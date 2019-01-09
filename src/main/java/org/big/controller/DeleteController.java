@@ -41,11 +41,17 @@ public class DeleteController {
 		modelAndView.setViewName("delete");
 		return modelAndView;
 	}
-	
+	/**
+	 * 
+	 * @Description 查询某团队下的所有数据集
+	 * @param team
+	 * @return
+	 * @throws Exception
+	 * @author ZXY
+	 */
 	@RequestMapping(value = "findAllDataSetByTeam",method = RequestMethod.POST)
 	@ResponseBody
 	public Object findAllDataSetByTeam(String team) throws Exception {
-		System.out.println("enter..."+team);
 		List<Dataset> datasetList = deleteService.findAllDataSetByTeam(team);
 		JSONArray array = new JSONArray();
 		for (Dataset dataset : datasetList) {
@@ -54,12 +60,18 @@ public class DeleteController {
 			jsonObject.put("dsname", dataset.getDsname());
 			array.add(jsonObject);
 		}
-		System.out.println(array.toJSONString());
 		return array.toJSONString();
 		
 	}
 	
-	
+	/**
+	 * 
+	 * @Description 查询某数据集下的所有分类单元集
+	 * @param dataset
+	 * @return
+	 * @throws Exception
+	 * @author ZXY
+	 */
 	@RequestMapping(value = "findAllTaxaSetByDS",method = RequestMethod.POST)
 	@ResponseBody
 	public Object findAllTaxaSetByDS(String dataset) throws Exception {

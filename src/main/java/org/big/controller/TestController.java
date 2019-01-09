@@ -2,9 +2,10 @@ package org.big.controller;
 
 
 
+import org.big.repository.DistributiondataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,8 +23,8 @@ public class TestController {
 //	private CommonnameRepository commonnameRepository;
 //	@Autowired
 //	private DescriptionRepository descriptionRepository;
-//	@Autowired
-//	private DistributiondataRepository distributiondataRepository;
+	@Autowired
+	private DistributiondataRepository distributiondataRepository;
 //	@Autowired
 //	private MultimediaRepository multimediaRepository;
 //	@Autowired
@@ -47,7 +48,8 @@ public class TestController {
 	@RequestMapping(value = "/testController_test1")
 	public String test1() {
 		logger.info("test1");
-		
+		distributiondataRepository.findAll();
+		distributiondataRepository.findOneById("12");
 		
 //		distributiondata.geojson新换旧
 //		String oldChar = "A9B74666A075495893FEF53C1D6268B9";
