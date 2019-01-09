@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:replace="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE</title>
+
+</head>
+
+<body>
+	<div th:include="base/common::menu"></div>
+	<div class="container">
+		<div class="row">
+			<h2>两栖爬行类</h2><p class="executeResult" style="color:red"></p>
+		</div>
+
+		<div class="row amphibiansAndReptiles-form">
+			<form role="form" id="handleAndInsertExcel" enctype="multipart/form-data">
+				<div class="form-group"><label>录入人id：</label><input class="form-control" name="mLoginUser" value="3a29945023d04ef8a134f0f017d316f0" type="text"></div>
+				<div class="form-group"><label>数据源id：</label><input class="form-control" name="mSourcesid" value="3a9b779e-108c-46b2-9417-cada360f2870" type="text"></div>
+				<div class="form-group"><label>录入时间（字符串）：</label><input class="form-control" name="mInputtimeStr" value="2018-12-25 01:01:01" type="text"></div>
+				<div class="form-group"><label>分类单元集id：</label><input class="form-control" name="mTaxasetId"  value="49b6f751f8e6422bbcfd83d435d3fe91" type="text"></div>
+				<div class="form-group"><label>分类树ID：</label><input class="form-control" name="mTaxtreeId"  value="7d551588ad3944e2bc94dcc0c55fb918" type="text"></div>
+				<div class="form-group">
+					<label> 是否录入数据库</label> 
+					<input type="radio" name="insert" value="false" >false &nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" name="insert" value="true" > true
+				</div>
+				<div class="form-group">
+					<label for="name">文件路径</label> <input type="text" name="filePath"
+						class="form-control" placeholder="上传文件或输入文件路径" value="E:\003采集系统\两栖动物数据\animal.xlsx">
+				</div>
+				<div class="form-group">
+					<label class="sr-only" for="inputfile">文件输入（excel文件）</label> <input
+						type="file" id="multipartFile" name = "multipartFile" accept="application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+				</div>
+				<div class="form-group">
+				<button type="button" class="btn btn-primary uploadFile"
+				data-loading-text="Loading...">提交</button>
+				<button type="button" class="btn btn-primary buildTree" style="margin-left:10%;"
+				data-loading-text="Loading...">buildTree</button>
+				</div>
+			</form>
+		</div>
+		
+	</div>
+</body>
+<div th:include="base/common::javascript"></div>
+<script type="text/javascript">
+$(function() {
+    //在layui中使用layer
+    layui.use(['layer'],function() {   var layer = layui.layer;    })
+    
+    //提交按钮
+    $(".uploadFile").click(function() {
+    	$(".executeResult").text("");
+        if (confirm("确定要导入数据吗？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var fd = new FormData(document.getElementById("handleAndInsertExcel"));
+			$.ajax({
+			  url: "/guest/AmphibiansAndReptilesController_doSave",
+			  type: "POST",
+			  data: fd,
+			  processData: false,  // 告诉jQuery不要去处理发送的数据
+			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+			  success: function (data) {
+			  		layer.msg("返回数据: \n" + data);
+			  		layer.close(index);//关闭loading层
+			  		$(".executeResult").text("返回数据: \n" + data);
+			  		},
+			  error: function () {
+			  		layer.close(index);//关闭loading层
+			  }
+			   
+			});
+		 
+        } else {
+            alert("导入操作取消");
+        }
+    });
+    
+    //buildTree
+    $(".buildTree").click(function() {
+    	$(".executeResult").text("");
+        if (confirm("确定要构建分类树吗？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var fd = new FormData(document.getElementById("handleAndInsertExcel"));
+			$.ajax({
+			  url: "/guest/AmphibiansAndReptilesController_doInsertTree",
+			  type: "POST",
+			  data: fd,
+			  processData: false,  // 告诉jQuery不要去处理发送的数据
+			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+			  success: function (data) {
+			  		layer.msg("返回数据: \n" + data);
+			  		layer.close(index);//关闭loading层
+			  		$(".executeResult").text("返回数据: \n" + data);
+			  		},
+			  error: function () {
+			  		layer.close(index);//关闭loading层
+			  }
+			   
+			});
+		 
+        } else {
+            alert("构建分类树操作取消");
+        }
+    });
+    
+    
+    
+});
+</script>
+</html>

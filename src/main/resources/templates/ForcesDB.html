@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace ="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE  </title>
+
+</head>
+
+<body>
+<div th:include="base/common::menu"></div>
+<div class="container">
+<div class="row"><h2>旧采集系统</h2></div>
+<div class="row"><h2>以<b>数据源</b>为单位，将旧采集系统的数据导入新采集系统。</h2></div>
+<div class="row">第一步：在org.big.service.ForcesDBServiceImpl.java中配置数据 或者 配置book1.xml文件</div>
+<div class="row">第二步：运行程序</div>
+<div class="row">第三步：访问目标数据的链接</div>
+<div class="row forcesDB-row" >
+<div class="row">
+<ul style="padding-top: 10px;">
+			<li><a href="javascript:void(0);"
+					onclick="importData('insertDSAllByXml','insertDSAllByXml')">一键导入（读取xml）</a></li>
+</ul>
+</div>
+<hr>
+<div class="form-group">
+		<input class="form-control"	name="seqBegin" value=""  placeholder="请输入xml中的序号"	type="text">
+</div>
+<ul style="padding-top: 10px;">
+			<li><a href="javascript:void(0);"
+					onclick="importData('insertDSAll','All')">一键导入</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdTaxonInsert','taxon')">1.链接：导入taxon</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdCommNameInsert','俗名')">2.链接：导入俗名</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdDescInsert','描述')">3.链接：导入描述信息</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdDistriInsert','分布')">4.链接：导入分布数据</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdKeyitemInsert','检索表')">5.链接：导入检索表</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdCitationInsert','引证')">6.链接：导入引证</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdSpecimenInsert','标本')">7.链接：导入标本</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdMultimediaInsert','多媒体')">链接：导入多媒体</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdTreeInsert','分类树')">链接：导入分类树</a></li>
+				<li><a href="javascript:void(0);"
+					onclick="importData('birdRefsInsert','文献')">链接：导入文献（birdRefsInsert）</a></li>
+			</ul>
+</div>
+<div class="row"></div>
+</div>
+</body>	
+<div th:include="base/common::javascript"></div>
+<script type="text/javascript">
+function importData(link, name) {
+	var seqBegin = $("input[name='seqBegin']").val();
+    if (confirm("确定要导入" + name + "数据吗？")) {
+          window.location.href=link+"?seqBegin="+seqBegin;
+          alert("开始导入" + name+",请在控制台查看导入进度 "+seqBegin);
+	} else {
+	        alert("取消导入" + name);
+	    }
+}
+
+
+</script>
+</html>

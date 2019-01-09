@@ -1,0 +1,134 @@
+--表结构修改
+alter table refs modify refstr VARCHAR(3000);
+alter table refs modify author VARCHAR(2000);
+alter table refs modify title VARCHAR(3000);
+alter table refs modify journal VARCHAR(1000)
+alter table refs modify translator VARCHAR(500)
+alter table refs modify press VARCHAR(500)
+alter table refs modify place VARCHAR(500)
+alter table refs modify `languages` varchar(50) DEFAULT NULL COMMENT '语言 1|中文/2|英文/3|法语/4|俄罗斯/5|西班牙/6|其他'
+alter table refs modify   `olang` varchar(50) DEFAULT NULL COMMENT '原始语言 1|中文/2|英文/3|法语/4|俄罗斯/5|西班牙/6|其他'
+alter table refs modify   `ptype` varchar(50) DEFAULT NULL COMMENT '参考文献类型 1|期刊/2|专著/3|论文集/4|其他/'
+alter table refs modify   `pyear` varchar(500) DEFAULT NULL COMMENT '发表时间'
+
+
+alter table taxon modify remark longtext
+alter table taxon modify scientificname VARCHAR(500)
+
+alter table citation modify sciname VARCHAR(500)
+
+alter table keyitem modify item longtext
+
+alter table description  modify describer VARCHAR(255)
+alter table description  modify destitle VARCHAR(600)
+
+
+alter table specimendata  modify specimentype VARCHAR(50)  COMMENT '标本类型 FK SpecimenTypeList.id' 
+alter table specimendata  modify sex VARCHAR(50)  COMMENT '性别 FK GenderList.id' 
+ALTER TABLE specimendata ADD  altitude VARCHAR(50) COMMENT '海拔高度';
+ALTER TABLE specimendata ADD  conserve_status VARCHAR(50) COMMENT '保存状态 FK  ConserveStatusList.id';
+ALTER TABLE specimendata ADD  deep VARCHAR(255) COMMENT 'deep';
+ALTER TABLE specimendata ADD  host VARCHAR(255) COMMENT 'host';
+ALTER TABLE specimendata ADD  specimen_status VARCHAR(255) COMMENT '标本状态 FK SpecimenStatusList.id';
+ALTER TABLE specimendata ADD  desc_note VARCHAR(255) COMMENT '描述';
+
+ALTER TABLE `multimedia`  modify `context` varchar(2000) 
+
+ALTER TABLE `commonname`  modify   `refjson` varchar(1000)
+
+--增加表
+CREATE TABLE
+    SpecimenTypeList
+    (
+        id VARCHAR(50) PRIMARY KEY NOT NULL,
+        C_Name VARCHAR(50),
+        Power INT
+    )
+    ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        
+CREATE TABLE
+    SpecimenStatusList
+    (
+        id VARCHAR(50) PRIMARY KEY NOT NULL,
+        C_Name VARCHAR(50),
+        Power INT
+    )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+CREATE TABLE
+    ConserveStatusList
+    (
+        id VARCHAR(50) PRIMARY KEY NOT NULL,
+        C_Name VARCHAR(50),
+        Power INT
+    )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+CREATE TABLE
+    GenderList
+    (
+        id VARCHAR(50) PRIMARY KEY NOT NULL,
+        C_Name VARCHAR(50),
+        Power INT
+    )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+--添加增加数据
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('07A5E2A9-E32D-4477-A668-4EC333ED7693', '其它', 16);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('10061F27-E6FA-4422-8051-1E5C92767794', '透明标本', 9);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('11E2FE07-8EFE-4B0D-9256-5FD6778C9B83', '浸制标本', 2);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('31A2B14B-2421-4228-98F0-11A702253F79', '化石标本', 15);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('3D320A56-6535-4D8F-9B85-6116AF0AC641', '分子生物学材料', 14);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('4CF8590F-7400-4413-AC64-CD053B8AA839', '不详', -1);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('4D09029C-04C3-4515-9512-B3AA2CB8B3A1', '针插', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('5D4144F7-F6EC-45F5-9289-45ACAD19BB90', '干制标本', 13);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('5EC76218-D34C-43A5-8605-AC8E088341D7', '酒精瓶装 ', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('63D9C758-CC80-449E-B5ED-D63FA8540D5E', '浸制标本:福尔马林浸泡', 1);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('79374132-4A44-4D9E-834D-3D602CFDCE6A', '巢+卵', 7);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('8BA67B15-188D-46F0-B9B9-BC4DA6A4582E', '卵', 6);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('8F2240E5-AD87-4F04-B2B8-5FFA23C91857', '液浸', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('A4A6E3BB-E9DC-47B0-AED6-EA44E2EC5AAB', '酒精液浸', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('AA3F2541-16F0-413E-8409-EC3D51560D50', '针插标本', 10);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('AC02139B-AC86-40F5-8BC2-D63B065A17FA', '干制盒装', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('BE9ECF71-50CA-49B0-B1D8-E27B54AA2488', '形态标本', 8);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('C3101CE5-C0C9-451C-ACD1-AE14ACFF2DC7', '巢', 5);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('C31F112F-5637-4703-8A82-CAF8EB3EE767', '皮张标本', 4);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('CD872955-F45A-435F-B926-1DF220FDB5C1', '浸制标本:酒精浸泡', 1);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('CFC20059-D414-48ED-B571-75CB10AA45F1', '骨骼标本', 3);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('D09F4DC2-8B69-478F-A910-D71E51350701', '玻片标本', 12);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('D457EE47-34E0-46F0-A8FC-CCA8B6F30E4D', '浸制标本:酒精+甘油浸泡', 1);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('E79542DB-962C-4171-905A-41C2D2B3EDE3', '剥制标本', 1);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('F59F732A-B785-4DC5-A435-0C5DD22AF245', '浸液瓶装', 0);
+INSERT INTO ConserveStatusList (id, C_Name, Power) VALUES ('F6588ED6-7595-4DE9-B2DD-568832D11797', '纸夹标本', 11);
+
+
+INSERT INTO GenderList (id, C_Name, Power) VALUES ('364C3FF0-ADE5-46C8-B6FA-75ED6497D01E', '雌体', 2);
+INSERT INTO GenderList (id, C_Name, Power) VALUES ('386C1FFE-3615-4DDB-840B-A3B541A0CD61', '雌体+雄体', 5);
+INSERT INTO GenderList (id, C_Name, Power) VALUES ('B4734458-DC18-42F1-B441-06CA86FA4EC6', '不详', 1);
+INSERT INTO GenderList (id, C_Name, Power) VALUES ('CFFC3B85-FE78-4A06-9C54-A8EBEFF69FCE', '雌雄同体', 4);
+INSERT INTO GenderList (id, C_Name, Power) VALUES ('EB1D3011-BAC8-468F-9149-539D649256A0', '雄体', 3);
+
+
+
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('0A1B63D2-2138-4D17-BBAF-62CC55EDAC1E', '不详', 0);
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('14F059F0-F92A-436F-9B95-6D9E1B9879D9', '外借', 2);
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('4BD636CE-D257-4945-81D7-DE09445D92C5', '赠送', 4);
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('AAE85AF9-AABE-406E-8C91-4762544DA5D3', '交换', 3);
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('C2A51001-0E35-4972-8328-6ED241135ED2', '馆藏', 1);
+INSERT INTO SpecimenStatusList (id, C_Name, Power) VALUES ('C7793141-A9D0-4A02-950F-D52D17A9D06C', '其它', 5);
+
+
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('1F79D7C4-DA3C-4E19-A687-119D9A099F25', '模式标本：后模', 8);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('29C8DCF1-97EE-4A3F-BEDF-B2FC6A4BED39', '模式标本：其他', 9);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('2BDB75A6-34D2-4B7E-8C5F-3960E8384835', '模式标本：副模', 3);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('30E40F85-DA96-4CB8-BD37-D9A8B2D47CB1', '模式标本：地模', 7);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('32510310-8B21-4924-B655-7B68DDC3E8AB', '模式标本：全模', 4);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('33022A3E-88DF-426E-A9BD-78C85FF0CBBF', '模式标本：同模', 12);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('60BF1472-BABA-4DD6-B48A-B821DEFC5D93', '模式标本：新模', 6);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('67EE0B74-FFC2-4CDE-BD4C-3187B0BA8402', null, 0);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('7090A545-1104-4728-B499-9BBF9A1C6DD3', '模式标本：选模', 5);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('84B20DC5-205C-4579-A0C1-B711D05B0BE0', '模式标本：正模', 1);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('8B0AADF4-32EA-4753-ACEE-EAAC73CA8D83', '模式标本：余模', 14);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('91F03F20-A28D-4BB3-9BCD-E8F76852C3C9', '模式标本：配模', 2);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('9BE76119-AB7A-42ED-89F9-1A6D2888E726', '模式标本：选副模', 11);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('A4FE23B6-2A52-4BC1-B610-9B933A806A27', '模式标本：外模', 13);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('AE077D5F-FC5C-405A-85C1-DCD2BE6306E5', '未定名标本', 17);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('F3FBAFBE-5098-4FF6-B4FC-40C2499E8D33', '模式标本：综模', 10);
+INSERT INTO SpecimenTypeList (id, C_Name, Power) VALUES ('F93AF9B6-8E83-4D02-9D94-BDE7D738FEE9', '普通标本', 16);

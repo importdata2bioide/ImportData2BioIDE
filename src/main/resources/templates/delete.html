@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:replace="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE</title>
+
+</head>
+
+<body>
+	<div th:include="base/common::menu"></div>
+	<div class="container delete-form">
+
+		<div class="row">
+			<hr>
+			<form id="deleteDataByTaxaSetForm" action="guest/deleteDataByTaxaSet"
+				role="form" class="form-inline">
+				<p>
+					团队名称：
+					 <select class="form-control input-sm" name="team"
+						id="team">
+						<option></option>
+						<option th:each="team:${teamList}" th:value="${team.id}"
+							th:text="${team.name}"></option>
+					</select> 
+					数据集名称：
+					 <select class="form-control input-sm" name="dataset"
+						id="dataset">
+						<option>-</option>
+					</select> 
+					分类单元集名称：
+					<select class="form-control input-sm" name="taxaset"
+						id="taxaset">
+						<option>-</option>
+					</select> 
+					
+					<button class="btn btn-primary" type="button"
+						onclick="deleteDataByTaxaSet()">【【删除该分类单元集下的所有信息】】</button>
+				</p>
+			</form>
+		</div>
+		<div class="row">
+			<hr>
+			<form id="deleteDescription" action="guest/deleteDescription"
+				role="form" class="form-inline">
+				<p>
+					团队名称：<input name="teamName" id="teamName" value="旧采集系统"
+						class="form-control"> 数据集名称：<input name="datesetName"
+						id="datesetName" class="form-control"> 分类单元集名称：<input
+						name="taxasetName" id="taxasetName" class="form-control">
+					<button class="btn btn-primary" type="button"
+						onclick="deleteDescription()">【【删除该分类单元集下的所有描述信息】】</button>
+				</p>
+			</form>
+		</div>
+		<div class="row">
+			<hr>
+			<form id="findNodeAndAllChildren"
+				action="guest/findNodeAndAllChildren" role="form"
+				class="form-inline">
+				<p>
+					节点ID：<input name="nodeId" id="nodeId" class="form-control">
+					taxtreeId：<input name="taxtreeId" id="taxtreeId"
+						value="88613a88dfe64df48caa92f786d82d51" class="form-control">
+					<button class="btn btn-primary" type="button"
+						onclick="findNodeAndAllChildren()">【【查询该该节点的所有孩子节点】】</button>
+				</p>
+			</form>
+		</div>
+
+
+		<div class="row">
+			<hr>
+			<form id="deleteByTeamForm" action="guest/deleteByTeam" role="form"
+				class="form-inline">
+				团队名称： <select class="form-control input-sm" name="team"
+					id="teamName">
+					<option th:each="team:${teamList}" th:value="${team.id}"
+						th:text="${team.name}"></option>
+				</select>
+				<button type="button" class="btn btn-primary deleteByTeam">删除该团队下的所有数据</button>
+			</form>
+		</div>
+
+
+		<div class="row">
+			<hr>
+			<form id="deleteByTaxtreeId" action="guest/deleteByTaxtreeId"
+				role="form" class="form-inline">
+				分类树id：<input name="mTaxtreeId" value="" class="form-control">
+				<button type="button" class="btn btn-primary deleteByTaxtreeId">删除该树的所有孩子节点</button>
+			</form>
+		</div>
+	</div>
+
+	<div th:include="base/common::javascript"></div>
+	<script type="text/javascript">
+	
+$(document).ready(function() {
+    //在layui中使用layer
+    layui.use(['layer'],
+    function() {
+        var layer = layui.layer;
+    })
+    
+    //数据集下拉选框change事件
+	$("#dataset").change(function() { 
+	    var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+		var fd = new FormData(document.getElementById("deleteDataByTaxaSetForm"));
+		$.ajax({
+		  url: "/guest/findAllTaxaSetByDS",
+		  type: "POST",
+		  data: fd,
+		  processData: false,  // 告诉jQuery不要去处理发送的数据
+		  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+		  success: function (data) {
+		  		layer.close(index);//关闭loading层
+		  		$("#taxaset").empty();
+		  		var jsonObj =  JSON.parse(data);//转换为json对象
+		  		$("#taxaset").append("<option></option>");
+				for(var i=0;i<jsonObj.length;i++){
+				   $("#taxaset").append("<option value='"+jsonObj[i].id+"'>"+jsonObj[i].tsname+"</option>");//新增
+				}
+	
+		  		},
+		  error: function () {
+		  		layer.close(index);//关闭loading层
+		  		layer.msg("服务器出现错误！！！");
+		  }
+		   
+		});
+	});
+ 
+    
+    	//团队下拉选框change事件
+	$("#team").change(function() { 
+	    var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+		var fd = new FormData(document.getElementById("deleteDataByTaxaSetForm"));
+		$.ajax({
+		  url: "/guest/findAllDataSetByTeam",
+		  type: "POST",
+		  data: fd,
+		  processData: false,  // 告诉jQuery不要去处理发送的数据
+		  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+		  success: function (data) {
+		  		layer.close(index);//关闭loading层
+		  		$("#dataset").empty();
+		  		var jsonObj =  JSON.parse(data);//转换为json对象
+		  		$("#dataset").append("<option></option>");
+				for(var i=0;i<jsonObj.length;i++){
+				   $("#dataset").append("<option value='"+jsonObj[i].id+"'>"+jsonObj[i].dsname+"</option>");//新增
+				}
+	
+		  		},
+		  error: function () {
+		  		layer.close(index);//关闭loading层
+		  		layer.msg("服务器出现错误！！！");
+		  }
+		   
+		});
+	});
+    
+    //deleteByTeam
+	$(".deleteByTeam").click(function(){
+       layer.confirm('危险操作！！！确定要执行删除任务么？', {
+          	btn: ['确定','取消'] //按钮
+        }, function(){
+			var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var formData = $("#deleteByTeam").serialize()
+		    $.post("guest/deleteByTeam",formData,
+		        function(data,status){
+		        layer.close(index);//关闭loading层
+		        layer.msg("返回数据: \n" + data + "\n状态: " + status);
+		        $(".executeResult").text("返回数据: \n" + data + "    状态: " + status);
+		    });
+        });//layer.confirm
+	});//$(".deleteByTeam").click
+	
+	//根据分类树id删除
+	$(".deleteByTaxtreeId").click(function(){
+       layer.confirm('危险操作！！！确定要执行删除任务么？', {
+          	btn: ['确定','取消'] //按钮
+        }, function(){
+			var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var formData = $("#deleteByTaxtreeId").serialize()
+		    $.post("guest/deleteByTaxtreeId",formData,
+		        function(data,status){
+		        layer.close(index);//关闭loading层
+		        layer.msg("返回数据: \n" + data + "\n状态: " + status);
+		        $(".executeResult").text("返回数据: \n" + data + "    状态: " + status);
+		    });
+        });
+	});
+	
+
+	
+	
+});
+
+function deleteDataByTaxaSet() {
+    if (confirm("危险操作！！！确定要删除数据吗？")) {
+        var form = document.getElementById('deleteDataByTaxaSetForm');
+        form.submit();
+    } else {
+        alert("删除操作取消");
+    }
+}	
+
+function deleteDescription() {
+    if (confirm("危险操作！！！确定要删除描述数据吗？")) {
+        var form = document.getElementById('deleteDescription');
+        form.submit();
+    } else {
+        alert("删除操作取消");
+    }
+}
+
+function findNodeAndAllChildren() {
+    if (confirm("确定要find数据吗？")) {
+        var form = document.getElementById('findNodeAndAllChildren');
+        form.submit();
+    } else {
+        alert("操作取消");
+    }
+}	
+</script>
+</body>
+</html>

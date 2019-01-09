@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:replace="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE</title>
+<style type="text/css">
+
+</style>
+</head>
+
+<body>
+	<div th:include="base/common::menu"></div>
+	<div class="container">
+		<div class="row" style="text-align:center;">
+			<h2>模板</h2>
+			
+		</div>
+		<div class="row btn_row" >
+		<hr>
+			<button type="button" class="btn btn-primary btn_reset" style="margin-left:3%">重置[RESET]</button>
+			<button type="button" class="btn btn-primary btn_plant" style="margin-left:3%">植物百科【14】</button>
+			<hr>
+		</div>
+		<div class="row model-form">
+			<form class="form-horizontal" role="form" enctype="multipart/form-data" id="thisformData">
+				<div class="form-group">
+					<label for="firstname" class="col-sm-2 control-label">访问路径：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mActionUrl"
+							placeholder="访问路径">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="firstname" class="col-sm-2 control-label">录入人id：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mLoginUser"
+							placeholder="录入人id">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="firstname" class="col-sm-2 control-label">审核人id：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mExpert"
+							placeholder="审核人id">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">数据源id：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mSourcesid"
+							placeholder="数据源id">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">录入时间（字符串）：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mInputtimeStr"
+							placeholder="录入时间（字符串）">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">分类单元集id：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mTaxasetId"
+							placeholder="分类单元集id">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">分类树id：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="mTaxtreeId"
+							placeholder="分类树id">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">
+						是否录入数据库：</label>
+					<div class="col-sm-8">
+						<input type="radio" name="insert" value="false" checked="checked">false
+						&nbsp;&nbsp;&nbsp;&nbsp; <input type="radio" name="insert"
+							value="true"> true
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">文件路径：</label>
+					<div class="col-sm-8">
+						<input type="text" class="form-control" name="filePath"
+							placeholder="文件路径">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="lastname" class="col-sm-2 control-label">文件输入：</label>
+					<div class="col-sm-8">
+						<input type="file" id="multipartFile" name="multipartFile">
+					</div>
+				</div>
+
+
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-8">
+						<button type="button" class="btn btn-danger btn_submit"
+							data-loading-text="Loading...">提交</button>
+					</div>
+				</div>
+			</form>
+
+		</div>
+		<div class="row"> <p class="executeResult" style="color:red"></p> </div>
+
+	</div>
+</body>
+<div th:include="base/common::javascript"></div>
+<script type="text/javascript">
+$(function() {
+    //在layui中使用layer
+    layui.use(['layer'],function() {   var layer = layui.layer;    })
+  
+    //btn_submit
+    $(".btn_submit").click(function() {
+    	$(".executeResult").text("");
+    	var mActionUrl = $("input[name=mActionUrl]").val();
+        if (confirm("确定要提交吗？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var fd = new FormData(document.getElementById("thisformData"));
+			$.ajax({
+			  url: mActionUrl,
+			  type: "POST",
+			  data: fd,
+			  processData: false,  // 告诉jQuery不要去处理发送的数据
+			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+			  success: function (data) {
+			  		layer.msg("返回数据: \n" + data);
+			  		layer.close(index);//关闭loading层
+			  		$(".executeResult").text("返回数据: \n" + data);
+			  		},
+			  error: function () {
+			  		layer.close(index);//关闭loading层
+			  		layer.msg("服务器出现错误！！！");
+			  }
+			   
+			});
+		 
+        } else {
+            layer.msg("提交操作取消");
+        }
+    });
+    
+	$(".btn_reset").click(function() {
+	    $(".executeResult").text("");
+	    $('input[name=mActionUrl]').val('');//访问路径
+	    $('input[name=mLoginUser]').val('');//录入人id
+	    $('input[name=mExpert]').val('');//审核人id
+	    $('input[name=mSourcesid]').val('');//数据源id
+	    $('input[name=mInputtimeStr]').val('');//录入时间（字符串）
+	    $('input[name=mTaxasetId]').val('');//分类单元集id
+	    $('input[name=mTaxtreeId]').val('');//分类树id
+	    $("input[name=insert][value=false]").attr("checked",true); //是否录入数据库
+	    $('input[name=filePath]').val('');//文件路径
+	});
+
+	$(".btn_plant").click(function() {
+	    $(".executeResult").text("");
+	    $('input[name=mActionUrl]').val('/guest/plantEncyclopediaController_doSave');//访问路径
+	    $('input[name=mLoginUser]').val('4a29946023d04ef8a134f0f017d317d0');//录入人id
+	    $('input[name=mExpert]').val('1001ccc5350d4886a1e50d15fd6d45ee');//审核人id
+	    $('input[name=mSourcesid]').val('');//数据源id
+	    $('input[name=mInputtimeStr]').val('2019-01-07 01:01:01');//录入时间（字符串）
+	    $('input[name=mTaxasetId]').val('cade371eddf14b859c6952c27d6f9a67');//分类单元集id
+	    $('input[name=mTaxtreeId]').val('');//分类树id
+	    $("input[name=insert][value=false]").attr("checked",true); //是否录入数据库
+	    $('input[name=filePath]').val('E:\\003采集系统\\0007-5-2-1-金效华\\汇交专项-植物专题\\');//文件路径
+	});	
+	
+
+	
+    
+});
+</script>
+</html>

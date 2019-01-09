@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header">
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<!-- 使用base 解决在控制层加RequestMapping注解后的 静态资源路径问题 -->
+<base th:href="@{/}"/>
+<link rel="stylesheet"
+	th:href="@{plugins/bootstrap-3.3.7-dist/css/bootstrap.min.css}" />
+<link rel="stylesheet" th:href="@{css/index.css}" />
+</head>
+<body>
+	<div th:fragment="menu">
+		<nav class="navbar navbar-default navbar-menu" role="navigation">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target="#example-navbar-collapse">
+						<span class="sr-only">切换导航</span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="JumpPageController_index">数据导入BioIDE</a>
+				</div>
+				<div class="collapse navbar-collapse menu-list" id="example-navbar-collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="JumpPageController_model">模板</a></li>
+						<li class="speciesCatalogue-menu-item"><a href="JumpPageController_SpeciesCatalogue">杨定</a></li>
+						<li><a href="JumpPageController_ForcesDB">旧采集系统</a></li>
+						<li><a href="JumpPageController_amphibiansAndReptiles">两栖爬行数据</a></li>
+						<li><a href="JumpPageController_birdListComparison">2019鸟类名录对比</a></li>
+						<li><a href="/guest/deleteController_goDelete">数据删除</a></li>
+						<li><a href="/guest/findAllTables">代码生成器</a></li>
+						
+						<li class="dropdown"><a  class="dropdown-toggle"
+							data-toggle="dropdown"> #337AB7 <b class="caret"></b>
+						</a>
+							<ul class="dropdown-menu">
+								<li><a href="#">jmeter</a></li>
+								<li><a href="#">EJB</a></li>
+								<li><a href="#">Jasper Report</a></li>
+								<li class="divider"></li>
+								<li><a href="#">分离的链接</a></li>
+								<li class="divider"></li>
+								<li><a href="#">另一个分离的链接</a></li>
+							</ul></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</div>
+</body>
+<!-- JS -->
+<footer th:fragment="javascript">
+	<!-- 使用base 解决在控制层加RequestMapping注解后的 静态资源路径问题 -->
+	
+	<script type="text/javascript" th:src="@{js/jquery-3.3.1.js}"></script>
+	<script type="text/javascript" th:src="@{js/index.js}"></script>
+	<script th:src="@{plugins/layui/layui.js}"></script>
+	<script th:src="@{plugins/bootstrap-3.3.7-dist/js/bootstrap.min.js}"></script>
+
+</footer>
+</html>

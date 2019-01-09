@@ -1,0 +1,42 @@
+html body {
+  font-size: 16px;
+  font-family: "微软雅黑体";
+  color: black;
+  background-image:url("../img/bg5.png");
+}
+
+a:link {color: #fff} /* 未访问时的状态 */
+a:visited {color: #7C7B7B} /* 已访问过的状态 */
+a:hover {color: #ffff00} /* 鼠标移动到链接上时的状态 */
+a:active {color: #C1CC22} /* 鼠标按下去时的状态 */ 
+
+.forcesDB-row ul li{
+	margin:15px;
+	background-color:#1661AB;
+	padding:3px;
+	
+}
+.navbar-default .navbar-nav > li > a {
+  color: #fff;
+}
+.navbar-default .navbar-nav > li > a:hover {
+  background-color:#1661AB ;
+  color: #fff;
+  filter:alpha(opacity:50); opacity:0.5;  -moz-opacity:0.5;-khtml-opacity: 0.5;
+}
+.navbar-default .navbar-brand {
+  color: #fff;
+}
+.amphibiansAndReptiles-form input[type=text]{
+	width:60%;
+}
+
+.SpeciesCatalogue-form input[type=text]{
+	width:60%;
+}
+/* 导航条颜色 */
+.navbar-menu{
+	background-color: #337AB7;
+}
+
+

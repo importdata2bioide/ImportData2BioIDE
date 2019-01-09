@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:replace="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE</title>
+
+</head>
+
+<body>
+	<div th:include="base/common::menu"></div>
+	<div class="container">
+		<div class="row"><h2>2019鸟类名录对比</h2></div>
+		<div class="row">
+				<button class="btn btn-primary" type="button"
+					onclick="importData('importbirdListComparison','【新版比对旧版结果】')">开始导入【新版比对旧版结果】</button>
+		</div>
+		<div class="row"></div>
+		<div class="row"></div>
+	</div>
+</body>
+<div th:include="base/common::javascript"></div>
+<script type="text/javascript">
+function importData(link, name) {
+    if (confirm("确定要导入" + name + "数据吗？")) {
+                    window.location.href=link;
+                    alert("开始导入" + name+",请在控制台查看导入进度");
+	} else {
+	        alert("取消导入" + name);
+	    }
+}
+</script>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace ="base/common::header">
+<meta charset="utf-8" />
+<title>import data to bioIDE  </title>
+
+</head>
+
+<body>
+<div th:include="base/common::menu"></div>
+<div class="container">
+<div class="row" >
+<h2>所有表：</h2>
+</div>
+<div class="row" >
+<form class="form-horizontal" role="form" id="thisformData">
+	<div  class="col-xs-6 col-sm-3" th:each="allTable : ${allTable}" >
+	<input type="checkbox" th:value="${allTable}" th:text="${allTable}" name="tableNames" >
+	</div>
+</form>
+</div>
+<div class="row" style="margin-top:10px"><button class="btn btn-primary btn-batchExecutecode" type="button">【【batchExecutecode】】</button></div>
+<h2>结果：</h2>
+<div class="row ">
+<p class="executeResult"></p>
+</div>
+<div class="row" style="padding:5px;">
+<textarea class="form-control" rows="20"></textarea>
+</div>
+
+</div>
+</body>	
+<div th:include="base/common::javascript"></div>
+<script type="text/javascript">
+$(function() {
+    //在layui中使用layer
+    layui.use(['layer'],function() {   var layer = layui.layer;    })
+  
+    //btn-batchExecutecode
+    $(".btn-batchExecutecode").click(function() {
+    	$(".executeResult").text("");
+        if (confirm("确定要提交吗11？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var fd = new FormData(document.getElementById("thisformData"));
+			$.ajax({
+			  url: "/guest/batchExecuteCode_doGet",
+			  type: "POST",
+			  data: fd,
+			  processData: false,  // 告诉jQuery不要去处理发送的数据
+			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+			  success: function (data) {
+			  		layer.msg("返回数据: \n" + data);
+			  		layer.close(index);//关闭loading层
+			  		$(".executeResult").text("返回数据: \n" + data);
+			  		},
+			  error: function () {
+			  		layer.close(index);//关闭loading层
+			  		layer.msg("服务器出现错误！！！");
+			  }
+			   
+			});
+		 
+        } else {
+            layer.msg("提交操作取消");
+        }
+    });
+
+    
+});
+</script>
+</html>

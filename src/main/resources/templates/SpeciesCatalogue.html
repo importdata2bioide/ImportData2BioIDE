@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<title>import data to bioIDE</title>
+<head th:replace="base/common::header">
+<meta charset="utf-8" />
+</head>
+
+<body>
+	<div th:include="base/common::menu"></div>
+	<div class="container">
+		<div class="row">
+			<h2>杨定-中国生物物种名录</h2>
+			<p class="executeResult" style="color: red"></p>
+		</div>
+
+		<div class="row SpeciesCatalogue-form">
+			<form id="importTxt" class="form-horizontal"
+				action="guest/SpeciesCatalogueController_importTxt" method="post"
+				role="form">
+				<div class="form-group">
+
+					<button type="button" class="btn btn-primary t-data-name-1">数据：双翅目长角亚目名录</button>
+					<button type="button" class="btn btn-primary t-data-name-2">数据：双翅目蝇类名录
+						正文1</button>
+					<button type="button" class="btn btn-primary t-data-name-3">数据：双翅目蝇类名录
+						正文2</button>
+				</div>
+				<div class="form-group">
+					<label> 是否录入数据库</label> 
+					<input type="radio" name="insert" value="false" >false &nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="radio" name="insert" value="true" > true
+				</div>
+				<div class="form-group">
+					<label>文件路径：</label><input class="form-control" name="txtUrl"
+						type="text" value="E:\003采集系统\杨定-名录-导入\双翅目长角亚目名录.txt"> <label>编码：</label><input
+						class="form-control" name="code" value="Unicode" type="text">
+				</div>
+				<div class="form-group">
+					<label>录入人（杨定）：</label><input class="form-control"
+						name="mLoginUser" value="4a29945023d04ef8a134f0f017d316f1"
+						type="text"> <label>数据源ID：</label><input
+						class="form-control" name="mSourcesid"
+						value="a51bb462-a9c7-47ed-8ad8-5d8cd7443f56" type="text">
+				</div>
+				<div class="form-group">
+					<label>录入时间（字符串）：</label><input class="form-control"
+						name="mInputtimeStr" value="2018-11-26 01:01:01" type="text">
+					<label>分类单元集ID：</label><input class="form-control"
+						name="mTaxasetId" value="d9154ee24e89424c853f822363731cf4"
+						type="text">
+				</div>
+				<div class="form-group">
+					<label>分类树ID：</label><input class="form-control" name="mTaxtreeId"
+						value="56e9ca1b1e414c63b14df63bd19eaafa" type="text">
+				</div>
+				<div class="form-group">
+					<label>参考文献remark：</label><input class="form-control" name="remark"
+						value="双翅目长角亚目名录参考文献" type="text">
+				</div>
+				
+				<div class="form-group">
+					<button type="button" id="fat-btn" class="btn btn-primary t-txt"
+						data-loading-text="Loading...">文本解析</button>
+					<button type="button" id="fat-btn" class="btn btn-primary t-tree"
+						data-loading-text="Loading...">分类树解析</button>
+				</div>
+			</form>
+		</div>
+		<div class="row">
+			<h2>根据数据源删除导入的数据</h2>
+			<div>delete from taxon_has_taxtree where taxtree_id = ''</div>
+			<div>delete from distributiondata where sourcesid = ''</div>
+			<div>delete from citation where sourcesid = ''</div>
+			<div>delete from taxon where sourcesid = ''</div>
+		</div>
+	</div>
+	<div th:include="base/common::javascript"></div>
+	<script>
+$(function() {
+
+	
+	
+    //在layui中使用layer
+    layui.use(['layer'],function() {   var layer = layui.layer;    })
+    
+    //文本解析
+    $(".t-txt").click(function() {
+    	$(".executeResult").text("");
+        if (confirm("确定要导入数据吗？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+        	var formData = $("#importTxt").serialize()
+		        $.post("guest/SpeciesCatalogueController_importTxt",formData,
+			        function(data,status){
+			        layer.close(index);//关闭loading层
+			        layer.msg("返回数据: \n" + data + "\n状态: " + status);
+			        $(".executeResult").text("返回数据: \n" + data + "    状态: " + status);
+			    });
+        } else {
+            alert("删除操作取消");
+        }
+    });
+    
+    //分类树解析
+	$(".t-tree").click(function(){
+		$(".executeResult").text("");
+		var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+		var formData = $("#importTxt").serialize()
+	    $.post("guest/SpeciesCatalogueController_insertTree",formData,
+	        function(data,status){
+	        layer.close(index);//关闭loading层
+	        layer.msg("返回数据: \n" + data + "\n状态: " + status);
+	        $(".executeResult").text("返回数据: \n" + data + "\n状态: " + status);
+	    });
+	});
+	
+	//填充数据，双翅目长角亚目名录
+	$(".t-data-name-1").click(function(){
+		$(".executeResult").text("");
+		$('input[name=txtUrl]').val('E:\\003采集系统\\杨定-名录-导入\\双翅目长角亚目名录.txt');
+		$('input[name=code]').val('Unicode');
+		$('input[name=mLoginUser]').val('4a29945023d04ef8a134f0f017d316f1');
+		$('input[name=mSourcesid]').val('a51bb462-a9c7-47ed-8ad8-5d8cd7443f56');
+		$('input[name=mInputtimeStr]').val('2018-11-26 01:01:01');
+		$('input[name=mTaxasetId]').val('d9154ee24e89424c853f822363731cf4');
+		$('input[name=mTaxtreeId]').val('56e9ca1b1e414c63b14df63bd19eaafa');
+		$('input[name=remark]').val('双翅目长角亚目名录参考文献');
+		
+	});
+	//填充数据，双翅目蝇类名录 正文1
+	$(".t-data-name-2").click(function(){
+		$(".executeResult").text("");
+		$('input[name=txtUrl]').val('E:\\003采集系统\\杨定-名录-导入\\双翅目蝇类名录 正文1.txt');
+		$('input[name=code]').val('Unicode');
+		$('input[name=mLoginUser]').val('4a29945023d04ef8a134f0f017d316f1');
+		$('input[name=mSourcesid]').val('ae4d6943-a621-4bb4-80a2-0cf186ad950b');
+		$('input[name=mInputtimeStr]').val('2018-11-27 01:01:01');
+		$('input[name=mTaxasetId]').val('ff4893ee56494c0b95606546e0704a79');
+		$('input[name=mTaxtreeId]').val('cb07756c53ed474eb66c71410e8e52c8');
+		$('input[name=remark]').val('双翅目蝇类名录');
+	});
+	//填充数据，双翅目蝇类名录 正文2
+	$(".t-data-name-3").click(function(){
+		$(".executeResult").text("");
+		$('input[name=txtUrl]').val('E:\\003采集系统\\杨定-名录-导入\\双翅目蝇类名录 正文2.txt');
+		$('input[name=code]').val('Unicode');
+		$('input[name=mLoginUser]').val('4a29945023d04ef8a134f0f017d316f1');
+		$('input[name=mSourcesid]').val('ae4d6943-a621-4bb4-80a2-0cf186ad950b');
+		$('input[name=mInputtimeStr]').val('2018-11-29 01:01:01');
+		$('input[name=mTaxasetId]').val('ff4893ee56494c0b95606546e0704a79');
+		$('input[name=mTaxtreeId]').val('cb07756c53ed474eb66c71410e8e52c8');
+		$('input[name=remark]').val('双翅目蝇类名录');
+	});
+});
+</script>
+</body>
+</html>
