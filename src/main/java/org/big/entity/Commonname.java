@@ -9,6 +9,7 @@ import javax.persistence.ManyToOne;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
@@ -21,8 +22,10 @@ import java.sql.Timestamp;
  * @since JDK 1.80_144
  */
 @Entity
-public class Commonname {
-    private String id;
+public class Commonname implements Serializable{
+   
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String commonname;
     private String language;
     private String refjson;

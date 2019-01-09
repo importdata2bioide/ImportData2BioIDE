@@ -4,6 +4,8 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
@@ -16,8 +18,10 @@ import java.sql.Timestamp;
  * @since JDK 1.80_144
  */
 @Entity
-public class Message {
-    private String id;
+public class Message implements Serializable{
+   
+	private static final long serialVersionUID = 1L;
+	private String id;
     private String sender;
     private String addressee;
     private Timestamp sendtime;

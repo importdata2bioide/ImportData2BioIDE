@@ -1,5 +1,7 @@
 package org.big.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
 
 /**
@@ -14,9 +16,10 @@ import javax.persistence.*;
 @Entity
 @Table(name = "user_has_team", schema = "biodata")
 @IdClass(UserTeamPK.class)
-public class UserTeam {
+public class UserTeam implements Serializable{
 
-    private String userId;
+	private static final long serialVersionUID = 1L;
+	private String userId;
     private String teamId;
 
     @Id

@@ -1,5 +1,6 @@
 package org.big.entity;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 import javax.persistence.Basic;
@@ -19,7 +20,8 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "team", schema = "biodata")
-public class Team {
+public class Team implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private String id;
 	private String name;
 	private String leader;

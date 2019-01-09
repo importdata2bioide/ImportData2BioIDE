@@ -1,27 +1,19 @@
 package org.big.service;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 
 import org.apache.commons.lang.StringUtils;
-import org.big.common.BuildEntity;
-import org.big.common.IdentityVote;
 import org.big.common.MD5Utils;
-import org.big.common.QueryTool;
 import org.big.common.UUIDUtils;
 import org.big.entity.Dataset;
 import org.big.entity.Team;
 import org.big.entity.User;
-import org.big.entity.UserDetail;
 import org.big.entity.UserTeam;
 import org.big.repository.DatasetRepository;
 import org.big.repository.TeamRepository;
@@ -29,10 +21,8 @@ import org.big.repository.UserRepository;
 import org.big.repository.UserTeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
@@ -65,58 +55,7 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private DatasetRepository datasetRepository;
     
-    @Override
-	@Transactional
-	public JSON findbyInfo(HttpServletRequest request) {
-		JSON json = null;
-		String searchText = request.getParameter("search");
-		if (searchText == null || searchText.length() <= 0) {
-			searchText = "";
-		}
-		int limit_serch = Integer.parseInt(request.getParameter("limit"));
-		int offset_serch = Integer.parseInt(request.getParameter("offset"));
-		
-		String sort = "adddate";
-		String order = "desc";
-		
-        JSONObject thisTable= new JSONObject();
-        JSONArray rows = new JSONArray();
-        List<User> thisList=new ArrayList<>();
-        Page<User> thisPage=this.userRepository.searchInfo(searchText,QueryTool.buildPageRequest(offset_serch,limit_serch,sort,order));
-        thisTable.put("total",thisPage.getTotalElements());
-        thisList=thisPage.getContent();
-        for(int i=0;i<thisList.size();i++){
-            JSONObject row= new JSONObject();
-            String thisSelect="<input type='checkbox' name='checkbox' id='sel_"+thisList.get(i).getId()+"' />";
-            String thisEdit=
-                    "<a class=\"wts-table-edit-icon\" onclick=\"editThisObject('"+thisList.get(i).getId()+"','user')\" >" +
-                    	"<span class=\"glyphicon glyphicon-edit\"></span>" +
-                    "</a> &nbsp;&nbsp;&nbsp;" +
-                    "<a class=\"wts-table-edit-icon\" onclick=\"removeThisObject('"+thisList.get(i).getId()+"','user')\" >" +
-                    	"<span class=\"glyphicon glyphicon-remove\"></span>" +
-                    "</a>";
-            row.put("select",thisSelect);
-            row.put("userName",thisList.get(i).getUserName());
-            row.put("nickname",thisList.get(i).getNickname());
-            row.put("email",thisList.get(i).getEmail());
-            row.put("mobile",thisList.get(i).getMobile());
-            row.put("role",thisList.get(i).getRole());
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String addTime="";
-            try {
-                addTime=formatter.format(thisList.get(i).getAdddate());
-            } catch (Exception e) {
-                //e.printStackTrace();
-            }
-            row.put("adddate",addTime);
-            row.put("edit",thisEdit);
-            rows.add(i,row);
-        }
-        thisTable.put("rows",rows);
-        json=thisTable;
-        return json;
-    }
-
+   
     @Override
     public User findbyID(String ID) {
         return this.userRepository.getOne(ID);
@@ -188,121 +127,7 @@ public class UserServiceImpl implements UserService{
     	return this.userRepository.findOneByEmail(email);
     }
 
-	@Override
-	@Transactional
-	public JSON findAllUserInfo(HttpServletRequest request) {
-		String findText = request.getParameter("find");
-		if (findText == null || findText.length() <= 0) {
-			findText = "";
-		}
-		int findPage = 1;
-		try {
-			findPage = Integer.valueOf(request.getParameter("page"));
-		} catch (Exception e) {
-		}
-		int limit_serch = 30;
-		int offset_serch = (findPage - 1) * 30;
-		String sort = "email";
-		String order = "asc";
-        // 创建JSONObject对象
-        JSONObject thisSelect = new JSONObject();	
-        // 创建JSON数组
-        JSONArray items = new JSONArray();
-        List<Object> thisList=new ArrayList<>();
-        // 获取当前登录用户
-        // 传入页码起始页、页面大小、排序字段和排序类型关键参数返回SpringData规定排序PageRequest类型
-        UserDetail thisUser = (UserDetail) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Page<Object> thisPage=this.userRepository.findUserInfoByEmail(findText, thisUser.getEmail(), 
-        		QueryTool.buildPageRequest(offset_serch,limit_serch,sort,order));
-        thisSelect.put("total_count",thisPage.getTotalElements());	// 总记录数
-        Boolean incompleteResulte=true;
-        
-        if((thisPage.getTotalElements()/30)>findPage){
-            incompleteResulte=false;
-        }
-        thisSelect.put("incompleteResulte",incompleteResulte);
-        thisList = thisPage.getContent();
-
-        for(int i=0;i<thisList.size();i++){
-            JSONObject row= new JSONObject();
-            row.put("id",BuildEntity.buildEmailString(thisList.get(i)));
-            row.put("text",BuildEntity.buildUserInfoString(thisList.get(i)));
-            items.add(row);
-        }
-        thisSelect.put("items",items);
-        return thisSelect;
-    }
-    
-    @Override
-    @Transactional
-    public JSON findbyTeamId(HttpServletRequest request) {
-        JSON json= null;
-        // -- 复选框 -- 
-        String searchText=request.getParameter("search");
-        if(searchText==null || searchText.length()<=0){
-            searchText="";
-        }
-        int limit_serch=Integer.parseInt(request.getParameter("limit"));
-        int offset_serch=Integer.parseInt(request.getParameter("offset"));
-        String teamId=request.getParameter("teamId");
-    	String sort = "adddate";
-		String order = "desc";
-		/*sort = request.getParameter("sort");
-		order = request.getParameter("order");
-		if (StringUtils.isBlank(sort)) {
-			sort = "adddate";
-		}
-		if (StringUtils.isBlank(order)) {
-			order = "desc";
-		}*/
-        JSONObject thisTable = new JSONObject();
-        JSONArray rows = new JSONArray();
-        List<User> thisList=new ArrayList<>();
-        Page<User> thisPage=this.userRepository.searchByTeamId(teamId,searchText,QueryTool.buildPageRequest(offset_serch,limit_serch,sort,order));
-        thisTable.put("total",thisPage.getTotalElements());
-        thisList=thisPage.getContent();
-        for(int i=0;i<thisList.size();i++){
-            JSONObject row= new JSONObject();
-            String thisEdit=
-                            "<a class=\"wts-table-edit-icon\" onclick=\"delThisMember('"+teamId+"','"+thisList.get(i).getId()+"')\" >" +
-                            	"<span class=\"glyphicon glyphicon-remove\" title=\"删除\"></span>" +
-                            "</a> &nbsp;&nbsp;&nbsp;" + 
-                            "<a class=\"wts-table-edit-icon\" onclick=\"transThisMember('"+teamId+"','"+thisList.get(i).getId()+"')\" >" +
-                        		"<span class=\"glyphicon glyphicon-adjust\" title=\"权限转让\"></span>" +
-                            "</a> &nbsp;&nbsp;&nbsp;" +
-				            "<a class=\"wts-table-edit-icon\" onclick=\"inviteThisObject('"+teamId+"','"+thisList.get(i).getId()+"')\" >" +
-				            	"<span class=\"glyphicon glyphicon-plus\" title=\"团队邀请\"></span>" +
-				            "</a>";
-            row.put("userName",thisList.get(i).getUserName());
-            row.put("nickname",thisList.get(i).getNickname());
-            row.put("email",thisList.get(i).getEmail());
-            // -- 团队角色 -- 
-            String role="成员";
-            if(this.teamRepository.getOne(teamId).getLeader().equals(thisList.get(i).getId())){
-                role="<span class=\"badge bg-light-blue\">负责人</span>";
-            }
-            row.put("role",role);
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            // -- 时间 --
-            String addTime="";
-            try {
-                addTime=formatter.format(thisList.get(i).getAdddate());
-            } catch (Exception e) {
-                //e.printStackTrace();
-            }
-            // -- 团队创建日期 --
-            row.put("adddate",addTime);
-            IdentityVote identityVote=new IdentityVote();
-            if(identityVote.isTeamLeaderByTeamId(teamId))
-                row.put("edit",thisEdit);
-            
-            rows.add(i,row);
-        }
-        thisTable.put("rows",rows);
-        json=thisTable;
-        return json;
-    }
-
+	
     @Override
     public void changeStatus(User thisUser,int status) {
         thisUser.setStatus((byte)status);

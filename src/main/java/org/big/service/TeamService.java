@@ -1,10 +1,8 @@
 package org.big.service;
 
 
-import com.alibaba.fastjson.JSON;
 
 import org.big.entity.Team;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -72,31 +70,6 @@ public interface TeamService {
      */
     Boolean removeOneByUser(String ID);
 
-    /**
-     *<b>带分页排序的条件查询</b>
-     *<p> 带分页排序的条件查询</p>
-     * @author WangTianshan (王天山)
-     * @param request 页面请求
-     * @return com.alibaba.fastjson.JSON
-     */
-    JSON findbyInfo(HttpServletRequest request);
-
-    /**
-     *<b>带分页排序的条件查询(仅显示所属的团队)</b>
-     *<p> 根据用户id查询Team列表，带分页排序的条件查询功能</p>
-     * @author WangTianshan (王天山)
-     * @param request 页面请求
-     * @return com.alibaba.fastjson.JSON
-     */
-    JSON findbyUser(HttpServletRequest request);
-
-    /**
-     *<b>根据name查找一个实体</b>
-     *<p> 据name查找一个实体</p>
-     * @author WangTianshan (王天山)
-     * @param name 实体的name
-     * @return org.big.entity.Team
-     */
     Team findOneByName(String name);
 
     /**
@@ -108,34 +81,6 @@ public interface TeamService {
      */
     int countMembersByTeamId(String ID);
 
-    /**
-     *<b>根据TeamId与UserIds删除成员</b>
-     *<p> 根据TeamId与UserIds删除成员</p>
-     * @author WangTianshan (王天山)
-     * @param teamId Team的ID
-     * @param userId User的ID
-     * @return int
-     */
-    boolean removeMembersByTeamIdAndUserId(HttpServletRequest request);
-    
-    /**
-     *<b>根据TeamId与UserIds完成团队负责人权限转换</b>
-     *<p> 根据TeamId与UserIds完成团队负责人权限转换</p>
-     * @author BINZI (王天山)
-     * @param teamId Team的ID
-     * @param userId User的ID
-     * @return int
-     */
-    void updateTeamInfoByLeader(HttpServletRequest request);
-    
-    /**
-     *<b>存储一个新的Team实体</b>
-     *<p> 存储一个新的Team实体</p>
-     * @author BINZI
-     * @param thisTeam 实体
-     * @return com.alibaba.fastjson.JSON
-     */
-	JSON newOne(Team thisTeam, HttpServletRequest request);
 	
 	/**
 	 *<b>保存修改Team实体</b>
@@ -146,11 +91,4 @@ public interface TeamService {
 	 */
 	void saveForUpdate(Team thisTeam);
 
-    /**
-     *<b>根据userId查找它所属的所有Team信息</b>
-     *<p> 根据userId查找它所属的所有Team信息</p>
-     * @param request
-     * @return
-     */
-    JSON findTeamListByUserId(String userId, HttpServletRequest request);
 }

@@ -1,6 +1,8 @@
 package org.big.entity;
 
 import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -17,8 +19,10 @@ import java.util.Objects;
 @Entity
 @Table(name = "taxon_has_taxtree", schema = "biodata", catalog = "")
 @IdClass(TaxonHasTaxtreePK.class)
-public class TaxonHasTaxtree {
-    private String taxonId;
+public class TaxonHasTaxtree implements Serializable{
+   
+	private static final long serialVersionUID = 1L;
+	private String taxonId;
     private String taxtreeId;
     private String pid;
     private String prevTaxon;

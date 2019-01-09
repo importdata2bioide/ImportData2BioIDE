@@ -180,7 +180,7 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<!-- 高版本redis的lettuce需要commons-pool2 -->
-		<dependency>
+		 <dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
 		</dependency>

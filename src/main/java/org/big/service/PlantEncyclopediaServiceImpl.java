@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Resource;
 import javax.validation.ValidationException;
 
 import org.apache.commons.collections4.map.HashedMap;
@@ -40,6 +41,7 @@ import org.big.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -52,6 +54,7 @@ import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
 @Service
 public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private final static Logger logger = LoggerFactory.getLogger(PlantEncyclopediaServiceImpl.class);
+	
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -82,6 +85,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 
 	@Override
 	public String insertPlantEncyclopedia(BaseParamsForm baseParamsForm) throws Exception {
+     
 		// validate 必填验证
 		validate(baseParamsForm);
 		// get 获取所有文件
@@ -181,32 +185,15 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 			Entry<String, List<PlantEncyclopediaExcelVO>> entry = entries.next();
 			String sheetName = entry.getKey();
 			List<PlantEncyclopediaExcelVO> sheetValues = entry.getValue();
-			if (sheetName.contains("百科")) {// 百科sheet
-				for (PlantEncyclopediaExcelVO row : sheetValues) {
-					boolean entityAttrNull = toolService.EntityAttrNull(row);// 判断是否所有属性值均为空
-					//如果为空行，跳过
-					if (entityAttrNull) {
-						continue;
-					}
-					toolService.reflectChangeValue(row, "*", "");// 修改值的等于*的属性值为空
-					//以colA为标题录入数据
-					if (StringUtils.isNoneEmpty(row.getColA())) {
-						insertByColA(row, taxon, path, params);
-					}else if (StringUtils.isNoneEmpty(row.getColB())) {//以colB为标题录入数据
-						insertByColB(row, taxon, path, params);
-					}
-				}
-				if (params.isInsert()) {
-					//update,读取整个excel完成后，更新实体信息
-					taxonService.saveOne(taxon);
-				}
+			if (sheetName.contains("百科")) {
+				insertBaiKeSheet(sheetValues, taxon, path, params);
 			} else if (sheetName.contains("性状") || "一般被子植物".equals(sheetName)) {
 
 			} else {
 				logger.info("error , 未知sheet,sheetName=" + sheetName + ",path=" + path);
 			}
 		}
-		// excel文件所有内存处理完毕后，更新一次taxon
+		// excel文件所有sheet处理完毕后，最后更新一次taxon
 		if (params.isInsert()) {
 			// save or update
 			taxonService.saveOne(taxon);
@@ -214,23 +201,46 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 
 	}
 
+	private void insertBaiKeSheet(List<PlantEncyclopediaExcelVO> sheetValues, Taxon taxon, String path,
+			BaseParamsForm params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
+		// 百科sheet
+		for (PlantEncyclopediaExcelVO row : sheetValues) {
+			boolean entityAttrNull = toolService.EntityAttrNull(row);// 判断是否所有属性值均为空
+			// 如果为空行，跳过
+			if (entityAttrNull) {
+				continue;
+			}
+			toolService.reflectChangeValue(row, "*", "");// 修改值的等于*的属性值为空
+			// 以colA为标题录入数据
+			if (StringUtils.isNoneEmpty(row.getColA())) {
+				insertByColA(row, taxon, path, params);
+			} else if (StringUtils.isNoneEmpty(row.getColB())) {// 以colB为标题录入数据
+				insertByColB(row, taxon, path, params);
+			}
+		}
+		if (params.isInsert()) {
+			// update,读取整个excel完成后，更新实体信息
+			taxonService.saveOne(taxon);
+		}
+
+	}
+
 	private void insertByColB(PlantEncyclopediaExcelVO row, Taxon taxon, String path, BaseParamsForm params) {
-		//B列是描述类型，D列是描述原文
+		// B列是描述类型，D列是描述原文
 		String colB = row.getColB().trim();
 		String colD = row.getColD();
-		if(StringUtils.isEmpty(colB)|| StringUtils.isEmpty(colD)) {
+		if (StringUtils.isEmpty(colB) || StringUtils.isEmpty(colD)) {
 			return;
 		}
 		Descriptiontype descriptiontype = descriptiontypeService.findOneByName(colB);
-		if(descriptiontype == null) {
-			logger.info("数据库 [描述类型] 表中没有："+colB);
-			return ;
+		if (descriptiontype == null) {
+			logger.info("数据库 [描述类型] 表中没有：" + colB);
+			return;
 		}
 		if (params.isInsert()) {
 			// save
-			descriptionService.insertDescription(descriptiontype,colD,taxon,params);
+			descriptionService.insertDescription(descriptiontype, colD, taxon, params);
 		}
-		
 
 	}
 
@@ -295,7 +305,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 			taxon.setRemark(turnJsonRemark(JsonExpertName, colD, taxon.getRemark()));
 		} else {
 			if (CommUtils.isStrNotEmpty(colA)) {
-				System.out.println("colA: "+colA);
+				System.out.println("colA: " + colA);
 			}
 		}
 

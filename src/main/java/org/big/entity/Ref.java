@@ -7,25 +7,6 @@ import javax.persistence.*;
 
 import java.util.Date;
 
-/**
- * <p>
- * <b>Ref的Entity类</b>
- * </p>
- * <p>
- * Ref的Entity类
- * </p>
- * 
- * @author BINZI
- *         <p>
- *         Created date: 2018/4/8 17:35
- *         </p>
- *         <p>
- *         Copyright: The Research Group of Biodiversity Informatics
- *         (BiodInfoGroup) - 中国科学院动物研究所生物多样性信息学研究组
- *         </p>
- * @version: 0.1
- * @since JDK 1.80_144
- */
 @Entity
 @Table(name = "refs", schema = "biodata")
 public class Ref implements Serializable {

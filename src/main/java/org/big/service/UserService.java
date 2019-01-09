@@ -8,7 +8,6 @@ import org.big.entity.User;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import com.alibaba.fastjson.JSON;
 
 /**
  *<p><b>User的Service类接口</b></p>
@@ -60,15 +59,7 @@ public interface UserService {
     @Query("DELETE FROM User WHERE id = ?1")
     void removeOne(String ID);
 
-    /**
-     *<b>带分页排序的条件查询</b>
-     *<p> 带分页排序的条件查询</p>
-     * @author WangTianshan (王天山)
-     * @param request 页面请求
-     * @return com.alibaba.fastjson.JSON
-     */
-    JSON findbyInfo(HttpServletRequest request);
-
+  
     /**
      *<b>根据user_name查找一个实体</b>
      *<p> 据user_name查找一个实体</p>
@@ -87,15 +78,7 @@ public interface UserService {
      */
     User findOneByEmail(String email);
     
-    /**
-     *<b>带分页排序的条件查询的Team成员列表</b>
-     *<p> 带分页排序的条件查询的当前用户所能查看权限的Team成员列表</p>
-     * @author WangTianshan (王天山)
-     * @param request 页面请求
-     * @return com.alibaba.fastjson.JSON
-     */
-    JSON findbyTeamId(HttpServletRequest request);
-    
+ 
     /**
      *<b>改变实体状态</b>
      *<p> 改变实体状态</p>
@@ -165,12 +148,5 @@ public interface UserService {
      */
     Boolean restPassword(String username,String password);
     
-    /**
-     *<b>查询所有用户</b>
-     *<p> 查询所有用户</p>
-     * @author BINZI
-     * @return com.alibaba.fastjson.JSON
-     */
-    JSON findAllUserInfo(HttpServletRequest request);
-
+  
 }
