@@ -21,21 +21,19 @@ public class MethodRunTimeAop {
 	 * @param pjp
 	 * @return
 	 */
-	@Around("execution(* org.big.service.ForcesDBService.*(..))") 
+	@Around("execution(* org.big.controller..*(..))") 
     public Object interceptor(ProceedingJoinPoint pjp) {
         long startTime = System.currentTimeMillis();
         Object result = null;
         try {
-        	logger.info("-------Method execute begin :"+pjp.getSignature().getName());
             // 通过代理类调用业务逻辑执行，调用proceed()方法，就会触发切入点方法执行
             result = pjp.proceed();
-            logger.info("-------Method execute finish :"+pjp.getSignature().getName());
         } catch (Throwable e) {
         	logger.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
         // 记录程序运行时间
-        logger.info(pjp.getSignature().getName() +
+        logger.info("方法名："+pjp.getSignature().getName() +
                 "  运行时间: " + (System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
         return result;
     }

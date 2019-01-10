@@ -2,7 +2,6 @@ package org.big.repository;
 
 import org.big.entity.Team;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -106,7 +105,6 @@ public interface TeamRepository extends BaseRepository<Team, String> {
      * @param teamId
      * @return
      */
-    @Cacheable(value="findTeamOneById")
     @Query("select t from Team t where t.id = ?1")
 	Team findOneById(String teamId);
 }

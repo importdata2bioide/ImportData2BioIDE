@@ -43,13 +43,27 @@ public class TestController {
 //	private SpecimendataRepository specimendataRepository;
 //	@Autowired
 //	private TaxtreeService taxtreeService;
+//	@Autowired
+//	private ToolService toolService;
 
 	@ResponseBody
 	@RequestMapping(value = "/testController_test1")
 	public String test1() {
 		logger.info("test1");
-		distributiondataRepository.findAll();
-		distributiondataRepository.findOneById("12");
+		for(int i = 0;i<10000;i++) {
+			try {
+				distributiondataRepository.findOneById("000051bd18254fe096086b0e74b2b449");
+				distributiondataRepository.findOneById("0006bd161a4a46a4929ea685d9a19efc");
+				distributiondataRepository.findOneById("123");
+				distributiondataRepository.findOneById("89222");
+				distributiondataRepository.findOneById("0020287d-c00f-4fc5-9fa7-ee5d791ec946");
+				if(i%500 == 0) {
+					System.out.println("查询次数："+i);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		
 //		distributiondata.geojson新换旧
 //		String oldChar = "A9B74666A075495893FEF53C1D6268B9";

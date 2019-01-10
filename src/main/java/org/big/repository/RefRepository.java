@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.big.entity.Ref;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -50,7 +49,6 @@ public interface RefRepository extends BaseRepository<Ref, String> {
      * @param Id 实体的id
      * @return org.big.entity.Ref
      */
-    @Cacheable(value="oneRef")
 	@Query(value = "Select r From Ref r Where r.id = ?1")
 	Ref findOneById(String id);
 	
@@ -102,16 +100,13 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 //	@Query(value = "Select r From Ref r Where r.remark = ?1")
 //	Ref  findByRemark(String remark );
 	
-	@Cacheable(value="refListLike")
 	@Query(value = "Select r from Ref r where (r.pyear like %?1%) and (r.title like %?2%) and r.inputer = ?3")
 	List<Ref> searchByParams(String year, String title,String userId);
 	
-	@Cacheable(value="searchByYearAndAuthorAndInpuAndRem")
 	@Query(value = "Select r from Ref r where (r.pyear like %?1%) and (r.author like %?2%)  and r.inputer = ?3 and r.remark = ?4")
 	List<Ref> searchByYearAndAuthorAndInpuAndRem(String year, String author ,String inputer,String remark);
 	
 	
-	@Cacheable(value="findByRefstrAndInputer")
 	Ref findByRefstrAndInputer(String refstr,String inputer);
 	
 

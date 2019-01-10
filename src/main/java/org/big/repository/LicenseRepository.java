@@ -2,7 +2,6 @@ package org.big.repository;
 
 import org.big.entity.License;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +35,6 @@ public interface LicenseRepository extends BaseRepository<License, String> {
      * @param Id 实体的id
      * @return org.big.entity.License
      */
-	@Cacheable(value="oneLicense")
 	@Query(value = "Select L from License L where L.id = ?1")
 	License findOneById(String licenseId);
 

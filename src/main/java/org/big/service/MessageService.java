@@ -1,9 +1,6 @@
 package org.big.service;
 
-import com.alibaba.fastjson.JSON;
-import org.big.entity.Message;
 
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *<p><b>Message的Service类接口</b></p>

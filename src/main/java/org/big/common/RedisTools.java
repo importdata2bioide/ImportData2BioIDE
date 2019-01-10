@@ -14,11 +14,12 @@ public class RedisTools {
 	//DEFAULT_EXPIRE 过期时长，单位：秒
     public static final long DEFAULT_EXPIRE = 60 * 60;
 
-	public void setDataToRedis(Object[] args,String longString, Object value) {
-		//序列化
-		byte[] bytes = SerializeUtil.serialize(value);
-		redisTemplate.opsForValue().set(getRedisKey(args, longString), new String(bytes));
-
+	public void setDataToRedis(Object[] args,String longString, Object obj) {
+		if(obj == null) {
+			return;
+		}
+		String value = BytesUtil.objectToBytesString(obj);//将对象转换为二进制字节串
+		redisTemplate.opsForValue().set(getRedisKey(args, longString), value);
 	}
 
 	public Object getDataFromRedis(Object[] args,String longString) {
@@ -27,10 +28,24 @@ public class RedisTools {
 			return null;
 		}
 		//反序列化
-		Object object = SerializeUtil.unSerialize(value.getBytes());
+		Object object = null;
+		try {
+			object = BytesUtil.StringToObject(value);//将二进制字节串转换为对象
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return object;
+		
 	}
 	
+	/**
+	 * 
+	 * @Description 根据传入参数生成key
+	 * @param args
+	 * @param longString
+	 * @return
+	 * @author ZXY
+	 */
 	private String  getRedisKey(Object[] args,String longString) {
 		StringBuffer key = new StringBuffer();
 		if(args != null && args.length >0) {

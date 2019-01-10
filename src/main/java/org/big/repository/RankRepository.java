@@ -27,7 +27,6 @@ public interface RankRepository extends BaseRepository<Rank, Integer> {
      * @param ID 实体的id
      * @return void
      */
-	@Transactional
 	@Modifying
 	@Query(value = "Delete From Rank r Where r.id = ?1")
 	void deleteOneById(String Id);

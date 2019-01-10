@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-springsecurity4</artifactId>
-			 <version>3.0.4.RELEASE</version>
+			<version>3.0.4.RELEASE</version>
 		</dependency>
 		<!-- 支持全栈式Web开发，包括Tomcat和spring-webmvc。 -->
 		<dependency>
@@ -180,7 +180,7 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<!-- 高版本redis的lettuce需要commons-pool2 -->
-		 <dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
 		</dependency>

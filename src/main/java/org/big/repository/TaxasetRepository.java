@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.big.entity.Taxaset;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -31,8 +30,8 @@ public interface TaxasetRepository extends BaseRepository<Taxaset, String> {
      * @param ID 实体的id
      * @return void
      */
-	@Transactional
 	@Modifying
+	@Transactional
 	@Query(value = "Delete From Taxaset ts Where ts.id = ?1")
 	void deleteOneById(String id);
 	
@@ -43,7 +42,6 @@ public interface TaxasetRepository extends BaseRepository<Taxaset, String> {
      * @param Id 实体的id
      * @return org.big.entity.Taxaset
      */
-	@Cacheable(value="findTaxasetOneById")
 	@Query(value = "Select ts From Taxaset ts Where ts.id = ?1")
 	Taxaset findOneById(String Id);
 	
