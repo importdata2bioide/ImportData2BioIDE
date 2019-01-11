@@ -33,6 +33,7 @@ public class DescriptionServiceImpl implements DescriptionService {
 		d.setLanguage(String.valueOf(LanguageEnum.chinese.getIndex()));
 		d.setRefjson(taxon.getRefjson());
 		EntityInit.initDescription(d, params);
+		d.setSourcesid(taxon.getSourcesid());
 		descriptionRepository.save(d);
 	}
 

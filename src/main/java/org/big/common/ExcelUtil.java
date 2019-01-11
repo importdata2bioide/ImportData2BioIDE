@@ -215,6 +215,8 @@ public class ExcelUtil {
 				}
 			}
 		}
+		
+		input.close();
 		return result;
 	}
 
@@ -259,6 +261,7 @@ public class ExcelUtil {
 				}
 			}
 		}
+		input.close();
 		return result;
 	}
 

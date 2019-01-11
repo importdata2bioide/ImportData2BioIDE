@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,7 +53,7 @@ import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
 @Service
 public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private final static Logger logger = LoggerFactory.getLogger(PlantEncyclopediaServiceImpl.class);
-	
+
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -75,15 +76,17 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private DescriptiontypeService descriptiontypeService;
 	@Autowired
 	private DescriptionService descriptionService;
-
 	private final String JsonExpertName = "expert";// 专家信息
 	private final String ClassificationConcept = "ClassificationConcept";// 分类概念依据
 	private final String relativeExcelPath = "path";
 	private final String refRemark = "金效华植物百科";
+	private final List<String> unColADescTitle = new ArrayList<>(
+			Arrays.asList("分布信息", "生物学信息", "形态信息", "保护信息", "多媒体", "经济意义（价值）", "遗传信息", "文献信息", "专家信息","v","淡黄白色，"));
+	private final List<String> unColBDescTitle = new ArrayList<>(Arrays.asList("图片", "线条图", "视频"));
 
 	@Override
 	public String insertPlantEncyclopedia(BaseParamsForm baseParamsForm) throws Exception {
-     
+
 		// validate 必填验证
 		validate(baseParamsForm);
 		// get 获取所有文件
@@ -93,25 +96,25 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		logger.info("groupFiles.size():" + groupFiles.size() + ",allFiles.size()" + allFiles.size());
 		Map<String, String> map = new HashedMap<>();
 		for (List<String> partFiles : groupFiles) {
-			CommUtils.executor.execute(new Runnable() {
-				@Override
-				public void run() {
+//			CommUtils.executor.execute(new Runnable() {
+//				@Override
+//				public void run() {
 					try {
 						readAnExcel(baseParamsForm, partFiles, map);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 
-				}
-			});
+//				}
+//			});
 		}
 
-		while (true) {
-			if (CommUtils.executor.getActiveCount() == 0) {
-				logger.info("read  [植物百科]  excel，finish...");
-				break;
-			}
-		}
+//		while (true) {
+//			if (CommUtils.executor.getActiveCount() == 0) {
+//				logger.info("read  [植物百科]  excel，finish...");
+//				break;
+//			}
+//		}
 
 		return "OK";
 
@@ -146,16 +149,21 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 					HSSFWorkbook xlsWorkBook = ExcelUtil.getXlsWorkBook(path);
 					excelMap = handleXSSFWorkbook(xlsWorkBook, path, baseParamsForm, map, notReadSheetNamesAsList);
 				} else {
-					logger.info("error 00001 无法识别的文件" + path);
+					logger.info("error F00001 无法识别的文件" + path);
 				}
 			} catch (Exception e) {
-				logger.info("error 00002 无法识别的文件" + path);
+				logger.info("error F00002 无法识别的文件" + path);
 			}
 			// handle an excel（include multiple sheets）
 			if (excelMap != null) {
-				insertExcel(excelMap, path, baseParamsForm);
+				try {
+					insertExcel(excelMap, path, baseParamsForm);
+				} catch (Exception e) {
+					logger.info("error 00000 ,错误信息如下" + e.getMessage() + "，路径：" + path);
+					e.printStackTrace();
+				}
 			}
-			break;// test run
+//			break;// test run
 		}
 
 	}
@@ -183,16 +191,19 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 			Entry<String, List<PlantEncyclopediaExcelVO>> entry = entries.next();
 			String sheetName = entry.getKey();
 			List<PlantEncyclopediaExcelVO> sheetValues = entry.getValue();
-			if (sheetName.contains("百科")) {
+			if (sheetName.contains("百科") || sheetName.contains("Sheet1")) {
 				insertBaiKeSheet(sheetValues, taxon, path, params);
-			} else if (sheetName.contains("性状") || "一般被子植物".equals(sheetName)) {
+			} else if (sheetName.contains("性状") || "一般被子植物".equals(sheetName) || "Sheet2".equals(sheetName)) {
 
 			} else {
-				logger.info("error , 未知sheet,sheetName=" + sheetName + ",path=" + path);
+				if (!sheetName.contains("Sheet3")) {
+					logger.info("error A00001, 未知sheet,sheetName=" + sheetName + ",path=" + path);
+				}
 			}
 		}
 		// excel文件所有sheet处理完毕后，最后更新一次taxon
-		if (params.isInsert()) {
+		if (params.isInsert() && StringUtils.isNotEmpty(taxon.getScientificname())
+				&& StringUtils.isNotEmpty(taxon.getRankid())) {
 			// save or update
 			taxonService.saveOne(taxon);
 		}
@@ -200,7 +211,8 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	}
 
 	private void insertBaiKeSheet(List<PlantEncyclopediaExcelVO> sheetValues, Taxon taxon, String path,
-			BaseParamsForm params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
+			BaseParamsForm params) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, InstantiationException {
 		// 百科sheet
 		for (PlantEncyclopediaExcelVO row : sheetValues) {
 			boolean entityAttrNull = toolService.EntityAttrNull(row);// 判断是否所有属性值均为空
@@ -218,7 +230,15 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		}
 		if (params.isInsert()) {
 			// update,读取整个excel完成后，更新实体信息
-			taxonService.saveOne(taxon);
+			try {
+				taxonService.saveOne(taxon);
+			} catch (Exception e) {
+				logger.info("error 00001 ,错误信息如下" + e.getMessage() + "，路径：" + path);
+				for (PlantEncyclopediaExcelVO row : sheetValues) {
+					toolService.printEntity(row);
+				}
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -227,32 +247,55 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		// B列是描述类型，D列是描述原文
 		String colB = row.getColB().trim();
 		String colD = row.getColD();
-		if (StringUtils.isEmpty(colB) || StringUtils.isEmpty(colD)) {
+		if (StringUtils.isEmpty(colB) || StringUtils.isEmpty(colD) || unColBDescTitle.contains(colB)) {
 			return;
 		}
+		String SourceColB = colB;//原标题
 		Descriptiontype descriptiontype = descriptiontypeService.findOneByName(colB);
 		if (descriptiontype == null) {
-			logger.info("数据库 [描述类型] 表中没有：" + colB);
-			return;
+			colB = toDBEescType(colB);
+			descriptiontype = descriptiontypeService.findOneByName(colB);
+			if (descriptiontype == null) {
+				logger.info("error C00001 数据库 [描述类型] 表中没有：" + colB + ", " + path);
+				return;
+			}
 		}
 		if (params.isInsert()) {
 			// save
-			descriptionService.insertDescription(descriptiontype, colD, taxon, params);
+			descriptionService.insertDescription(descriptiontype, SourceColB+"："+colD, taxon, params);
 		}
 
+	}
+
+	private String toDBEescType(String colB) {
+		// 处理特殊的
+		if (colB.contains("生境")) {
+			colB = "生境信息";
+		} else if (colB.contains("标本")) {
+			colB = "标本信息";
+		} else if (colB.contains("遗传")) {
+			colB = "遗传学";
+		}else if(colB.contains("分布")) {
+			colB = "分布信息";
+		}else if(colB.contains("海拔")) {
+			colB = "海拔范围";
+		}else if(colB.contains("地理区")) {
+			colB = "地理区分布";
+		}
+		return colB;
 	}
 
 	private void insertByColA(PlantEncyclopediaExcelVO row, Taxon taxon, String path, BaseParamsForm params) {
 		String colA = row.getColA();
 		String colD = row.getColD();
 		// colA
-		if ("物种学名".equals(colA)) {
+		if (colA.contains("物种学名")) {
 			handleSciNameRow(row, taxon, path, params);
-		} else if ("物种中文名".equals(colA)) {
+		} else if (colA.contains("物种中文名")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				taxon.setChname(colD.trim());
 			}
-		} else if ("分类概念依据".equals(colA)) {
+		} else if (colA.contains("分类概念依据")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				taxon.setRemark(turnJsonRemark(ClassificationConcept, colD, taxon.getRemark()));
 			}
@@ -260,7 +303,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 				// save or update
 				taxonService.saveOne(taxon);
 			}
-		} else if ("引证信息".equals(colA)) {
+		} else if (colA.contains("引证信息")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				Citation citation = new Citation();
 				EntityInit.initCitation(citation, params);
@@ -277,7 +320,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 				}
 			}
 
-		} else if ("俗名信息".equals(colA)) {
+		} else if (colA.contains("俗名信息")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				colD = toolService.replaceAllChar(colD, ",，", "、");
 				String[] commNames = colD.split("、");
@@ -295,15 +338,23 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 					}
 				}
 			}
-		} else if ("文献信息".equals(colA) && StringUtils.isBlank(taxon.getSourcesid())) {
-			// 参考文献和数据源
-			handleRefAndDataSource(row, taxon, path, params);
-		} else if ("专家信息".equals(colA) && StringUtils.isNotBlank(colD)) {
-			// 参考文献和数据源
-			taxon.setRemark(turnJsonRemark(JsonExpertName, colD, taxon.getRemark()));
+		} else if (colA.contains("文献信息")) {
+			if (StringUtils.isBlank(taxon.getSourcesid())) {
+				// 参考文献和数据源
+				handleRefAndDataSource(row, taxon, path, params);
+			}
+		} else if (colA.contains("专家信息")) {
+			if (StringUtils.isNotBlank(colD)) {
+				// 参考文献和数据源
+				taxon.setRemark(turnJsonRemark(JsonExpertName, colD, taxon.getRemark()));
+			}
+		} else if ((colA.contains("经济意义") || colA.contains("遗传信息")) || colA.contains("物种数") || colA.contains("亲缘")
+				|| colA.contains("用途")||colA.contains("标本")||colA.contains("花果期") ) {
+			// 保存到描述表
+			// 待实现
 		} else {
-			if (CommUtils.isStrNotEmpty(colA)) {
-				System.out.println("colA: " + colA);
+			if (CommUtils.isStrNotEmpty(colA) && !unColADescTitle.contains(colA.trim())) {
+				System.out.println("error B00001  未知：colA: " + colA + ", " + path);
 			}
 		}
 
@@ -345,10 +396,13 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	}
 
 	private void handleSciNameRow(PlantEncyclopediaExcelVO row, Taxon taxon, String path, BaseParamsForm params) {
-		String colD = row.getColD().trim();// 学名和命名人
+		String colD = row.getColD();// 学名和命名人,有可能为空
+		if(CommUtils.isStrNotEmpty(colD)) {
+			colD = colD.replace(" ", " ");
+			colD = colD.trim();
+		}
 		String colE = row.getColE();// 来源
 		String colF = row.getColF();// 审核专家，可能为空
-		colD = colD.replace(" ", " ");
 		// 分类等级
 		Rank rank = new Rank();
 		String excelName = StringUtils.substring(path, path.lastIndexOf("\\") + 1);
@@ -361,6 +415,9 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		taxon.setRank(rank);
 		// colD 按照空格拆分
 		if (CommUtils.isStartWithEnglish(colD)) {
+			if(colD.contains("注：")) {
+				colD = CommUtils.cutByStrBefore(colD, "注：");
+			}
 			int spaceCount = toolService.countTargetStr(colD, " ");
 			if (spaceCount >= 2) {
 				String sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
@@ -371,16 +428,16 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 				taxon.setScientificname(colD);
 				taxon.setEpithet(CommUtils.cutByStrAfter(colD, " "));// 种加词
 			} else {
-				logger.info("error , 无法根据空格截取sciname,colD = " + colD + ",path=" + path);
+				logger.info("error , 无法根据空格截取sciname,colD =" + colD + ",path=" + path);
 			}
-		} else {
-			logger.info("error , E00001, D列不是物种学名..." + path);
+		} else if(CommUtils.isStrNotEmpty(colD)){
+			logger.info("error , E00001, D列不是物种学名...,colD =" + colD + ", path =" + path);
 		}
 		// colE 数据源/参考文献
 		if (CommUtils.isStrNotEmpty(colE)) {
 			handleRefAndDataSource(row, taxon, path, params);
 		}
-		// 审核专家
+		// remark 
 		if (CommUtils.isStrNotEmpty(colF)) {
 			taxon.setRemark(turnJsonRemark(JsonExpertName, colF, taxon.getRemark()));
 			// 此审核专家放入remark中
