@@ -22,7 +22,12 @@ import java.util.Date;
 @Table(name = "molecular", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Molecular implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -6623974174267754381L;
 
 	@Id
 	private String id;

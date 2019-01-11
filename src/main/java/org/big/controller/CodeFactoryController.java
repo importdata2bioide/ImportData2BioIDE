@@ -19,7 +19,7 @@ public class CodeFactoryController {
 	private CodeFactoryService codeFactoryService;
 	
 	
-	@RequestMapping(value = "/findAllTables",method = RequestMethod.GET)
+	@RequestMapping(value = "/codeFactoryController_findAllTables",method = RequestMethod.GET)
 	public ModelAndView findAllTables() {
 		ModelAndView modelAndView = new ModelAndView();
 		try {
@@ -39,7 +39,7 @@ public class CodeFactoryController {
 	 * @author ZXY
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/batchExecuteCode_doGet",method = RequestMethod.POST)
+	@RequestMapping(value = "/codeFactoryController_batchExecuteCode_doGet",method = RequestMethod.POST)
 	public String batchExecuteCode(@RequestParam("tableNames")String[] tableNames) {
 		System.out.println("enter batchExecuteCode_doGet");
 		try {

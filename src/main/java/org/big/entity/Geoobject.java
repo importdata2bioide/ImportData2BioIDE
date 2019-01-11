@@ -22,7 +22,12 @@ import java.util.Date;
 @Table(name = "geoobject", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Geoobject implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -5489515952143398869L;
 
 	@Id
 	private String id;

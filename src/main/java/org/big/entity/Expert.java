@@ -18,7 +18,11 @@ import javax.persistence.*;
 @Entity
 @Table(name = "expert", schema = "biodata")
 public class Expert implements Serializable {
-	private static final long serialVersionUID = 1L;
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 6737467966289563181L;
 	@Id
 	private String id;
 	private String cnName;

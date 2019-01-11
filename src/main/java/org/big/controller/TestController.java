@@ -1,30 +1,45 @@
 package org.big.controller;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 
-import org.big.repository.DistributiondataRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.big.common.CommUtils;
+import org.big.common.FilesUtils;
+import org.big.entityVO.ExcelWithColNumVO;
+import org.big.entityVO.NationalListOfProtectedAnimalsVO;
+import org.big.service.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 
 @Controller
 @RequestMapping(value = "guest")
 public class TestController {
-	
+
 	private final static Logger logger = LoggerFactory.getLogger(TestController.class);
-	
+
 //	@Autowired
 //	private TaxonRepository taxonRepository;
 //	@Autowired
 //	private CommonnameRepository commonnameRepository;
 //	@Autowired
 //	private DescriptionRepository descriptionRepository;
-	@Autowired
-	private DistributiondataRepository distributiondataRepository;
+//	@Autowired
+//	private DistributiondataRepository distributiondataRepository;
 //	@Autowired
 //	private MultimediaRepository multimediaRepository;
 //	@Autowired
@@ -43,28 +58,13 @@ public class TestController {
 //	private SpecimendataRepository specimendataRepository;
 //	@Autowired
 //	private TaxtreeService taxtreeService;
-//	@Autowired
-//	private ToolService toolService;
+	@Autowired
+	private ToolService toolService;
 
-	@ResponseBody
 	@RequestMapping(value = "/testController_test1")
-	public String test1() {
-		logger.info("test1");
-		for(int i = 0;i<10000;i++) {
-			try {
-				distributiondataRepository.findOneById("000051bd18254fe096086b0e74b2b449");
-				distributiondataRepository.findOneById("0006bd161a4a46a4929ea685d9a19efc");
-				distributiondataRepository.findOneById("123");
-				distributiondataRepository.findOneById("89222");
-				distributiondataRepository.findOneById("0020287d-c00f-4fc5-9fa7-ee5d791ec946");
-				if(i%500 == 0) {
-					System.out.println("查询次数："+i);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		
+	public void test1(HttpServletResponse res) {
+		NationalListOfProtectedAnimals(res);
+
 //		distributiondata.geojson新换旧
 //		String oldChar = "A9B74666A075495893FEF53C1D6268B9";
 //		String newChar = "BB77C40FCBB94212BF71C622CE1B74D7";
@@ -90,9 +90,7 @@ public class TestController {
 //		logger.info("i = "+i+" ,总计："+size+",保存进度"+i*100/size+"%");
 //		logger.info("OK, i = "+i+", 查询总数："+distributionlist.size());
 //		
-		
-		
-		
+
 //		taxon 根据Scientificname更新Epithet
 //		int i = 0;
 //		List<Taxon> taxonlist = null;
@@ -114,7 +112,80 @@ public class TestController {
 //			return e.getMessage();
 //		}
 //		return "OK,更新数量："+i+",总数："+taxonlist.size();
-		return "OK";
+//		return "OK";
+	}
+
+	private void NationalListOfProtectedAnimals(HttpServletResponse response) {
+		// 1.读取xls文件
+		String filePath = "E:\\003采集系统\\0009国家保护动物名录\\国家保护动物名录 - 自己.xlsx";
+		System.out.println("test");
+		ImportParams params = new ImportParams();
+		params.setTitleRows(1);
+		params.setHeadRows(0);
+		long start = new Date().getTime();
+		List<ExcelWithColNumVO> list = ExcelImportUtil.importExcel(new File(filePath),
+				ExcelWithColNumVO.class, params);
+		logger.info("读取耗费时间："+(new Date().getTime() - start));
+		logger.info(filePath+"，读取总行数："+list.size());
+		logger.info(ReflectionToStringBuilder.toString(list.get(0)));
+		//2.循环处理xls文件
+		String gangCN = null;
+		String gangEN = null;
+		String muCN = null;
+		String muEN = null;
+		String keCN = null;
+		String keEN = null;
+		List<NationalListOfProtectedAnimalsVO> exportlist = new ArrayList<>();
+		for (ExcelWithColNumVO row : list) {
+			String colA = row.getColA().trim();
+			String colB = row.getColB();
+			if(StringUtils.isNotEmpty(colB)) {
+				colB = colB.trim();
+			}
+			if(colA.contains("纲")) {
+				muCN = null;
+				muEN = null;
+				keCN = null;
+				keEN = null;
+				gangCN = CommUtils.cutChinese(colA).trim();
+				gangEN = CommUtils.cutByStrAfter(colA, gangCN).trim();
+			}else if(colA.contains("目")) {
+				keCN = null;
+				keEN = null;
+				muCN = colA;
+				muEN = row.getColB().trim();
+			}else if(colA.contains("科")) {
+				keCN = colA;
+				keEN = colB;
+			}else{
+				//种
+				NationalListOfProtectedAnimalsVO entity = new NationalListOfProtectedAnimalsVO();
+				entity.setColA(gangCN);
+				entity.setColB(gangEN);
+				entity.setColC(muCN);
+				entity.setColD(muEN);
+				entity.setColE(keCN);
+				entity.setColF(keEN);
+				entity.setColG(colA);
+				entity.setColH(colB);
+				entity.setColI(StringUtils.isNotEmpty(row.getColC())?row.getColC():row.getColD());
+				exportlist.add(entity);
+				try {
+					toolService.printEntity(entity);
+				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		//3.导出excel
+		try {
+			FilesUtils.exportExcel(exportlist, "国家保护动物名录" ,"国家保护动物名录", NationalListOfProtectedAnimalsVO.class, URLEncoder.encode("国家保护动物名录.xls", "GBK"),
+					response);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

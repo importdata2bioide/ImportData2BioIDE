@@ -20,7 +20,11 @@ import java.sql.Timestamp;
 @Entity
 public class Memberllog implements Serializable{
    
-	private static final long serialVersionUID = 1L;
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -8326327420411512014L;
 	private String id;
     private String teamid;
     private String initiator;

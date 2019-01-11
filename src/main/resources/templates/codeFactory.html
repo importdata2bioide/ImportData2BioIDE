@@ -43,7 +43,7 @@ $(function() {
         	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
 			var fd = new FormData(document.getElementById("thisformData"));
 			$.ajax({
-			  url: "/guest/batchExecuteCode_doGet",
+			  url: "/guest/codeFactoryController_batchExecuteCode_doGet",
 			  type: "POST",
 			  data: fd,
 			  processData: false,  // 告诉jQuery不要去处理发送的数据

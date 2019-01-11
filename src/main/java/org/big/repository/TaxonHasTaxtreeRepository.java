@@ -116,9 +116,26 @@ public interface TaxonHasTaxtreeRepository extends BaseRepository<TaxonHasTaxtre
 	
 	@Query(value = "select tht from TaxonHasTaxtree tht where tht.taxonId = ?1 and tht.taxtreeId = ?2 ")
 	TaxonHasTaxtree findTaxonHasTaxtreesByTaxonIdAndTaxtreeId(String taxonId,String taxtreeId);
-	
+	/**
+	 * 
+	 * @Description 查询某个库下的所有表
+	 * @param tableSchema
+	 * @return
+	 * @author ZXY
+	 */
 	@Query(value = "select table_name from information_schema.tables where table_schema=?1 and table_type='base table' order by table_name asc",nativeQuery = true)
 	List<String> findAllTable(String tableSchema);
+	/**
+	 * 
+	 * @Description 查询一个表中的所有字段
+	 * @param tableName
+	 * @param tableSchema
+	 * @return
+	 * @author ZXY
+	 */
+	@Query(value = "select TABLE_NAME,COLUMN_NAME,DATA_TYPE,IS_NULLABLE,COLUMN_COMMENT from INFORMATION_SCHEMA.Columns where table_name=?1 and table_schema=?2 ",nativeQuery = true)
+	List<Object[]> findColumnByTable(String tableName,String tableSchema);
+	
 
 	@Transactional
 	@Modifying

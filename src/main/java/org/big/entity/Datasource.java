@@ -19,7 +19,12 @@ import java.util.Date;
 @Entity
 @Table(name="datasources", schema="biodata")
 public class Datasource implements Serializable {
-	private static final long serialVersionUID = 1L;
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 3612843965079723834L;
+
 	@Id
 	private String id;
 	

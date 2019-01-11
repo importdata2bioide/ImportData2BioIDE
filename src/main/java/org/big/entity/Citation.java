@@ -33,8 +33,12 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 @Table(name = "citation", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Citation implements Serializable {
-	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 1469505469318276985L;
 	@Id
 	private String id;
 	@Excel(name="* 引证名称", width=40.00)

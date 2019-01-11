@@ -24,7 +24,12 @@ import java.util.Date;
 @Table(name = "distributiondata", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Distributiondata implements Serializable {
-	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 1755881123726450718L;
 	@Id
 	private String id;
 	private String geojson;

@@ -18,7 +18,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "keyitem", schema = "biodata")
 public class Keyitem implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -8432384438553470096L;
 
 	@Id
 	private String id;

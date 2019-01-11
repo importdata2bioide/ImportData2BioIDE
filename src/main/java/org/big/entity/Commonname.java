@@ -24,7 +24,11 @@ import java.sql.Timestamp;
 @Entity
 public class Commonname implements Serializable{
    
-	private static final long serialVersionUID = 1L;
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 955262543875860259L;
 	private String id;
     private String commonname;
     private String language;

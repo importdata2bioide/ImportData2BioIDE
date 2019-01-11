@@ -40,6 +40,26 @@ public class CommUtils {
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
 
+	/**
+	 * 
+	 * @Description 去除数据的空格、回车、换行符、制表符
+	 * @param str
+	 * @return
+	 * @author ZXY
+	 */
+	public static String replaceBlank(String str) {
+		String dest = "";
+		if (str != null) {
+			// 空格\t、回车\n、换行符\r、制表符\t
+			Pattern p = Pattern.compile("\\s*|\t|\r|\n|　| ");
+			Matcher m = p.matcher(str);
+			dest = m.replaceAll("");
+		}
+		return dest;
+	}
+
+
+
 	public static void printList(List<String> list) {
 		StringBuffer sb = new StringBuffer();
 		for (String str : list) {
@@ -47,10 +67,7 @@ public class CommUtils {
 		}
 		System.out.println(sb.toString());
 	}
-	
-	
-	
-	
+
 	/**
 	 * get fileType and count title: CommUtils.java
 	 * 
@@ -372,7 +389,7 @@ public class CommUtils {
 	 * @return
 	 */
 	public static boolean isStartWithEnglish(String line) {
-		if(CommUtils.isStrEmpty(line)) {
+		if (CommUtils.isStrEmpty(line)) {
 			return false;
 		}
 		if (isEnglish(getChartASC(line, 1))) {

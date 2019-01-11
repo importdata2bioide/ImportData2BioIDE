@@ -16,7 +16,12 @@ import java.sql.Timestamp;
 @Entity
 @Table(name="flyway_schema_history", schema = "biodata")
 public class FlywaySchemaHistory implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -8273069001040725788L;
 
 	@Id
 	@Column(name="installed_rank")

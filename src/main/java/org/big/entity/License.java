@@ -22,7 +22,12 @@ import java.util.List;
 @Entity
 @Table(name = "license", schema = "biodata")
 public class License implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -2319420528084529741L;
 
 	@Id
 	private String id;

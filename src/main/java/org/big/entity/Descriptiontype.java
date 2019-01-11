@@ -20,7 +20,12 @@ import java.util.List;
 @Entity
 @Table(name = "descriptiontype", schema = "biodata")
 public class Descriptiontype implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 7551612866741370067L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

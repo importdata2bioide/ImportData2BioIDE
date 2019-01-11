@@ -20,7 +20,11 @@ import java.sql.Timestamp;
 @Entity
 public class Message implements Serializable{
    
-	private static final long serialVersionUID = 1L;
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 8095185049755055679L;
 	private String id;
     private String sender;
     private String addressee;

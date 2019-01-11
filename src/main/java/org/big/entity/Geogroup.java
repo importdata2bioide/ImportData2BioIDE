@@ -17,7 +17,12 @@ import java.util.List;
 @Entity
 @Table(name = "geogroup", schema = "biodata")
 public class Geogroup implements Serializable {
-	private static final long serialVersionUID = 1L;
+
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = -5332756687515372112L;
 
 	@Id
 	private String id;

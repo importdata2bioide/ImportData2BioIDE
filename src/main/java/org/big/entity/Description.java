@@ -30,8 +30,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "description", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Description implements Serializable {
-	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @Description 
+	 * @author ZXY  
+	 */
+	private static final long serialVersionUID = 1275405641637293147L;
 	@Id
 	private String id;
 	private String destitle;
