@@ -20,6 +20,7 @@ import org.big.service.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -63,7 +64,10 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse res) {
-		NationalListOfProtectedAnimals(res);
+		
+		testAsync();
+		
+//		NationalListOfProtectedAnimals(res);
 
 //		distributiondata.geojson新换旧
 //		String oldChar = "A9B74666A075495893FEF53C1D6268B9";
@@ -114,6 +118,15 @@ public class TestController {
 //		return "OK,更新数量："+i+",总数："+taxonlist.size();
 //		return "OK";
 	}
+
+	private void testAsync() {
+		for(int i = 0;i<10;i++) {
+			toolService.asy(i);
+		}
+		
+	}
+	
+	
 
 	private void NationalListOfProtectedAnimals(HttpServletResponse response) {
 		// 1.读取xls文件

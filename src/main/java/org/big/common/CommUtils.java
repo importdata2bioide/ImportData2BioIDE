@@ -33,6 +33,7 @@ import com.alibaba.fastjson.JSONObject;
 public class CommUtils {
 
 	// 线程池核心线程数:20;线程池最大数:200;空闲线程存活时间:10s;时间单位:SECONDS;线程池所使用的缓冲队列20
+	// 废弃，使用ThreadConfig替换
 	public static ThreadPoolExecutor executor = new ThreadPoolExecutor(20, 200, 10, TimeUnit.SECONDS,
 			new ArrayBlockingQueue<Runnable>(20));
 

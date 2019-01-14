@@ -8,12 +8,26 @@ import java.util.Date;
 import org.big.common.CommUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ToolServiceImpl implements ToolService{
 	private final static Logger logger = LoggerFactory.getLogger(ToolServiceImpl.class);
 	
+	@SuppressWarnings("static-access")
+	@Async
+	public void asy(int i) {
+		
+		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务：" + i);
+		try {
+			Thread.currentThread().sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + i);
+	}
 	
 	public String replaceAllChar(String line,String expression,String newChar) {
 		line = line.replaceAll(expression, newChar).trim();

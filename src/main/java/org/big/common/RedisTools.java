@@ -12,7 +12,7 @@ public class RedisTools {
 	private RedisTemplate<String, String> redisTemplate;
 	
 	//DEFAULT_EXPIRE 过期时长，单位：秒
-    public static final long DEFAULT_EXPIRE = 60 * 60;
+    public static final long DEFAULT_EXPIRE = 60 * 10;
 
 	public void setDataToRedis(Object[] args,String longString, Object obj) {
 		if(obj == null) {

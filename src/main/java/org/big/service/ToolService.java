@@ -3,6 +3,7 @@ package org.big.service;
 import java.lang.reflect.InvocationTargetException;
 
 public interface ToolService {
+	public void asy(int i);
 	/**
 	 * 
 	 * title: ToolService.java
