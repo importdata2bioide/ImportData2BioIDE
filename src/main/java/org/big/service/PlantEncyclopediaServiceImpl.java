@@ -38,6 +38,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		validate(baseParamsForm);
 		// get 获取所有文件
 		List<String> allFiles = CommUtils.getAllFiles(baseParamsForm.getFilePath(), null);
+		System.out.println(allFiles.size());
 		// group 拆分为多个数组
 		List<List<String>> groupFiles = CommUtils.groupList(allFiles, groupSize);
 		logger.info("groupFiles.size():" + groupFiles.size() + ",allFiles.size()：" + allFiles.size());

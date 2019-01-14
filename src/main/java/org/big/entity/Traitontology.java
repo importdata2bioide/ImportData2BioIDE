@@ -44,7 +44,7 @@ public class Traitontology implements Serializable {
 
 	private String enterm;
 
-	private String group;
+	private String groups;
 
 	private String inputer;
 
@@ -125,12 +125,14 @@ public class Traitontology implements Serializable {
 		this.enterm = enterm;
 	}
 
-	public String getGroup() {
-		return this.group;
+	
+
+	public String getGroups() {
+		return groups;
 	}
 
-	public void setGroup(String group) {
-		this.group = group;
+	public void setGroups(String groups) {
+		this.groups = groups;
 	}
 
 	public String getInputer() {
@@ -211,113 +213,5 @@ public class Traitontology implements Serializable {
 		return traitsetHasTraitontology;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((catalog1 == null) ? 0 : catalog1.hashCode());
-		result = prime * result + ((catalog2 == null) ? 0 : catalog2.hashCode());
-		result = prime * result + ((catalog3 == null) ? 0 : catalog3.hashCode());
-		result = prime * result + ((cnterm == null) ? 0 : cnterm.hashCode());
-		result = prime * result + ((definition == null) ? 0 : definition.hashCode());
-		result = prime * result + ((enterm == null) ? 0 : enterm.hashCode());
-		result = prime * result + ((group == null) ? 0 : group.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((inputer == null) ? 0 : inputer.hashCode());
-		result = prime * result + ((inputtime == null) ? 0 : inputtime.hashCode());
-		result = prime * result + ((sourcesjson == null) ? 0 : sourcesjson.hashCode());
-		result = prime * result + status;
-		result = prime * result + ((synchdate == null) ? 0 : synchdate.hashCode());
-		result = prime * result + synchstatus;
-		result = prime * result + ((synonymys == null) ? 0 : synonymys.hashCode());
-		result = prime * result + ((traitsetHasTraitontologies == null) ? 0 : traitsetHasTraitontologies.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Traitontology other = (Traitontology) obj;
-		if (catalog1 == null) {
-			if (other.catalog1 != null)
-				return false;
-		} else if (!catalog1.equals(other.catalog1))
-			return false;
-		if (catalog2 == null) {
-			if (other.catalog2 != null)
-				return false;
-		} else if (!catalog2.equals(other.catalog2))
-			return false;
-		if (catalog3 == null) {
-			if (other.catalog3 != null)
-				return false;
-		} else if (!catalog3.equals(other.catalog3))
-			return false;
-		if (cnterm == null) {
-			if (other.cnterm != null)
-				return false;
-		} else if (!cnterm.equals(other.cnterm))
-			return false;
-		if (definition == null) {
-			if (other.definition != null)
-				return false;
-		} else if (!definition.equals(other.definition))
-			return false;
-		if (enterm == null) {
-			if (other.enterm != null)
-				return false;
-		} else if (!enterm.equals(other.enterm))
-			return false;
-		if (group == null) {
-			if (other.group != null)
-				return false;
-		} else if (!group.equals(other.group))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (inputer == null) {
-			if (other.inputer != null)
-				return false;
-		} else if (!inputer.equals(other.inputer))
-			return false;
-		if (inputtime == null) {
-			if (other.inputtime != null)
-				return false;
-		} else if (!inputtime.equals(other.inputtime))
-			return false;
-		if (sourcesjson == null) {
-			if (other.sourcesjson != null)
-				return false;
-		} else if (!sourcesjson.equals(other.sourcesjson))
-			return false;
-		if (status != other.status)
-			return false;
-		if (synchdate == null) {
-			if (other.synchdate != null)
-				return false;
-		} else if (!synchdate.equals(other.synchdate))
-			return false;
-		if (synchstatus != other.synchstatus)
-			return false;
-		if (synonymys == null) {
-			if (other.synonymys != null)
-				return false;
-		} else if (!synonymys.equals(other.synonymys))
-			return false;
-		if (traitsetHasTraitontologies == null) {
-			if (other.traitsetHasTraitontologies != null)
-				return false;
-		} else if (!traitsetHasTraitontologies.equals(other.traitsetHasTraitontologies))
-			return false;
-		return true;
-	}
-
+	
 }

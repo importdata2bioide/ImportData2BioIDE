@@ -1,7 +1,7 @@
 package org.big.entityVO;
 
 public enum RankEnum {
-	family("科", 5),genus("属",6),species("种",7),var("变种",31);
+	family("科", 5),genus("属",6),species("种",7),var("变种",31),subsp("亚种",42),Forma("变型",38);
 	// 成员变量
 	private String name;
 	private int index;

@@ -77,7 +77,7 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	 * @param request
 	 * @return
 	 */
-	@Query(value = "Select c from Citation c Where c.taxon.id = ?1 and c.status = 1")
+	@Query(value = "Select c from Citation c Where c.taxon.id = ?1")
 	List<Citation> findCitationListByTaxonId(String taxonId);
 	
 	//zxy

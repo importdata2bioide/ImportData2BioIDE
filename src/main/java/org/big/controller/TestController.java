@@ -127,6 +127,7 @@ public class TestController {
 	
 	
 
+	@SuppressWarnings("unused")
 	private void NationalListOfProtectedAnimals(HttpServletResponse response) {
 		// 1.读取xls文件
 		String filePath = "E:\\003采集系统\\0009国家保护动物名录\\国家保护动物名录 - 自己.xlsx";

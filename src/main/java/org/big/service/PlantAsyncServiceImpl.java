@@ -281,9 +281,14 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				insertByColB(row, taxon, path, params);
 			}
 		}
+		//更新分类等级
+		Rank rank = new Rank();
+		rank.setId(taxon.getRankid());
+		taxon.setRank(rank);
 		if (params.isInsert()) {
 			// update,读取整个excel完成后，更新实体信息
 			try {
+
 				taxonService.saveOne(taxon);
 			} catch (Exception e) {
 				logger.info("error 00001 ,错误信息如下" + e.getMessage() + "，路径：" + path);
@@ -348,6 +353,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	}
 
 	private void insertByColA(PlantEncyclopediaExcelVO row, Taxon taxon, String path, BaseParamsForm params) {
+
 		String colA = row.getColA();
 		String colD = row.getColD();
 		// colA
@@ -357,12 +363,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				taxon.setChname(colD.trim());
 			}
-		} else if (colA.contains("分类概念依据")) {
-			if (CommUtils.isStrNotEmpty(colD)) {
-				taxon.setRemark(turnJsonRemark(ClassificationConcept, colD, taxon.getRemark()));
-			}
-		} else if (colA.contains("引证信息")) {
-			if (CommUtils.isStrNotEmpty(colD)) {
+		} else if (colA.contains("引证信息") || colA.contains("分类概念依据")) {
+			List<Citation> citationList = citationService.findCitationListByTaxonId(taxon.getId());
+			if (CommUtils.isStrNotEmpty(colD) && citationList.size() == 0) {
 				Citation citation = new Citation();
 				EntityInit.initCitation(citation, params);
 				citation.setSciname(taxon.getScientificname());
@@ -376,6 +379,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				if (params.isInsert()) {
 					citationService.save(citation);
 				}
+			}else if (CommUtils.isStrNotEmpty(colD) && colD.contains("var.")) {
+				taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
+			}else if (CommUtils.isStrNotEmpty(colD) && colD.contains("subsp.")) {
+				taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
 			}
 
 		} else if (colA.contains("俗名信息")) {
@@ -437,6 +444,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			// 参考文献
 			Ref ref = refService.insertRefIfNotExist(col, params.getmLoginUser(), refRemark);
 			taxon.setRefjson(turnRefToJson(ref));
+			taxon.setRemark(turnJsonRemark(ClassificationConcept, col, taxon.getRemark()));
 		}
 
 	}
@@ -462,15 +470,16 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		String colE = row.getColE();// 来源
 		String colF = row.getColF();// 审核专家，可能为空
 		// 分类等级
-		Rank rank = new Rank();
 		String excelName = StringUtils.substring(path, path.lastIndexOf("\\") + 1);
 		if (excelName.contains("变种")) {
 			taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
+		}else if (excelName.contains("亚种")) {
+			taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
+		}else if (excelName.contains("变型")) {
+			taxon.setRankid(String.valueOf(RankEnum.Forma.getIndex()));
 		} else {
 			taxon.setRankid(String.valueOf(RankEnum.species.getIndex()));
 		}
-		rank.setId(taxon.getRankid());
-		taxon.setRank(rank);
 		// colD 拉丁名和命名信息 按照空格拆分
 		if (CommUtils.isStartWithEnglish(colD)) {
 			// remove 去除注后面的内容
@@ -481,10 +490,12 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			int spaceCount = toolService.countTargetStr(colD, " ");
 			if (spaceCount >= 2) {
 				String sciName = null;
-				if (colD.contains("var.")) {
-					// 变种的拉丁名
+				if (colD.contains("var.")) {// 变种的拉丁名
 					sciName = CommUtils.cutByStrBeforeInclude(colD,
 							StringUtils.substringBefore(StringUtils.substringAfter(colD, "var.").trim(), " "));
+				}else if (colD.contains("subsp.")) {// 亚种的拉丁名
+					sciName = CommUtils.cutByStrBeforeInclude(colD,
+							StringUtils.substringBefore(StringUtils.substringAfter(colD, "subsp.").trim(), " "));
 				} else {
 					sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
 				}
