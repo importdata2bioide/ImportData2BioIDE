@@ -7,8 +7,10 @@ import java.util.Map;
 import javax.validation.ValidationException;
 
 import org.apache.commons.collections4.map.HashedMap;
+import org.apache.commons.lang3.StringUtils;
 import org.big.common.CommUtils;
 import org.big.entityVO.BaseParamsForm;
+import org.big.entityVO.RankEnum;
 import org.big.repository.TaxasetRepository;
 import org.big.repository.UserRepository;
 import org.slf4j.Logger;
@@ -30,7 +32,8 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private PlantAsyncService plantAsyncService;
 	@Autowired
 	private ExpertService expertService;
-	private final int groupSize  = 1000;
+	private final int groupSize = 1000;
+
 	@Override
 	public String insertPlantEncyclopedia(BaseParamsForm baseParamsForm) throws Exception {
 
@@ -38,7 +41,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		validate(baseParamsForm);
 		// get 获取所有文件
 		List<String> allFiles = CommUtils.getAllFiles(baseParamsForm.getFilePath(), null);
-		System.out.println(allFiles.size());
+//		countByRank(allFiles);
 		// group 拆分为多个数组
 		List<List<String>> groupFiles = CommUtils.groupList(allFiles, groupSize);
 		logger.info("groupFiles.size():" + groupFiles.size() + ",allFiles.size()：" + allFiles.size());
@@ -51,6 +54,55 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 			}
 		}
 		return "OK";
+
+	}
+
+	private void countByRank(List<String> allFiles) {
+		int species = 0;
+		int other = 0;
+
+		for (String path : allFiles) {
+			if(path.contains("~$")) {
+				continue;
+			}
+			String[] splitPath = StringUtils.split(path, "\\");
+			
+			String excelName = splitPath[splitPath.length-1].replace("．", ".");
+			String upperRank = splitPath[splitPath.length-2].replace("．", ".");
+			String onlyChUpperRank = CommUtils.cutByStrAfter(upperRank, ".");
+			String chineseName = CommUtils.cutByStrAfter(CommUtils.cutByStrBefore(excelName, ".x"), ".").trim();
+			
+			if (excelName.contains("变种") && !excelName.contains("含")) {
+				//变种
+				other++;
+			} else if (excelName.contains("变种") && excelName.contains("含")) {
+				//种
+				species++;
+			} else if (excelName.contains("亚种")) {
+				//亚种
+				other++;
+			} else {
+				if(upperRank.contains("组") || upperRank.contains("属") || upperRank.contains("系")) {
+					//种
+					species++;
+				}else if(onlyChUpperRank.equals(chineseName)){
+					//种
+					species++;
+				}else if(chineseName.contains(onlyChUpperRank)){
+					//变种
+					other++;
+				}else {
+					//
+					other++;
+//					logger.info(onlyChUpperRank+",excelName:"+ chineseName+","+path);
+					
+				}
+				
+			}
+		}
+		logger.info("总计："+allFiles.size());
+		logger.info("种："+species);
+		logger.info("种下："+other);
 
 	}
 
