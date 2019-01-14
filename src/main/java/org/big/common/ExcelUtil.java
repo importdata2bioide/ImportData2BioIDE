@@ -200,9 +200,8 @@ public class ExcelUtil {
 					XSSFCell cell = row.getCell(i);
 					try {
 						String oneCell = cell.toString();
-
 						if (CommUtils.isStrNotEmpty(oneCell) && !"*".equals(oneCell.trim())) {
-							rowList.add(oneCell.replaceAll("\\s*", " "));//replace special space
+							rowList.add(oneCell.replaceAll("\\s* ", " "));//replace special space
 						}
 					} catch (Exception e) {
 //						continue;

@@ -44,9 +44,10 @@ import com.alibaba.fastjson.JSONObject;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
+
 @Service
 public class PlantAsyncServiceImpl implements PlantAsyncService {
-	
+
 	@Autowired
 	private DatasourceService datasourceService;
 	@Autowired
@@ -68,9 +69,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	private final String relativeExcelPath = "path";
 	private final String refRemark = "金效华植物百科";
 	private final List<String> unColADescTitle = new ArrayList<>(
-			Arrays.asList("分布信息", "生物学信息", "形态信息", "保护信息", "多媒体", "经济意义（价值）", "遗传信息", "文献信息", "专家信息","v","淡黄白色，"));
+			Arrays.asList("分布信息", "生物学信息", "形态信息", "保护信息", "多媒体", "经济意义（价值）", "遗传信息", "文献信息", "专家信息", "v", "淡黄白色，"));
 	private final List<String> unColBDescTitle = new ArrayList<>(Arrays.asList("图片", "线条图", "视频"));
-	
+
 	private final String[] notReadSheetNames = { "分布数据", "物种名录（sp2000）" };
 	private final static Logger logger = LoggerFactory.getLogger(PlantAsyncServiceImpl.class);
 
@@ -121,10 +122,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			}
 //			break;// test run
 		}
+		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + partFiles.get(0));
 
 	}
-	
-	
+
 	/**
 	 * xlsx title: PlantEncyclopediaServiceImpl.java Overloading
 	 * 
@@ -179,7 +180,6 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		return excelMap;
 
 	}
-	
 
 	/**
 	 * 
@@ -216,7 +216,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		List<PlantEncyclopediaExcelVO> list = result.getList();
 		excelMap.put(currentSheetName, list);
 	}
-	
+
 	/**
 	 * 
 	 * title: PlantEncyclopediaServiceImpl.java
@@ -236,11 +236,11 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		Iterator<Entry<String, List<PlantEncyclopediaExcelVO>>> entries = excelMap.entrySet().iterator();
 		Taxon taxon = new Taxon();
 		EntityInit.initTaxon(taxon, params);// 初始化taxon属性值
-		//1. save 一次 taxon,整个excel文件读取完毕后再更新一次taxon
+		// 1. save 一次 taxon,整个excel文件读取完毕后再更新一次taxon
 		if (params.isInsert()) {
 			taxonService.saveOne(taxon);
 		}
-		//2. 根据sheet名称逐一读取
+		// 2. 根据sheet名称逐一读取
 		while (entries.hasNext()) {
 			Entry<String, List<PlantEncyclopediaExcelVO>> entry = entries.next();
 			String sheetName = entry.getKey();
@@ -262,7 +262,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 
 	}
-	
+
 	private void insertBaiKeSheet(List<PlantEncyclopediaExcelVO> sheetValues, Taxon taxon, String path,
 			BaseParamsForm params) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, InstantiationException {
@@ -295,11 +295,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 
 	}
-	
 
 	/**
 	 * 
-	 * @Description  B列为描述类型，D列为描述原文
+	 * @Description B列为描述类型，D列为描述原文
 	 * @param row
 	 * @param taxon
 	 * @param path
@@ -313,7 +312,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		if (StringUtils.isEmpty(colB) || StringUtils.isEmpty(colD) || unColBDescTitle.contains(colB)) {
 			return;
 		}
-		String SourceColB = colB;//原标题
+		String SourceColB = colB;// 原标题
 		Descriptiontype descriptiontype = descriptiontypeService.findOneByName(colB);
 		if (descriptiontype == null) {
 			colB = toDBEescType(colB);
@@ -325,7 +324,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 		if (params.isInsert()) {
 			// save
-			descriptionService.insertDescription(descriptiontype, SourceColB+"："+colD, taxon, params);
+			descriptionService.insertDescription(descriptiontype, SourceColB + "：" + colD, taxon, params);
 		}
 
 	}
@@ -338,11 +337,11 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			colB = "标本信息";
 		} else if (colB.contains("遗传")) {
 			colB = "遗传学";
-		}else if(colB.contains("分布")) {
+		} else if (colB.contains("分布")) {
 			colB = "分布信息";
-		}else if(colB.contains("海拔")) {
+		} else if (colB.contains("海拔")) {
 			colB = "海拔范围";
-		}else if(colB.contains("地理区")) {
+		} else if (colB.contains("地理区")) {
 			colB = "地理区分布";
 		}
 		return colB;
@@ -408,7 +407,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				taxon.setRemark(turnJsonRemark(JsonExpertName, colD, taxon.getRemark()));
 			}
 		} else if ((colA.contains("经济意义") || colA.contains("遗传信息")) || colA.contains("物种数") || colA.contains("亲缘")
-				|| colA.contains("用途")||colA.contains("标本")||colA.contains("花果期") ) {
+				|| colA.contains("用途") || colA.contains("标本") || colA.contains("花果期")) {
 			// 保存到描述表
 			// 待实现
 		} else {
@@ -456,7 +455,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 
 	private void handleSciNameRow(PlantEncyclopediaExcelVO row, Taxon taxon, String path, BaseParamsForm params) {
 		String colD = row.getColD();// 学名和命名人,有可能为空
-		if(CommUtils.isStrNotEmpty(colD)) {
+		if (CommUtils.isStrNotEmpty(colD)) {
 			colD = colD.replace(" ", " ");
 			colD = colD.trim();
 		}
@@ -472,14 +471,23 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 		rank.setId(taxon.getRankid());
 		taxon.setRank(rank);
-		// colD 按照空格拆分
+		// colD 拉丁名和命名信息 按照空格拆分
 		if (CommUtils.isStartWithEnglish(colD)) {
-			if(colD.contains("注：")) {
+			// remove 去除注后面的内容
+			if (colD.contains("注：")) {
 				colD = CommUtils.cutByStrBefore(colD, "注：");
 			}
+			// countTargetStr 计算空格个数
 			int spaceCount = toolService.countTargetStr(colD, " ");
 			if (spaceCount >= 2) {
-				String sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
+				String sciName = null;
+				if (colD.contains("var.")) {
+					// 变种的拉丁名
+					sciName = CommUtils.cutByStrBeforeInclude(colD,
+							StringUtils.substringBefore(StringUtils.substringAfter(colD, "var.").trim(), " "));
+				} else {
+					sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
+				}
 				taxon.setScientificname(sciName.trim());// 学名
 				taxon.setAuthorstr(CommUtils.cutByStrAfter(colD, sciName).trim());// 命名人
 				taxon.setEpithet(CommUtils.cutByStrAfter(sciName, " "));// 种加词
@@ -489,14 +497,14 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			} else {
 				logger.info("error , 无法根据空格截取sciname,colD =" + colD + ",path=" + path);
 			}
-		} else if(CommUtils.isStrNotEmpty(colD)){
+		} else if (CommUtils.isStrNotEmpty(colD)) {
 			logger.info("error , E00001, D列不是物种学名...,colD =" + colD + ", path =" + path);
 		}
 		// colE 数据源/参考文献
 		if (CommUtils.isStrNotEmpty(colE)) {
 			handleRefAndDataSource(row, taxon, path, params);
 		}
-		// remark 
+		// remark
 		if (CommUtils.isStrNotEmpty(colF)) {
 			taxon.setRemark(turnJsonRemark(JsonExpertName, colF, taxon.getRemark()));
 			// 此审核专家放入remark中
@@ -529,5 +537,4 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		return jsonArray.toJSONString();
 	}
 
-	
 }

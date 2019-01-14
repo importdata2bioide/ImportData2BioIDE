@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 
-
 @Service
 public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private final static Logger logger = LoggerFactory.getLogger(PlantEncyclopediaServiceImpl.class);
@@ -31,8 +30,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 	private PlantAsyncService plantAsyncService;
 	@Autowired
 	private ExpertService expertService;
-	
-	
+	private final int groupSize  = 1000;
 	@Override
 	public String insertPlantEncyclopedia(BaseParamsForm baseParamsForm) throws Exception {
 
@@ -41,40 +39,19 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		// get 获取所有文件
 		List<String> allFiles = CommUtils.getAllFiles(baseParamsForm.getFilePath(), null);
 		// group 拆分为多个数组
-		List<List<String>> groupFiles = CommUtils.groupList(allFiles, 100);
+		List<List<String>> groupFiles = CommUtils.groupList(allFiles, groupSize);
 		logger.info("groupFiles.size():" + groupFiles.size() + ",allFiles.size()：" + allFiles.size());
 		Map<String, String> map = new HashedMap<>();
 		for (List<String> partFiles : groupFiles) {
-//			CommUtils.executor.execute(new Runnable() {
-//				@Override
-//				public void run() {
-					try {
-						plantAsyncService.readSomeExcel(baseParamsForm, partFiles, map);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-//				}
-//			});
+			try {
+				plantAsyncService.readSomeExcel(baseParamsForm, partFiles, map);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
-
-//		while (true) {
-//			if (CommUtils.executor.getActiveCount() == 0) {
-//				logger.info("read  [植物百科]  excel，finish...");
-//				break;
-//			}
-//		}
-
 		return "OK";
 
 	}
-
-
-
-	
-
-	
-
 
 	/**
 	 * 
