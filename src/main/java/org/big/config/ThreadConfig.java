@@ -16,13 +16,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * @author ZXY
  */
 @Configuration
-@EnableAsync//利用EnableAsync来开启Springboot对于异步任务的支持
+@EnableAsync
 public class ThreadConfig implements AsyncConfigurer {
 
 	@Override
 	public Executor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(20);
+		executor.setCorePoolSize(10);
 		executor.setMaxPoolSize(200);
 		executor.setQueueCapacity(50);
 		executor.initialize();

@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
+import org.big.common.HttpUtils;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.service.ToolService;
@@ -63,8 +64,11 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse res) {
-		
-		testAsync();
+		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
+		String data = "name=Anisodus tanguticus (Maxim.) Pascher var. viridulus";
+		String response = HttpUtils.doGet(url,data);
+		System.out.println("响应："+response);
+//		testAsync();
 		
 //		NationalListOfProtectedAnimals(res);
 
@@ -118,6 +122,7 @@ public class TestController {
 //		return "OK";
 	}
 
+	@SuppressWarnings("unused")
 	private void testAsync() {
 		for(int i = 0;i<10;i++) {
 			toolService.asy(i);

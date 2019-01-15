@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -19,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.big.common.CommUtils;
 import org.big.common.EntityInit;
 import org.big.common.ExcelUtil;
+import org.big.common.HttpUtils;
 import org.big.entity.Citation;
 import org.big.entity.Commonname;
 import org.big.entity.Datasource;
@@ -74,6 +77,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 
 	private final String[] notReadSheetNames = { "分布数据", "物种名录（sp2000）" };
 	private final static Logger logger = LoggerFactory.getLogger(PlantAsyncServiceImpl.class);
+	private final String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
 
 	/**
 	 * 
@@ -92,6 +96,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 
 		List<String> notReadSheetNamesAsList = Arrays.asList(notReadSheetNames);
 		for (String path : partFiles) {
+
 			// read an excel(xls or xlsx,Multiple sheet), convert to entities
 			Map<String, List<PlantEncyclopediaExcelVO>> excelMap = null;
 			try {
@@ -281,7 +286,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				insertByColB(row, taxon, path, params);
 			}
 		}
-		//更新分类等级
+		// 更新分类等级
 		Rank rank = new Rank();
 		rank.setId(taxon.getRankid());
 		taxon.setRank(rank);
@@ -379,9 +384,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				if (params.isInsert()) {
 					citationService.save(citation);
 				}
-			}else if (CommUtils.isStrNotEmpty(colD) && colD.contains("var.")) {
+			} else if (CommUtils.isStrNotEmpty(colD) && colD.contains("var.")) {
 				taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
-			}else if (CommUtils.isStrNotEmpty(colD) && colD.contains("subsp.")) {
+			} else if (CommUtils.isStrNotEmpty(colD) && colD.contains("subsp.")) {
 				taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
 			}
 
@@ -469,17 +474,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 		String colE = row.getColE();// 来源
 		String colF = row.getColF();// 审核专家，可能为空
-		// 分类等级
-		String excelName = StringUtils.substring(path, path.lastIndexOf("\\") + 1);
-		if (excelName.contains("变种")) {
-			taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
-		}else if (excelName.contains("亚种")) {
-			taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
-		}else if (excelName.contains("变型")) {
-			taxon.setRankid(String.valueOf(RankEnum.Forma.getIndex()));
-		} else {
-			taxon.setRankid(String.valueOf(RankEnum.species.getIndex()));
-		}
+		// 根据路径确定分类等级
+		int rankId = judgeRankIsWhatByPath(path).getIndex();
+		taxon.setRankid(String.valueOf(rankId));
 		// colD 拉丁名和命名信息 按照空格拆分
 		if (CommUtils.isStartWithEnglish(colD)) {
 			// remove 去除注后面的内容
@@ -490,18 +487,41 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			int spaceCount = toolService.countTargetStr(colD, " ");
 			if (spaceCount >= 2) {
 				String sciName = null;
-				if (colD.contains("var.")) {// 变种的拉丁名
-					sciName = CommUtils.cutByStrBeforeInclude(colD,
-							StringUtils.substringBefore(StringUtils.substringAfter(colD, "var.").trim(), " "));
-				}else if (colD.contains("subsp.")) {// 亚种的拉丁名
-					sciName = CommUtils.cutByStrBeforeInclude(colD,
-							StringUtils.substringBefore(StringUtils.substringAfter(colD, "subsp.").trim(), " "));
+				if (colD.contains("var.") || colD.contains("subsp.")) {
+					String flag = "";
+					if (colD.contains("var.")) {
+						flag = "var.";
+					} else {
+						flag = "subsp.";
+					}
+					try {
+						JSONObject object = varNameParser(colD, flag,path);
+						taxon.setEpithet(String.valueOf(object.get("Epithet")));
+						taxon.setScientificname(String.valueOf(object.get("FullScientificName")));
+						taxon.setAuthorstr(String.valueOf(object.get("Authorstr")));
+					} catch (Exception e) {
+						System.out.println(" K00001 colD:" + colD + "||||" + e.getMessage());
+						e.printStackTrace();
+					}
+				} else if (rankId != RankEnum.species.getIndex()) {
+					String response = HttpUtils.doGet(url, "name=" + colD);
+					JSONObject object = CommUtils.strToJSONObject(response);
+					sciName = String.valueOf(object.get("FullScientificName"));
+					taxon.setEpithet(String.valueOf(object.get("Epithet")));// 种加词
+					String[] splitSciName = sciName.split(" ");
+					String authorstr = colD;
+					for (String str : splitSciName) {
+						authorstr = StringUtils.remove(authorstr, str);
+					}
+					taxon.setScientificname(sciName.trim());// 学名
+					taxon.setAuthorstr(authorstr);
 				} else {
 					sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
+					taxon.setAuthorstr(CommUtils.cutByStrAfter(colD, sciName).trim());// 命名人
+					taxon.setEpithet(CommUtils.cutByStrAfter(sciName, " "));// 种加词
+					taxon.setScientificname(sciName.trim());// 学名
 				}
-				taxon.setScientificname(sciName.trim());// 学名
-				taxon.setAuthorstr(CommUtils.cutByStrAfter(colD, sciName).trim());// 命名人
-				taxon.setEpithet(CommUtils.cutByStrAfter(sciName, " "));// 种加词
+
 			} else if (spaceCount == 1) {
 				taxon.setScientificname(colD);
 				taxon.setEpithet(CommUtils.cutByStrAfter(colD, " "));// 种加词
@@ -527,6 +547,38 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				turnJsonRemark(relativeExcelPath, CommUtils.cutByStrAfter(path, "汇交专项-植物专题"), taxon.getRemark()));
 	}
 
+	private JSONObject varNameParser(String colD, String flag,String path) {
+		JSONObject obj = new JSONObject();
+		String sciName = "";
+		String epithet = "";
+		try {
+			
+			String[] varsplit = StringUtils.split(colD, " ");
+			sciName = varsplit[0] + " " + varsplit[1];
+			
+			for (int j = 0; j < varsplit.length; j++) {
+				String str = varsplit[j];
+				if (str.contains(flag)) {
+					sciName = sciName+" "+str + " " + varsplit[j + 1];// 学名
+					epithet = varsplit[j + 1];// 种加词
+					break;
+				}
+			}
+			// 作者
+			String[] nameSplit = sciName.split(" ");
+			for (String str : nameSplit) {
+				colD = StringUtils.remove(colD, str);
+			}
+		} catch (Exception e) {
+			logger.info("K00001 解析"+flag+"出错，"+path+","+colD);
+			e.printStackTrace();
+		}
+		obj.put("FullScientificName", sciName.trim());
+		obj.put("Epithet", epithet.trim());
+		obj.put("Authorstr", colD.replace("  ", " "));
+		return obj;
+	}
+
 	private String turnJsonRemark(String name, String value, String oldRemark) {
 		JSONObject jsonObject = null;
 		if (CommUtils.isStrEmpty(oldRemark)) {
@@ -548,4 +600,54 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		return jsonArray.toJSONString();
 	}
 
+	/**
+	 * 根据路径判断是什么分类等级
+	 * 
+	 * @Description
+	 * @param path
+	 * @return
+	 * @author ZXY
+	 */
+
+	public RankEnum judgeRankIsWhatByPath(String path) {
+		String[] splitPath = StringUtils.split(path, "\\");
+		String excelName = splitPath[splitPath.length - 1].replace("．", ".");// 1.喜马拉雅崖爬藤.xlsx
+		Pattern pattern = Pattern.compile("\\d{1,}\\w{1,}.");
+		Matcher matcher = pattern.matcher(excelName);
+		if (excelName.contains("变种") && !excelName.contains("含")) {
+			// 变种
+			return RankEnum.var;
+		} else if (excelName.contains("变种") && excelName.contains("含")) {
+			// 种
+			return RankEnum.species;
+		} else if (excelName.contains("亚种")) {
+			// 亚种
+			return RankEnum.subsp;
+		} else if (excelName.contains("变型")) {
+			// 变型
+			return RankEnum.Forma;
+		} else if (matcher.find()) {
+			// 变种
+			return RankEnum.var;
+		} else {
+			String upperRank = splitPath[splitPath.length - 2].replace("．", ".").replace("(", "（");// 31.喜马拉雅崖爬藤（含一个变种）
+			String onlyChUpperRank = StringUtils.substringBefore(CommUtils.cutChinese(upperRank), "含");// 喜马拉雅崖爬藤
+			String chineseName = CommUtils.cutByStrAfter(CommUtils.cutByStrBefore(excelName, ".x"), ".").trim();// 喜马拉雅崖爬藤
+			if (upperRank.contains("组") || upperRank.contains("属") || upperRank.contains("系")
+					|| upperRank.contains("存疑种")) {
+				// 种
+				return RankEnum.species;
+			} else if (onlyChUpperRank.equals(chineseName)) {
+				// 种
+				return RankEnum.species;
+			} else if (chineseName.contains(onlyChUpperRank)) {
+				// 变种
+				return RankEnum.var;
+			} else {
+				// 其余都视为变种
+				return RankEnum.var;
+			}
+		}
+
+	}
 }
