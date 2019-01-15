@@ -1,17 +1,14 @@
 package org.big.controller;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.big.common.CommUtils;
+import org.big.entityVO.RankEnum;
+import org.big.service.PlantAsyncServiceImpl;
 
 public class Tes {
 
 	public static void main(String[] args) {
-		System.out.println(CommUtils.cutChinese("69窄头橐吾（含一种）"));
-		Pattern pattern = Pattern.compile("\\d{1,}\\w{1,}.");
-		Matcher matcher = pattern.matcher("b.粉背薯蓣");
-		System.out.println(matcher.find());
+		PlantAsyncServiceImpl x = new PlantAsyncServiceImpl();
+		RankEnum rank = x.judgeRankIsWhatByPath("\\合瓣花类\\中国植物志第68卷玄参科（505）\\53. 马先蒿属\\系54 轮叶系\\124b.岩居马先蒿岩居亚种岩居变型.xlsx");
+		System.out.println(rank.getName());
 
 	}
 

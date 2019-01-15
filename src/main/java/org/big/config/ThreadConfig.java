@@ -23,8 +23,8 @@ public class ThreadConfig implements AsyncConfigurer {
 	public Executor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(10);
-		executor.setMaxPoolSize(200);
-		executor.setQueueCapacity(50);
+		executor.setMaxPoolSize(100);
+		executor.setQueueCapacity(20);
 		executor.initialize();
 		return executor;
 	}
