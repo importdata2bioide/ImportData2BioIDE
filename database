@@ -14,8 +14,11 @@ alter table refs modify   `pyear` varchar(500) DEFAULT NULL COMMENT '发表时�
 
 alter table taxon modify remark longtext
 alter table taxon modify scientificname VARCHAR(500)
+alter table `taxon`  modify  `authorstr` varchar(255) DEFAULT NULL COMMENT '命名人和命名年代'
+alter table `taxon`  modify  `epithet` varchar(255)
 
 alter table citation modify sciname VARCHAR(500)
+alter table `citation`  modify  `authorship` varchar(255) DEFAULT NULL COMMENT '命名人和命名年代'
 
 alter table keyitem modify item longtext
 

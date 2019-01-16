@@ -92,7 +92,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	@Async
 	public void readSomeExcel(BaseParamsForm baseParamsForm, List<String> partFiles, Map<String, String> map)
 			throws Exception {
-		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务：" + partFiles.get(0));
+		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务：" + CommUtils.getCurrentDate());
 
 		List<String> notReadSheetNamesAsList = Arrays.asList(notReadSheetNames);
 		for (String path : partFiles) {
@@ -127,7 +127,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			}
 //			break;// test run
 		}
-		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + partFiles.get(0));
+		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + CommUtils.getCurrentDate());
 
 	}
 
@@ -356,6 +356,12 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			colB = "亲缘关系";
 		}else if (colB.contains("用途")) {
 			colB = "经济用途";
+		}else if (colB.contains("经济意义")) {
+			colB = "经济意义";
+		}else if (colB.contains("世界物种数")) {
+			colB = "全球物种数估计";
+		}else if (colB.contains("中国物种数")) {
+			colB = "国内物种数估计";
 		}
 		
 		return colB;
@@ -375,6 +381,17 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		} else if (colA.contains("引证信息") || colA.contains("分类概念依据")) {
 			List<Citation> citationList = citationService.findCitationListByTaxonId(taxon.getId());
 			if (CommUtils.isStrNotEmpty(colD) && citationList.size() == 0) {
+				//rank = var 且 Scientificname不包含var. 且 colD以var.开头
+				if(String.valueOf(RankEnum.var.getIndex()).equals(taxon.getRankid()) &&StringUtils.isNotEmpty(taxon.getScientificname()) &&!taxon.getScientificname().contains("var.") && colD.startsWith("var.")) {
+					String substringBefore = StringUtils.substringBefore(colD, " in ");
+					if(StringUtils.isNotEmpty(substringBefore)) {
+						JSONObject object = varNameParser(taxon.getScientificname().trim()+" "+substringBefore.trim(), "var.", path);
+						taxon.setEpithet(String.valueOf(object.get("Epithet")));
+						taxon.setScientificname(String.valueOf(object.get("CanonicalName")));
+						taxon.setAuthorstr(String.valueOf(object.get("Authorstr")));
+						logger.info("拼接："+taxon.getScientificname());
+					}
+				}
 				Citation citation = new Citation();
 				EntityInit.initCitation(citation, params);
 				citation.setSciname(taxon.getScientificname());
@@ -513,12 +530,19 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 						e.printStackTrace();
 					}
 				} else if (rankId != RankEnum.species.getIndex()) {
-					String response = HttpUtils.doGet(url, "name=" + colD);
-					JSONObject object = CommUtils.strToJSONObject(response);
-					sciName = String.valueOf(object.get("CanonicalName"));
-					taxon.setEpithet(String.valueOf(object.get("Epithet")));// 种加词
-					taxon.setAuthorstr(String.valueOf(object.get("Author")));// 命名人
-					taxon.setScientificname(sciName.trim());// 学名
+					String[] splitD = StringUtils.split(colD, " ");
+					if(rankId == RankEnum.var.getIndex() && splitD.length ==3) {
+						taxon.setEpithet(String.valueOf(splitD[2]));// 种加词
+						taxon.setScientificname(colD);// 学名
+					}else {
+						String response = HttpUtils.doGet(url, "name=" + colD);
+						JSONObject object = CommUtils.strToJSONObject(response);
+						sciName = String.valueOf(object.get("CanonicalName"));
+						taxon.setEpithet(String.valueOf(object.get("Epithet")));// 种加词
+						taxon.setAuthorstr(String.valueOf(object.get("Author")));// 命名人
+						taxon.setScientificname(sciName.trim());// 学名
+					}
+					
 				} else {
 					sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
 					taxon.setAuthorstr(CommUtils.cutByStrAfter(colD, sciName).trim());// 命名人
@@ -618,13 +642,16 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		String excelName = splitPath[splitPath.length - 1].replace("．", ".");// 1.喜马拉雅崖爬藤.xlsx
 		Pattern pattern = Pattern.compile("\\d{1,}[a-zA-Z]{1,}");
 		Matcher matcher = pattern.matcher(excelName);
-		if (excelName.contains("变种") && !excelName.contains("含")) {
+		if (excelName.contains("变种") && !excelName.contains("含") && !excelName.contains("原变种")) {
 			// 变种
 			return RankEnum.var;
 		} else if (excelName.contains("变种") && excelName.contains("含")) {
 			// 种
 			return RankEnum.species;
-		} else if (excelName.contains("变型")) {
+		} else if (excelName.contains("原变种")) {
+			// 种
+			return RankEnum.species;
+		}else if (excelName.contains("变型")) {
 			// 变型
 			return RankEnum.Forma;
 		} else if (excelName.contains("亚种")) {
@@ -637,7 +664,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			String upperRank = splitPath[splitPath.length - 2].replace("．", ".").replace("(", "（");// 31.喜马拉雅崖爬藤（含一个变种）
 			String onlyChUpperRank = StringUtils.substringBefore(CommUtils.cutChinese(upperRank), "含");// 喜马拉雅崖爬藤
 			String chineseName = CommUtils.cutByStrAfter(CommUtils.cutByStrBefore(excelName, ".x"), ".").trim();// 喜马拉雅崖爬藤
-			
+			chineseName = CommUtils.cutChinese(chineseName);
 			if (upperRank.contains("组") || upperRank.contains("属") || upperRank.contains("系")
 					|| upperRank.contains("存疑种")) {
 				// 种

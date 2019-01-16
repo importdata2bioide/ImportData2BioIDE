@@ -51,7 +51,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 				e.printStackTrace();
 			}
 		}
-		return "OK";
+		return "正在执行，请稍后在控制台查看结果。";
 
 	}
 
