@@ -1,45 +1,115 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-<head th:replace ="base/common::header">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head th:replace="base/common::header">
 <meta charset="utf-8" />
-<title>import data to bioIDE  </title>
+<title>import data to bioIDE</title>
 
 </head>
 
 <body>
-<div th:include="base/common::menu"></div>
-<div class="container">
-<div class="row" >
-<h2>所有表：</h2>
-</div>
-<div class="row" >
-<form class="form-horizontal" role="form" id="thisformData">
-	<div  class="col-xs-6 col-sm-3" th:each="allTable : ${allTable}" >
-	<input type="checkbox" th:value="${allTable}" th:text="${allTable}" name="tableNames" >
-	</div>
-</form>
-</div>
-<div class="row" style="margin-top:10px"><button class="btn btn-primary btn-batchExecutecode" type="button">【【batchExecutecode】】</button></div>
-<h2>结果：</h2>
-<div class="row ">
-<p class="executeResult"></p>
-</div>
-<div class="row" style="padding:5px;">
-<textarea class="form-control" rows="20"></textarea>
-</div>
+	<div th:include="base/common::menu"></div>
+	<ul id="myTab" class="nav nav-tabs">
+		<li class="active"><a href="#home" data-toggle="tab"> bioIDE
+		</a></li>
+		<li><a href="#otherDBTab" data-toggle="tab">其他DB</a></li>
 
-</div>
-</body>	
+	</ul>
+	<div id="myTabContent" class="tab-content">
+		<div class="tab-pane fade in active" id="home">
+			<div class="container">
+				<div class="row">
+					<h2>所有表：</h2>
+				</div>
+				<div class="row">
+					<form class="form-horizontal" role="form" id="thisformData">
+						<div class="col-xs-6 col-sm-3" th:each="allTable : ${allTable}">
+							<input type="checkbox" th:value="${allTable}"
+								th:text="${allTable}" name="tableNames">
+						</div>
+					</form>
+				</div>
+				<div class="row" style="margin-top: 10px">
+					<button class="btn btn-primary btn-batchExecutecode" type="button">【【batchExecutecode】】</button>
+				</div>
+				<h2>结果：</h2>
+				<div class="row ">
+					<p class="executeResult"></p>
+				</div>
+				<div class="row" style="padding: 5px;">
+					<textarea class="form-control" rows="20"></textarea>
+				</div>
+
+			</div>
+		</div>
+		<div class="tab-pane fade" id="otherDBTab">
+			<div class="container">
+				<div class="row">
+					<form class="form-horizontal" role="form" id="dbformData">
+						<div class="form-group">
+							<label for="lastname" class="col-sm-2 control-label">
+								选择数据库：</label>
+							<div class="col-sm-8">
+								<select class="form-control" name="dbParams">
+									<option>jdbc:mysql://159.226.67.87:3306/biodata?useSSL=false&bioide&big@bioide_2017</option>
+									<option>2</option>
+									<option>3</option>
+									<option>4</option>
+									<option>5</option>
+								</select>
+							</div>
+							<div class="row" >
+									<button type="button" class="btn btn-primary btn_connDB"
+										data-loading-text="Loading...">测试连接</button>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="row">
+				<button type="button" class="btn btn-primary btn_quertTables"
+										data-loading-text="Loading...">查询表</button>
+				</div>
+				<div class="row">
+					<form class="form-horizontal" role="form" id="otherformData">
+						<div class="col-xs-6 col-sm-3" th:each="OtherDBAllTable : ${OtherDBAllTable}">
+							<input type="checkbox" th:value="${OtherDBAllTable}"
+								th:text="${OtherDBAllTable}" name="tableNames">
+						</div>
+					</form>
+				</div>
+				<div class="row" style="margin-top: 10px">
+					<button class="btn btn-primary btn-otherbatchExecutecode" type="button">【【生成代码】】</button>
+				</div>
+				<h2>结果：</h2>
+				
+				<div class="row" style="padding: 5px;">
+					<textarea class="form-control other-textarea" rows="20" ></textarea>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</body>
 <div th:include="base/common::javascript"></div>
+
+<script th:inline="javascript">
+    var tabName = [[${tab}]];
+    if(tabName == 'otherDBTab'){
+    	$('#myTab li:eq(1) a').tab('show');
+    }
+</script>
 <script type="text/javascript">
+	 
 $(function() {
+
     //在layui中使用layer
     layui.use(['layer'],function() {   var layer = layui.layer;    })
-  
+    
     //btn-batchExecutecode
     $(".btn-batchExecutecode").click(function() {
     	$(".executeResult").text("");
-        if (confirm("确定要提交吗11？")) {
+        if (confirm("确定要提交吗？")) {
         	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
 			var fd = new FormData(document.getElementById("thisformData"));
 			$.ajax({
@@ -64,8 +134,67 @@ $(function() {
             layer.msg("提交操作取消");
         }
     });
-
     
+    //btn-otherbatchExecutecode
+    $(".btn-otherbatchExecutecode").click(function() {
+    	$(".executeResult").text("");
+        if (confirm("确定要提交吗？")) {
+        	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+			var fd = new FormData(document.getElementById("otherformData"));
+			$.ajax({
+			  url: "/guest/codeFactoryController_batchExecuteCode_doGet",
+			  type: "POST",
+			  data: fd,
+			  processData: false,  // 告诉jQuery不要去处理发送的数据
+			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+			  success: function (data) {
+			  		layer.msg("返回数据: \n" + data);
+			  		layer.close(index);//关闭loading层
+			  		$(".executeResult").text("返回数据: \n" + data);
+			  		},
+			  error: function () {
+			  		layer.close(index);//关闭loading层
+			  		layer.msg("服务器出现错误！！！");
+			  }
+			   
+			});
+		 
+        } else {
+            layer.msg("提交操作取消");
+        }
+    });
+
+   	//测试连接数据库
+    $(".btn_connDB").click(function() {
+       	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
+		var fd = new FormData(document.getElementById("dbformData"));
+		$.ajax({
+		  url: "/guest/codeFactoryController_connDB",
+		  type: "POST",
+		  data: fd,
+		  processData: false,  // 告诉jQuery不要去处理发送的数据
+		  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
+		  success: function (data) {
+		  		layer.msg("返回数据: \n" + data);
+		  		layer.close(index);//关闭loading层
+		  		$(".executeResult").text("返回数据: \n" + data);
+		  		},
+		  error: function () {
+		  		layer.close(index);//关闭loading层
+		  		layer.msg("服务器出现错误！！！");
+		  }
+		   
+		});  
+    });
+    
+
+    	//查询所有表
+    $(".btn_quertTables").click(function() {
+       	$("#dbformData").attr("action","/guest/codeFactoryController_quertTables");
+       	$("#dbformData").submit();  
+	});
+	
+   
 });
 </script>
 </html>

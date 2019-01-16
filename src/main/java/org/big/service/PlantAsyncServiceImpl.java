@@ -362,6 +362,8 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			colB = "全球物种数估计";
 		}else if (colB.contains("中国物种数")) {
 			colB = "国内物种数估计";
+		}else if (colB.contains("鉴别")||colB.contains("鉴定")) {
+			colB = "鉴别特征";
 		}
 		
 		return colB;

@@ -33,7 +33,7 @@ public class MethodRunTimeAop {
             throw new RuntimeException(e);
         }
         // 记录程序运行时间
-        logger.info("方法名："+pjp.getSignature().getName() +
+        logger.info("------方法名："+pjp.getSignature().getName() +
                 "  运行时间: " + (System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
         return result;
     }

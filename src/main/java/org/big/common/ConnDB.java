@@ -26,11 +26,11 @@ public class ConnDB {
         Connection connection = null;
 		//加载驱动程序
         try {
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+			Class.forName("com.mysql.jdbc.Driver");
 			//1.getConnection()方法，连接数据库！！
-			String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=forcsdb";
-			String username = "SA";
-			String password = "123456";
+			String url = "jdbc:mysql://159.226.67.87:3306/biodata?useSSL=false";
+			String username = "bioide";
+			String password = "big@bioide_2017";
 			connection = DriverManager.getConnection(url,username,password);
 			if(!connection.isClosed())
 			    System.out.println(url+" 数据库连接成功");
@@ -41,6 +41,10 @@ public class ConnDB {
 			 throw new ValidationException(e.getMessage());
 		}
         return connection;
+	}
+	
+	public static void main(String[] args) throws SQLException {
+		getConnDB();
 	}
 
 }
