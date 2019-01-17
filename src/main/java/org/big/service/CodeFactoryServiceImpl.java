@@ -70,20 +70,29 @@ public class CodeFactoryServiceImpl implements CodeFactoryService {
 
 	@Override
 	public List<String> findAllTable(HttpServletRequest request) throws Exception {
-		List<String> list = new ArrayList<>();
-		Connection connection = connDB(request);
-		String parameter = request.getParameter("dbParams");
-		String url = parameter.split("&")[0];
-		String tableSchema = StringUtils.substring(url, url.lastIndexOf("3306")+5);
-		if(tableSchema.contains("?")) {
-			tableSchema  = tableSchema.substring(0, tableSchema.indexOf("?"));
-		}
-		String sql = "select table_name from information_schema.tables where table_schema=? and table_type='base table' order by table_name asc";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setString(1, tableSchema);
-		ResultSet rs = preparedStatement.executeQuery();
-		while (rs.next()) {
-			list.add(rs.getString("table_name"));
+		List<String> list = null;
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			list = new ArrayList<>();
+			connection = connDB(request);
+			String parameter = request.getParameter("dbParams");
+			String url = parameter.split("&")[0];
+			String tableSchema = StringUtils.substring(url, url.lastIndexOf("3306")+5);
+			if(tableSchema.contains("?")) {
+				tableSchema  = tableSchema.substring(0, tableSchema.indexOf("?"));
+			}
+			String sql = "select table_name from information_schema.tables where table_schema=? and table_type='base table' order by table_name asc";
+			preparedStatement = connection.prepareStatement(sql);
+			preparedStatement.setString(1, tableSchema);
+			ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				list.add(rs.getString("table_name"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			JDBCTools.closeConnection(connection,preparedStatement);
 		}
 		return list;
 	}

@@ -2,6 +2,7 @@ package org.big.common;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 
 
 public class JDBCTools {
@@ -18,5 +19,18 @@ public class JDBCTools {
 		}
 		return connection;
 	}
+	
+
+	public static void closeConnection(Connection connection, PreparedStatement preparedStatement) throws Exception {
+		if(preparedStatement != null) {
+			preparedStatement.close();
+		}
+		if(connection != null) {
+			connection.close();
+		}
+		
+	}
+	
+	
 
 }

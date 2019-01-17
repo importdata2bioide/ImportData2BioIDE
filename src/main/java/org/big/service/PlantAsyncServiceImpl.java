@@ -119,7 +119,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			// handle an excel（include multiple sheets）
 			if (excelMap != null) {
 				try {
-					insertExcel(excelMap, path, baseParamsForm);
+					insertAnExcel(excelMap, path, baseParamsForm);
 				} catch (Exception e) {
 					logger.info("error 00000 ,错误信息如下" + e.getMessage() + "，路径：" + path);
 					e.printStackTrace();
@@ -235,7 +235,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
-	private void insertExcel(Map<String, List<PlantEncyclopediaExcelVO>> excelMap, String path, BaseParamsForm params)
+	private void insertAnExcel(Map<String, List<PlantEncyclopediaExcelVO>> excelMap, String path, BaseParamsForm params)
 			throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, InstantiationException {
 		Iterator<Entry<String, List<PlantEncyclopediaExcelVO>>> entries = excelMap.entrySet().iterator();
@@ -354,18 +354,18 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			colB = "地理区分布";
 		} else if (colB.contains("亲缘")) {
 			colB = "亲缘关系";
-		}else if (colB.contains("用途")) {
+		} else if (colB.contains("用途")) {
 			colB = "经济用途";
-		}else if (colB.contains("经济意义")) {
+		} else if (colB.contains("经济意义")) {
 			colB = "经济意义";
-		}else if (colB.contains("世界物种数")) {
+		} else if (colB.contains("世界物种数")) {
 			colB = "全球物种数估计";
-		}else if (colB.contains("中国物种数")) {
+		} else if (colB.contains("中国物种数")) {
 			colB = "国内物种数估计";
-		}else if (colB.contains("鉴别")||colB.contains("鉴定")) {
+		} else if (colB.contains("鉴别") || colB.contains("鉴定")) {
 			colB = "鉴别特征";
 		}
-		
+
 		return colB;
 	}
 
@@ -379,19 +379,27 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		} else if (colA.contains("物种中文名")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
 				taxon.setChname(colD.trim());
+			} else {
+				// 根据文件名称获取
+				String[] split = StringUtils.split(path, "\\");
+				String name = CommUtils.cutChinese(split[split.length - 1]);
+				taxon.setChname(name.trim());
 			}
 		} else if (colA.contains("引证信息") || colA.contains("分类概念依据")) {
 			List<Citation> citationList = citationService.findCitationListByTaxonId(taxon.getId());
 			if (CommUtils.isStrNotEmpty(colD) && citationList.size() == 0) {
-				//rank = var 且 Scientificname不包含var. 且 colD以var.开头
-				if(String.valueOf(RankEnum.var.getIndex()).equals(taxon.getRankid()) &&StringUtils.isNotEmpty(taxon.getScientificname()) &&!taxon.getScientificname().contains("var.") && colD.startsWith("var.")) {
+				// rank = var 且 Scientificname不包含var. 且 colD以var.开头
+				if (String.valueOf(RankEnum.var.getIndex()).equals(taxon.getRankid())
+						&& StringUtils.isNotEmpty(taxon.getScientificname())
+						&& !taxon.getScientificname().contains("var.") && colD.startsWith("var.")) {
 					String substringBefore = StringUtils.substringBefore(colD, " in ");
-					if(StringUtils.isNotEmpty(substringBefore)) {
-						JSONObject object = varNameParser(taxon.getScientificname().trim()+" "+substringBefore.trim(), "var.", path);
+					if (StringUtils.isNotEmpty(substringBefore)) {
+						JSONObject object = varNameParser(
+								taxon.getScientificname().trim() + " " + substringBefore.trim(), "var.", path);
 						taxon.setEpithet(String.valueOf(object.get("Epithet")));
 						taxon.setScientificname(String.valueOf(object.get("CanonicalName")));
 						taxon.setAuthorstr(String.valueOf(object.get("Authorstr")));
-						logger.info("拼接："+taxon.getScientificname());
+						logger.info("拼接：" + taxon.getScientificname());
 					}
 				}
 				Citation citation = new Citation();
@@ -523,7 +531,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 						taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
 					}
 					try {
-						JSONObject object = varNameParser(colD, flag,path);
+						JSONObject object = varNameParser(colD, flag, path);
 						taxon.setEpithet(String.valueOf(object.get("Epithet")));
 						taxon.setScientificname(String.valueOf(object.get("CanonicalName")));
 						taxon.setAuthorstr(String.valueOf(object.get("Authorstr")));
@@ -533,10 +541,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 					}
 				} else if (rankId != RankEnum.species.getIndex()) {
 					String[] splitD = StringUtils.split(colD, " ");
-					if(rankId == RankEnum.var.getIndex() && splitD.length ==3) {
+					if (rankId == RankEnum.var.getIndex() && splitD.length == 3) {
 						taxon.setEpithet(String.valueOf(splitD[2]));// 种加词
 						taxon.setScientificname(colD);// 学名
-					}else {
+					} else {
 						String response = HttpUtils.doGet(url, "name=" + colD);
 						JSONObject object = CommUtils.strToJSONObject(response);
 						sciName = String.valueOf(object.get("CanonicalName"));
@@ -544,7 +552,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 						taxon.setAuthorstr(String.valueOf(object.get("Author")));// 命名人
 						taxon.setScientificname(sciName.trim());// 学名
 					}
-					
+
 				} else {
 					sciName = colD.substring(0, colD.indexOf(" ", colD.indexOf(" ") + 1));
 					taxon.setAuthorstr(CommUtils.cutByStrAfter(colD, sciName).trim());// 命名人
@@ -577,19 +585,19 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				turnJsonRemark(relativeExcelPath, CommUtils.cutByStrAfter(path, "汇交专项-植物专题"), taxon.getRemark()));
 	}
 
-	private JSONObject varNameParser(String colD, String flag,String path) {
+	private JSONObject varNameParser(String colD, String flag, String path) {
 		JSONObject obj = new JSONObject();
 		String sciName = "";
 		String epithet = "";
 		try {
-			
+
 			String[] varsplit = StringUtils.split(colD, " ");
 			sciName = varsplit[0] + " " + varsplit[1];
-			
+
 			for (int j = 0; j < varsplit.length; j++) {
 				String str = varsplit[j];
 				if (str.contains(flag)) {
-					sciName = sciName+" "+flag + " " + varsplit[j + 1];// 学名
+					sciName = sciName + " " + flag + " " + varsplit[j + 1];// 学名
 					epithet = varsplit[j + 1];// 种加词
 					break;
 				}
@@ -600,7 +608,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				colD = StringUtils.remove(colD, str);
 			}
 		} catch (Exception e) {
-			logger.info("K00001 解析"+flag+"出错，"+path+","+colD);
+			logger.info("K00001 解析" + flag + "出错，" + path + "," + colD);
 			e.printStackTrace();
 		}
 		obj.put("CanonicalName", sciName.trim());
@@ -653,7 +661,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		} else if (excelName.contains("原变种")) {
 			// 种
 			return RankEnum.species;
-		}else if (excelName.contains("变型")) {
+		} else if (excelName.contains("变型")) {
 			// 变型
 			return RankEnum.Forma;
 		} else if (excelName.contains("亚种")) {
