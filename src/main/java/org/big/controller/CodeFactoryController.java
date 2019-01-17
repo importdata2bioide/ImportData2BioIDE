@@ -47,7 +47,7 @@ public class CodeFactoryController {
 	public String batchExecuteCode(@RequestParam("tableNames") String[] tableNames) {
 		System.out.println("enter batchExecuteCode_doGet");
 		try {
-			codeFactoryService.batchExecuteCode(tableNames);
+			return codeFactoryService.batchExecuteCode(tableNames);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

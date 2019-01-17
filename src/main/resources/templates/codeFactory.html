@@ -10,42 +10,16 @@
 <body>
 	<div th:include="base/common::menu"></div>
 	<ul id="myTab" class="nav nav-tabs">
-		<li class="active"><a href="#home" data-toggle="tab"> bioIDE
+		<li class="active"><a href="#home" data-toggle="tab">home</a></li>
+		<li><a href="#second" data-toggle="tab"> none
 		</a></li>
-		<li><a href="#otherDBTab" data-toggle="tab">其他DB</a></li>
 
 	</ul>
 	<div id="myTabContent" class="tab-content">
 		<div class="tab-pane fade in active" id="home">
 			<div class="container">
 				<div class="row">
-					<h2>所有表：</h2>
-				</div>
-				<div class="row">
-					<form class="form-horizontal" role="form" id="thisformData">
-						<div class="col-xs-6 col-sm-3" th:each="allTable : ${allTable}">
-							<input type="checkbox" th:value="${allTable}"
-								th:text="${allTable}" name="tableNames">
-						</div>
-					</form>
-				</div>
-				<div class="row" style="margin-top: 10px">
-					<button class="btn btn-primary btn-batchExecutecode" type="button">【【batchExecutecode】】</button>
-				</div>
-				<h2>结果：</h2>
-				<div class="row ">
-					<p class="executeResult"></p>
-				</div>
-				<div class="row" style="padding: 5px;">
-					<textarea class="form-control" rows="20"></textarea>
-				</div>
-
-			</div>
-		</div>
-		<div class="tab-pane fade" id="otherDBTab">
-			<div class="container">
-				<div class="row">
-					<form class="form-horizontal" role="form" id="dbformData">
+					<form class="form-horizontal" role="form" id="dbformData" method="post">
 						<div class="form-group">
 							<label for="lastname" class="col-sm-2 control-label">
 								选择数据库：</label>
@@ -87,18 +61,18 @@
 				</div>
 			</div>
 		</div>
+		<div class="tab-pane fade" id="second">
+			
+		</div>
 
 	</div>
+	<hr>
+	<hr>
+	<hr>
 
 </body>
 <div th:include="base/common::javascript"></div>
 
-<script th:inline="javascript">
-    var tabName = [[${tab}]];
-    if(tabName == 'otherDBTab'){
-    	$('#myTab li:eq(1) a').tab('show');
-    }
-</script>
 <script type="text/javascript">
 	 
 $(function() {
@@ -108,8 +82,6 @@ $(function() {
     
     //btn-batchExecutecode
     $(".btn-batchExecutecode").click(function() {
-    	$(".executeResult").text("");
-        if (confirm("确定要提交吗？")) {
         	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
 			var fd = new FormData(document.getElementById("thisformData"));
 			$.ajax({
@@ -119,9 +91,8 @@ $(function() {
 			  processData: false,  // 告诉jQuery不要去处理发送的数据
 			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
 			  success: function (data) {
-			  		layer.msg("返回数据: \n" + data);
 			  		layer.close(index);//关闭loading层
-			  		$(".executeResult").text("返回数据: \n" + data);
+			  		$(".other-thisTextarea").val(data);
 			  		},
 			  error: function () {
 			  		layer.close(index);//关闭loading层
@@ -129,16 +100,10 @@ $(function() {
 			  }
 			   
 			});
-		 
-        } else {
-            layer.msg("提交操作取消");
-        }
     });
     
     //btn-otherbatchExecutecode
     $(".btn-otherbatchExecutecode").click(function() {
-    	$(".executeResult").text("");
-        if (confirm("确定要提交吗？")) {
         	var index = layer.load(1, {shade: [0.1,'#fff'] });//loading层， 0.1透明度的白色背景
 			var fd = new FormData(document.getElementById("otherformData"));
 			$.ajax({
@@ -148,9 +113,8 @@ $(function() {
 			  processData: false,  // 告诉jQuery不要去处理发送的数据
 			  contentType: false,  // 告诉jQuery不要去设置Content-Type请求头
 			  success: function (data) {
-			  		layer.msg("返回数据: \n" + data);
 			  		layer.close(index);//关闭loading层
-			  		$(".executeResult").text("返回数据: \n" + data);
+			  		$(".other-textarea").val(data);
 			  		},
 			  error: function () {
 			  		layer.close(index);//关闭loading层
@@ -158,10 +122,6 @@ $(function() {
 			  }
 			   
 			});
-		 
-        } else {
-            layer.msg("提交操作取消");
-        }
     });
 
    	//测试连接数据库
