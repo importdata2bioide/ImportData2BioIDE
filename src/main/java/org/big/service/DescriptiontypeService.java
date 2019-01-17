@@ -22,4 +22,13 @@ public interface DescriptiontypeService {
 	 * @author ZXY
 	 */
 	Descriptiontype findOneByName(String name);
+	/**
+	 * 
+	 * @Description 
+	 * @param name
+	 * @param style
+	 * @return
+	 * @author ZXY
+	 */
+	Descriptiontype insertOneDescType(String name,String style);
 }

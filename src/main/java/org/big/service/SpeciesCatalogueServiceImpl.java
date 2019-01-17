@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -587,7 +586,6 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 
 	}
 
-	@Transactional
 	@Override
 	public void insertTreeByDataSet(BaseParamsForm params) {
 		boolean isInsert = true;

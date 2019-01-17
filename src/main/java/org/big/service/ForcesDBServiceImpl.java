@@ -88,7 +88,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -461,7 +460,6 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 
 	}
 
-	@Transactional
 	public String insertCitation(HttpServletRequest request) throws Exception {
 		initData(request);
 		Connection connDB = null;
@@ -1417,7 +1415,6 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	}
 
 	// 俗名
-	@Transactional
 	public String insertCommName(HttpServletRequest request) throws SQLException {
 		try {
 			logger.info("开始录入俗名（ID随机生成）");

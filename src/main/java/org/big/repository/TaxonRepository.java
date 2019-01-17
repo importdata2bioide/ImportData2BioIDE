@@ -4,7 +4,6 @@ import org.big.entity.Rank;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -48,7 +47,6 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
      * @param Id 实体的id
      * @return org.big.entity.Taxon
      */
-    @Cacheable(value="oneTaxon")
 	@Query(value = "Select t From Taxon t Where t.id = ?1")
 	Taxon findOneById(String id);
 	/**
@@ -105,7 +103,6 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query(value = "select t from Taxon t where t.sourcesid = ?1")
 	List<Taxon>  findBySourcesidAll(String sourcesid);
 	
-	@Cacheable(value="oldTaxon")
 	@Query(value = "select t from Taxon t where t.id = ?1 and t.sourcesid = ?2")
 	Taxon findByTaxonOldId(String id, String sourcesid);
 	
@@ -134,7 +131,6 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	 * @param rankid 精确查询
 	 * @return
 	 */
-	@Cacheable("findByTaxonSciNameAndRankAndDSid")
 	@Query(value = "select t.* from taxon t where t.scientificname like %?1% and t.rank_id = ?2  and t.taxaset_id in (select d.id from taxaset d where d.dataset_id = ?3) and t.status = 1",nativeQuery = true)
 	List<Taxon> findByTaxonSciNameAndRankAndDSid(String scientificname, String rankid,String datasetId);
 	

@@ -5,7 +5,6 @@ import java.util.List;
 import org.big.entity.Dataset;
 import org.big.entity.Team;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -73,7 +72,6 @@ public interface DatasetRepository extends BaseRepository<Dataset, String> {
      * @param id id
      * @return org.springframework.data.domain.Page<org.big.entity.Dataset>
      */
-    @Cacheable(value="findDatasetOneById")
     @Query(value = "select d from Dataset d where d.id = ?1")
     Dataset findOneById(String id);
 

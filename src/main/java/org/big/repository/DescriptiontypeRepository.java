@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.big.entity.Descriptiontype;
 import org.big.repository.base.BaseRepository;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -47,7 +46,6 @@ public interface DescriptiontypeRepository extends BaseRepository<Descriptiontyp
 	@Query(value = "Select dt From Descriptiontype dt Where dt.name = ?1")
 	List<Descriptiontype> findByName(String name);
 	
-	@Cacheable(value = "findDescriptiontypeOneByName")
 	@Query(value = "Select dt From Descriptiontype dt Where dt.name = ?1")
 	Descriptiontype findOneByName(String name);
 	

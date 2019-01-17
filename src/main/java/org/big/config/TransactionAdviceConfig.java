@@ -39,13 +39,13 @@ public class TransactionAdviceConfig {
 		txAttr_REQUIRED_READONLY.setReadOnly(true);
 
 		NameMatchTransactionAttributeSource source = new NameMatchTransactionAttributeSource();
-		source.addTransactionalMethod("insert*", txAttr_REQUIRED);
-		source.addTransactionalMethod("add*", txAttr_REQUIRED);
-		source.addTransactionalMethod("save*", txAttr_REQUIRED);
+		source.addTransactionalMethod("insertList*", txAttr_REQUIRED);
+		source.addTransactionalMethod("addList*", txAttr_REQUIRED);
+		source.addTransactionalMethod("saveList*", txAttr_REQUIRED);
 		source.addTransactionalMethod("delete*", txAttr_REQUIRED);
-		source.addTransactionalMethod("update*", txAttr_REQUIRED);
-		source.addTransactionalMethod("exec*", txAttr_REQUIRED);
-		source.addTransactionalMethod("set*", txAttr_REQUIRED);
+		source.addTransactionalMethod("updateList*", txAttr_REQUIRED);
+//		source.addTransactionalMethod("exec*", txAttr_REQUIRED);
+//		source.addTransactionalMethod("set*", txAttr_REQUIRED);
 		source.addTransactionalMethod("get*", txAttr_REQUIRED_READONLY);
 		source.addTransactionalMethod("select*", txAttr_REQUIRED_READONLY);
 		source.addTransactionalMethod("query*", txAttr_REQUIRED_READONLY);

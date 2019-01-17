@@ -2,21 +2,13 @@ package org.big.service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 
 import org.big.entity.User;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-
 
 /**
- *<p><b>User的Service类接口</b></p>
- *<p> User的Service类接口，与User有关的业务逻辑方法</p>
- * @author WangTianshan (王天山)
- *<p>Created date: 2017/9/6 21:35</p>
- *<p>Copyright: The Research Group of Biodiversity Informatics (BiodInfo Group) - 中国科学院动物研究所生物多样性信息学研究组</p>
- * @version: 0.1
- * @since JDK 1.80_144
+ * 
+ * @Description 用户
+ * @author ZXY
  */
 public interface UserService {
 
@@ -54,9 +46,6 @@ public interface UserService {
      * @param ID 实体的id
      * @return void
      */
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM User WHERE id = ?1")
     void removeOne(String ID);
 
   

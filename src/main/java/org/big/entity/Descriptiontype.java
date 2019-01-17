@@ -28,7 +28,6 @@ public class Descriptiontype implements Serializable {
 	private static final long serialVersionUID = 7551612866741370067L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private String id;
 
 	private String name;

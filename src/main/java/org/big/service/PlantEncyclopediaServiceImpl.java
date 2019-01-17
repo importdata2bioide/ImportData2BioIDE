@@ -46,7 +46,7 @@ public class PlantEncyclopediaServiceImpl implements PlantEncyclopediaService {
 		Map<String, String> map = new HashedMap<>();
 		for (List<String> partFiles : groupFiles) {
 			try {
-				plantAsyncService.readSomeExcel(baseParamsForm, partFiles, map);
+				plantAsyncService.insertListExcel(baseParamsForm, partFiles, map);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

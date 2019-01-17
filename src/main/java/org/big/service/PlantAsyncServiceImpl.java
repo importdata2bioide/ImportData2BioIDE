@@ -90,13 +90,14 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	 * @author ZXY
 	 */
 	@Async
-	public void readSomeExcel(BaseParamsForm baseParamsForm, List<String> partFiles, Map<String, String> map)
+	public void insertListExcel(BaseParamsForm baseParamsForm, List<String> partFiles, Map<String, String> map)
 			throws Exception {
 		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务：" + CommUtils.getCurrentDate());
 
 		List<String> notReadSheetNamesAsList = Arrays.asList(notReadSheetNames);
+		int j = 0;
 		for (String path : partFiles) {
-
+			j++;
 			// read an excel(xls or xlsx,Multiple sheet), convert to entities
 			Map<String, List<PlantEncyclopediaExcelVO>> excelMap = null;
 			try {
@@ -126,6 +127,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				}
 			}
 //			break;// test run
+			if(j%50==0) {
+				logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务进度报告。已经完成："+j +"，总数:"+partFiles.size()+" , 百分比："+(j*100/partFiles.size())+"% ,"+ CommUtils.getCurrentDate());
+			}
+
 		}
 		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + CommUtils.getCurrentDate());
 
@@ -328,7 +333,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			colB = toDBEescType(colB);
 			descriptiontype = descriptiontypeService.findOneByName(colB);
 			if (descriptiontype == null) {
-				logger.info("error C00001 数据库 [描述类型] 表中没有：" + colB + ", " + path);
+				logger.info("error DT00001 ,在【描述类型表】中查询不到此描述类型："+colB+"");
 				return;
 			}
 		}
@@ -399,7 +404,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 						taxon.setEpithet(String.valueOf(object.get("Epithet")));
 						taxon.setScientificname(String.valueOf(object.get("CanonicalName")));
 						taxon.setAuthorstr(String.valueOf(object.get("Authorstr")));
-						logger.info("拼接：" + taxon.getScientificname());
+						
 					}
 				}
 				Citation citation = new Citation();
