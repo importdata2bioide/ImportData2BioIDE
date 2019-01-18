@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.big.entity.Ref;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +41,24 @@ public class CommUtils {
 	public static String uploadPath = "upload/";// 文件在新采集系统的保存路径
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
+	/**
+	 * 
+	 * @Description 首字母大写
+	 * @param name
+	 * @return
+	 * @author ZXY
+	 */
+	public static String captureName(String name) {
+		if(StringUtils.isEmpty(name)) {
+			return null;
+		}
+		name = name.trim();
+		if(isStartWithEnglish(name)) {
+			name = name.substring(0, 1).toUpperCase() + name.substring(1);
+		}
+		return name;
+
+	}
 
 	/**
 	 * 
@@ -58,8 +77,6 @@ public class CommUtils {
 		}
 		return dest;
 	}
-
-
 
 	public static void printList(List<String> list) {
 		StringBuffer sb = new StringBuffer();

@@ -391,8 +391,8 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				taxon.setChname(name.trim());
 			}
 		} else if (colA.contains("引证信息") || colA.contains("分类概念依据")) {
-			List<Citation> citationList = citationService.findCitationListByTaxonId(taxon.getId());
-			if (CommUtils.isStrNotEmpty(colD) && citationList.size() == 0) {
+//			List<Citation> citationList = citationService.findCitationListByTaxonId(taxon.getId());
+			if (CommUtils.isStrNotEmpty(colD)) {
 				// rank = var 且 Scientificname不包含var. 且 colD以var.开头
 				if (String.valueOf(RankEnum.var.getIndex()).equals(taxon.getRankid())
 						&& StringUtils.isNotEmpty(taxon.getScientificname())

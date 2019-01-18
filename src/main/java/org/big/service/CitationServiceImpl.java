@@ -2,6 +2,7 @@ package org.big.service;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.big.entity.Citation;
 import org.big.repository.CitationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class CitationServiceImpl implements CitationService {
 	}
 	@Override
 	public List<Citation> findCitationListByTaxonId(String taxonId) {
+		if(StringUtils.isEmpty(taxonId)) {
+			
+		}
 		return  citationRepository.findCitationListByTaxonId(taxonId);
 		
 	}

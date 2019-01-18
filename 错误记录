@@ -1,0 +1,13 @@
+1.
+	错误信息：
+	Deadlock found when trying to get lock; try restarting transaction
+	HHH000346: Error during managed flush [org.hibernate.exception.LockAcquisitionException: could not execute statement]
+	Unexpected exception occurred invoking async method: public void org.big.service.PlantAsyncServiceImpl.insertListExcel(org.big.entityVO.BaseParamsForm,java.util.List,java.util.Map) throws java.lang.Exception
+	org.springframework.dao.CannotAcquireLockException: could not execute statement; SQL [n/a]; nested exception is org.hibernate.exception.LockAcquisitionException: could not execute statement
+	解决思路：
+	@Async 和 @Transactional 同时使用失效
+	https://blog.csdn.net/qq_31212871/article/details/82901051
+	https://www.jianshu.com/p/36950fd704e0
+	那该如何给@Async操作添加事务管理呢？可以将需要事务管理操作的方法放置到异步方法"内部"，在内部被调用的方法上添加@Transactional.
+	方法A:使用了@Async/@Transactional来标注，但是无法产生事务控制的目的。
+	方法B:使用了@Async来标注，  B中调用了C、D，C/D分别使用@Transactional做了标注，则可实现事务控制的目的。

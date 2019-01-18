@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.big.common.CommUtils;
 import org.big.common.JDBCTools;
 import org.big.repository.TaxonHasTaxtreeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +46,14 @@ public class CodeFactoryServiceImpl implements CodeFactoryService {
 		}
 		Object tableName = list.get(0)[0];
 		StringBuffer methodInsert = new StringBuffer();
-		methodInsert.append("public void insert" + tableName + "() throws SQLException{\n");
+		methodInsert.append("public void insert" + CommUtils.captureName(String.valueOf(tableName)) + "() throws SQLException{\n");
 		methodInsert.append("	Connection connection = null;\n");
 		methodInsert.append("	PreparedStatement pstmt = null;\n");
+		methodInsert.append("	int entitiesSize = 0;\n");
+
 		methodInsert.append("	try {\n");
 		methodInsert.append("		// 连接数据库,字段个数" + list.size() + "\n");
-		methodInsert.append("		connection=连接数据库;\n");
+		methodInsert.append("		connection =null;\n");
 		StringBuffer columnNames = new StringBuffer();// 字段名称
 		StringBuffer placeholder = new StringBuffer();// 占位符
 		columnNames.append("INSERT INTO " + tableName + " (");
@@ -66,6 +69,7 @@ public class CodeFactoryServiceImpl implements CodeFactoryService {
 		columnNames.append(placeholder);
 		methodInsert.append("		String insertSql = \" " + columnNames.toString().replace(",)", ")") + " \";\n");
 		methodInsert.append("		pstmt = connection.prepareStatement(insertSql);\n");
+		methodInsert.append("		for(int i=0; i<entitiesSize; i++){\n");
 		// 设置字段值
 		for (int i = 0; i < list.size(); i++) {
 			int j = i + 1;
@@ -73,54 +77,56 @@ public class CodeFactoryServiceImpl implements CodeFactoryService {
 			String dataType = String.valueOf(obj[2]);
 			switch (dataType) {
 			case "varchar":
-				methodInsert.append("		pstmt.setString(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setString(" + j + ", null);\n");
 				break;
 			case "json":
-				methodInsert.append("		pstmt.setString(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setString(" + j + ", null);\n");
 				break;
 			case "int":
-				methodInsert.append("		pstmt.setInt(" + j + ", 1);\n");
+				methodInsert.append("			pstmt.setInt(" + j + ", 1);\n");
 				break;
 			case "tinyint":
-				methodInsert.append("		pstmt.setInt(" + j + ", 1);\n");
+				methodInsert.append("			pstmt.setInt(" + j + ", 1);\n");
 				break;
 			case "tinyblob"://
-				methodInsert.append("		pstmt.setBytes(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setBytes(" + j + ", null);\n");
 				break;
 			case "bigint":
-				methodInsert.append("		pstmt.setInt(" + j + ", 1);\n");
+				methodInsert.append("			pstmt.setInt(" + j + ", 1);\n");
 				break;
 			case "datetime":
 				methodInsert
-						.append("		pstmt.setTimestamp(" + j + ", new Timestamp(System.currentTimeMillis()));\n");
+						.append("			pstmt.setTimestamp(" + j + ", new Timestamp(System.currentTimeMillis()));\n");
 				break;
 			case "date":
-				methodInsert.append("		pstmt.setDate(" + j + ", new Date(System.currentTimeMillis()));\n");
+				methodInsert.append("			pstmt.setDate(" + j + ", new Date(System.currentTimeMillis()));\n");
 				break;
 			case "timestamp":
-				methodInsert.append("		pstmt.setTimestamp(" + j
+				methodInsert.append("			pstmt.setTimestamp(" + j
 						+ ", new java.sql.Timestamp(new java.util.Date().getTime()));\n");
 				break;
 			case "longtext":
-				methodInsert.append("		pstmt.setString(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setString(" + j + ", null);\n");
 				break;
 			case "double":
-				methodInsert.append("		pstmt.setDouble(" + j + ", 0.0);\n");
+				methodInsert.append("			pstmt.setDouble(" + j + ", 0.0);\n");
 				break;
 			case "text":
-				methodInsert.append("		pstmt.setString(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setString(" + j + ", null);\n");
 				break;
 			case "char":
-				methodInsert.append("		pstmt.setString(" + j + ", null);\n");
+				methodInsert.append("			pstmt.setString(" + j + ", null);\n");
 				break;
 			default:
-				methodInsert.append("		pstmt.setString(" + j + ", \"未定义的dataType\");\n");
+				methodInsert.append("			pstmt.setString(" + j + ", \"未定义的dataType\");\n");
 				System.out.println("未定义的dataType : " + dataType);
 				break;
 			}
 
 		}
-		methodInsert.append("		pstmt.execute();\n");
+		methodInsert.append("			pstmt.addBatch();//添加到同一个批处理中;\n");
+		methodInsert.append("		}//for end\n");
+		methodInsert.append("		pstmt.executeBatch();//执行批处理\n");
 		methodInsert.append("	} catch (Exception e) {\n");
 		methodInsert.append("		e.printStackTrace();\n");
 		methodInsert.append("	}finally{\n");
