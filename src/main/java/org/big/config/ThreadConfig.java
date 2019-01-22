@@ -22,16 +22,22 @@ public class ThreadConfig implements AsyncConfigurer {
 	@Override
 	public Executor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(15);
-		executor.setMaxPoolSize(100);
-		executor.setQueueCapacity(20);
+		
+		executor.setCorePoolSize(15);//核心线程数
+		executor.setMaxPoolSize(21);//最大线程数
+		executor.setQueueCapacity(5);//队列大小
+		executor.setKeepAliveSeconds(15);//线程最大空闲时间
+//		executor.setAwaitTerminationSeconds(60);//线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
 		executor.initialize();
 		return executor;
 	}
 
 	@Override
 	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-		return new SimpleAsyncUncaughtExceptionHandler();
+		SimpleAsyncUncaughtExceptionHandler handler = new SimpleAsyncUncaughtExceptionHandler();
+		return handler;
 	}
+	
+	
 
 }

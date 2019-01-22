@@ -92,8 +92,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 	@Async
 	public void insertListExcel(BaseParamsForm baseParamsForm, List<String> partFiles, Map<String, String> map)
 			throws Exception {
-		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务：" + CommUtils.getCurrentDate());
-
+		int activeCount = Thread.currentThread().getThreadGroup().activeCount();
+		int maxPriority = Thread.currentThread().getThreadGroup().getMaxPriority();
+		logger.info("线程" + Thread.currentThread().getName() +",activeCount = "+activeCount+",maxPriority"+maxPriority+ ", 执行异步任务：" + CommUtils.getCurrentDate());
 		List<String> notReadSheetNamesAsList = Arrays.asList(notReadSheetNames);
 		int j = 0;
 		for (String path : partFiles) {
@@ -132,8 +133,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			}
 
 		}
-		logger.info("线程" + Thread.currentThread().getName() + " 执行异步任务结束：" + CommUtils.getCurrentDate());
-
+		int activeCount1 = Thread.currentThread().getThreadGroup().activeCount();
+		int maxPriority1 = Thread.currentThread().getThreadGroup().getMaxPriority();
+		logger.info("线程" + Thread.currentThread().getName() +",activeCount = "+activeCount1+",maxPriority"+maxPriority1+ ", 执行异步任务：" + CommUtils.getCurrentDate());
 	}
 
 	/**
