@@ -128,6 +128,7 @@ public class CodeFactoryServiceImpl implements CodeFactoryService {
 		methodInsert.append("		}//for end\n");
 		methodInsert.append("		pstmt.executeBatch();//执行批处理\n");
 		methodInsert.append("	} catch (Exception e) {\n");
+		methodInsert.append("		connection.rollback();\n");
 		methodInsert.append("		e.printStackTrace();\n");
 		methodInsert.append("	}finally{\n");
 		methodInsert.append("		//do something\n");

@@ -23,10 +23,11 @@ public class ThreadConfig implements AsyncConfigurer {
 	public Executor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		
-		executor.setCorePoolSize(15);//核心线程数
+		executor.setCorePoolSize(20);//核心线程数
 		executor.setMaxPoolSize(21);//最大线程数
 		executor.setQueueCapacity(5);//队列大小
 		executor.setKeepAliveSeconds(15);//线程最大空闲时间
+		executor.setThreadNamePrefix("zxy's ThreadPoolTaskExecutor");
 //		executor.setAwaitTerminationSeconds(60);//线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
 		executor.initialize();
 		return executor;
