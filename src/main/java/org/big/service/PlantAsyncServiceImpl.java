@@ -101,22 +101,33 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			j++;
 			// read an excel(xls or xlsx,Multiple sheet), convert to entities
 			Map<String, List<PlantEncyclopediaExcelVO>> excelMap = null;
+			XSSFWorkbook xlsxWorkBook = null;
+			HSSFWorkbook xlsWorkBook = null;
 			try {
 				if (path.contains("~$") || path.contains("desktop.ini")) {
 					// 临时文件，目的是为了防止文档信息丢失
 					// 意外断电，也会造成那些文档不自动消失，也会像正常文件一样始终保存在电脑中
 					// 此类文件不处理
 				} else if (path.endsWith(".xlsx")) {
-					XSSFWorkbook xlsxWorkBook = ExcelUtil.getXlsxWorkBook(path);
+					xlsxWorkBook = ExcelUtil.getXlsxWorkBook(path);
 					excelMap = handleXSSFWorkbook(xlsxWorkBook, path, baseParamsForm, map, notReadSheetNamesAsList);
 				} else if (path.endsWith(".xls")) {
-					HSSFWorkbook xlsWorkBook = ExcelUtil.getXlsWorkBook(path);
+					xlsWorkBook = ExcelUtil.getXlsWorkBook(path);
 					excelMap = handleXSSFWorkbook(xlsWorkBook, path, baseParamsForm, map, notReadSheetNamesAsList);
+					
 				} else {
 					logger.info("error F00001 无法识别的文件" + path);
 				}
 			} catch (Exception e) {
 				logger.info("error F00002 无法识别的文件" + path);
+			}finally {
+				//关闭
+				if(xlsWorkBook != null) {
+					xlsWorkBook.close();
+				}
+				if(xlsxWorkBook != null) {
+					xlsxWorkBook.close();
+				}
 			}
 			// handle an excel（include multiple sheets）
 			if (excelMap != null) {
