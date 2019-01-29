@@ -6,16 +6,16 @@ public class ExcelWithColNumVO implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 	// fixedIndex int -1 对应excel的列,忽略名字
-	@Excel(fixedIndex = 0, width = 40.00, name = "")
+	@Excel(fixedIndex = 0, width = 40.00, name = "A")
 	private String colA;
 
-	@Excel(fixedIndex = 1, width = 40.00, name = "")
+	@Excel(fixedIndex = 1, width = 40.00, name = "B")
 	private String colB;
 
-	@Excel(fixedIndex = 2, width = 40.00, name = "")
+	@Excel(fixedIndex = 2, width = 40.00, name = "C")
 	private String colC;
 
-	@Excel(fixedIndex = 3, width = 40.00, name = "")
+	@Excel(fixedIndex = 3, width = 40.00, name = "D")
 	private String colD;
 
 	public String getColA() {

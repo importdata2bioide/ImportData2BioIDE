@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -31,6 +30,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSONObject;
 
+import net.sourceforge.pinyin4j.PinyinHelper;
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+
 public class CommUtils {
 
 	// 线程池核心线程数:20;线程池最大数:200;空闲线程存活时间:10s;时间单位:SECONDS;线程池所使用的缓冲队列20
@@ -41,6 +46,32 @@ public class CommUtils {
 	public static String uploadPath = "upload/";// 文件在新采集系统的保存路径
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
+	
+	/**
+     * 汉字转为拼音
+     * @param chinese
+     * @return
+     */
+    public static String ToPinyin(String chinese){          
+        String pinyinStr = "";  
+        char[] newChar = chinese.toCharArray();  
+        HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();  
+        defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);  
+        defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);  
+        for (int i = 0; i < newChar.length; i++) {  
+            if (newChar[i] > 128) {  
+                try {  
+                    pinyinStr += PinyinHelper.toHanyuPinyinStringArray(newChar[i], defaultFormat)[0];  
+                } catch (BadHanyuPinyinOutputFormatCombination e) {  
+                    e.printStackTrace();  
+                }  
+            }else{  
+                pinyinStr += newChar[i];  
+            }  
+        }  
+        return pinyinStr;  
+    } 
+	
 	/**
 	 * 
 	 * @Description 首字母大写

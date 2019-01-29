@@ -14,9 +14,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
-import org.big.common.HttpUtils;
+import org.big.entity.Geoobject;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
+import org.big.repository.GeoobjectRepository;
 import org.big.service.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class TestController {
 
 	private final static Logger logger = LoggerFactory.getLogger(TestController.class);
 
+	@Autowired
+	private GeoobjectRepository geoobjectRepository;
 //	@Autowired
 //	private TaxonRepository taxonRepository;
 //	@Autowired
@@ -63,11 +66,13 @@ public class TestController {
 	private ToolService toolService;
 
 	@RequestMapping(value = "/testController_test1")
-	public void test1(HttpServletResponse res) {
-		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
-		String data = "name=Anisodus tanguticus (Maxim.) Pascher var. viridulus";
-		String response = HttpUtils.doGet(url,data);
-		System.out.println("响应："+response);
+	public void test1(HttpServletResponse response) {
+		py(true);
+//		compareArea(response);
+//		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
+//		String data = "name=Anisodus tanguticus (Maxim.) Pascher var. viridulus";
+//		String response = HttpUtils.doGet(url,data);
+//		System.out.println("响应："+response);
 //		testAsync();
 		
 //		NationalListOfProtectedAnimals(res);
@@ -120,6 +125,81 @@ public class TestController {
 //		}
 //		return "OK,更新数量："+i+",总数："+taxonlist.size();
 //		return "OK";
+	}
+	private void updateGeoobjectPY(boolean execute) {
+		if(!execute) {
+			return;
+		}
+		
+		
+	}
+	private void py(boolean execute) {
+		if(!execute) {
+			return;
+		}
+		List<Geoobject> list = geoobjectRepository.findByPid("710000");
+		logger.info(list.size()+"");
+		for (Geoobject geoobject : list) {
+			logger.info(geoobject.getCngeoname());
+			geoobject.setEngeoname(CommUtils.ToPinyin(geoobject.getCngeoname()));
+			logger.info(geoobject.getEngeoname());
+			geoobjectRepository.save(geoobject);
+		}
+		
+		
+	}
+	/**
+	 * 
+	 * @Description 行政区对比
+	 * @author ZXY
+	 */
+	private void compareArea(HttpServletResponse response) {
+		String filePath = "E:\\003采集系统\\行政区.xlsx";
+		ImportParams params = new ImportParams();
+		params.setTitleRows(1);
+		params.setHeadRows(0);
+		long start = new Date().getTime();
+		List<ExcelWithColNumVO> list = ExcelImportUtil.importExcel(new File(filePath),
+				ExcelWithColNumVO.class, params);
+		logger.info("读取耗费时间："+(new Date().getTime() - start));
+		logger.info(filePath+"，读取总行数："+list.size());
+		logger.info(ReflectionToStringBuilder.toString(list.get(0)));
+
+		for (ExcelWithColNumVO row : list) {
+			String colB = row.getColB().trim();//code
+			String colC = row.getColC().trim();//name
+			List<Geoobject> list1 = geoobjectRepository.findByCngeonameAndAdcode(colC, colB);
+			if(list1.size() < 1) {//没找到
+				List<Geoobject> list2 = geoobjectRepository.findByCngeoname(colC);
+				List<Geoobject> list3 = geoobjectRepository.findByAdcode(colB);
+				if(list2.size() == 1 && list3.size() ==0) {//name 查询到了，adcode没有查询到
+					row.setColD("name 同，adcode 不同 , 数据库adcode="+list2.get(0).getAdcode());
+				}else if(list3.size() == 1 && list2.size() ==0) {//adcode 查询到了，name 没有查询到
+					row.setColD("adcode相同，name不同；数据库中name="+list3.get(0).getCngeoname());
+				}else if(list3.size() ==0 && list2.size() ==0) {//adcode和name 都没有查询到
+					row.setColD("数据库中没有此地；name="+colC);
+				}else {
+					Geoobject geoobjectByCngeoname = list2.get(0);
+					Geoobject geoobjectByAdcode = list3.get(0);
+					row.setColD("数据库中 [name ="+geoobjectByCngeoname.getCngeoname()+",adcode="+geoobjectByCngeoname.getAdcode()+"] [name= "+geoobjectByAdcode.getCngeoname()+",adcode="+geoobjectByAdcode.getAdcode()+"]");
+					logger.info("error 根据name查询到："+list2.size()+",根据adcode 查询到"+list3.size());
+					
+				}
+			}else if(list1.size() > 1) {
+				//找到多个
+				logger.info("数据库中有重复数据："+colB+","+colC);
+			}else {
+				//找到一个，perfect
+			}
+			
+		}//end for 
+		//导出excel
+		try {
+			FilesUtils.exportExcel(list, "行政分布" ,"行政分布", ExcelWithColNumVO.class, URLEncoder.encode("行政分布.xls", "GBK"),
+					response);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@SuppressWarnings("unused")

@@ -56,7 +56,7 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 
 	
 
-//	List<Taxon> taxonList = new ArrayList<>();
+//	List<Taxon> taxonList = new ArrayList<>();//默认为单例模式，并发线程不安全，可以使用ThreadLocal解决
 //	List<Distributiondata> distributionList = new ArrayList<>();
 //	List<Citation> citationList = new ArrayList<>();
 

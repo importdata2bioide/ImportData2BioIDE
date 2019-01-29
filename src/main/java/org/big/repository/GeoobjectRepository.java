@@ -49,6 +49,12 @@ public interface GeoobjectRepository extends BaseRepository<Geoobject, String> {
     @Query(value = "Select go from Geoobject go where go.cngeoname = ?1 ")
     List<Geoobject> findByCngeoname(String cngeoname);
     
+    List<Geoobject> findByCngeonameAndAdcode(String cngeoname,String adcode);
+    
+    List<Geoobject> findByAdcode(String adcode);
+    
+    List<Geoobject> findByPid(String pid);
+    
     @Query(value = "select *  from geoobject where id not in  (:ids) and citycode in  ('0') ",nativeQuery = true)
     List<Geoobject>  findByIdNotIn(@Param("ids") List<String> ids);
     
@@ -60,5 +66,7 @@ public interface GeoobjectRepository extends BaseRepository<Geoobject, String> {
     
     @Query(value = "Select go from Geoobject go where cngeoname like %?1%  order by adcode asc")
     List<Geoobject> findByLikeCngeoname(String cngeoname);
+    
+    
 
 }
