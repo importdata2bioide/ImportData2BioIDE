@@ -260,9 +260,9 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 				pstmt.setString(5, commonname.getLanguage());
 				pstmt.setString(6, commonname.getRefjson());
 				pstmt.setString(7, commonname.getSourcesid());
-				pstmt.setInt(8, 1);
+				pstmt.setInt(8, commonname.getStatus());
 				pstmt.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
-				pstmt.setInt(10, 1);
+				pstmt.setInt(10, commonname.getSynchstatus());
 				pstmt.setString(11, commonname.getTaxon().getId());
 				pstmt.setBytes(12, null);
 				pstmt.setString(13, commonname.getExpert());
