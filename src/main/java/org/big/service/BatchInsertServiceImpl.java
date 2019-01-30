@@ -2,6 +2,7 @@ package org.big.service;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.List;
 
@@ -20,8 +21,9 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+
 @Service
-public class BatchInsertServiceImpl implements BatchInsertService{
+public class BatchInsertServiceImpl implements BatchInsertService {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 	@SuppressWarnings("unused")
@@ -29,16 +31,16 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	@PersistenceContext
 	EntityManager em;
-	
 
 	/**
 	 * Taxon
+	 * 
 	 * @param records
 	 */
-	public void batchInsertTaxon(List<Taxon> records,String inputtimeStr) {
+	public void batchInsertTaxon(List<Taxon> records, String inputtimeStr) {
 		String insertSql = "INSERT INTO taxon (id, scientificname, authorstr, epithet, rankid, nomencode, remark, sourcesid, tci,"
 				+ " refjson, status, inputer, inputtime, synchstatus, synchdate, taxaset_id, rank_id, chname, sourcesid_id "
-				+ " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)";      
+				+ " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -92,16 +94,18 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 			@Override
 			public int getBatchSize() {
 				return records.size();
-			}});
+			}
+		});
 	}
-	
+
 	/**
 	 * Citation 引证
+	 * 
 	 * @param records
 	 */
-	public void batchInsertCitation(List<Citation> records,String inputtimeStr) {
+	public void batchInsertCitation(List<Citation> records, String inputtimeStr) {
 		String insertSql = "INSERT INTO citation (id, sciname, authorship, nametype, citationstr, shortrefs, refjson, "
-				+ "sourcesid, status, inputer, inputtime, synchstatus, synchdate, taxon_id, sourcesid_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";      
+				+ "sourcesid, status, inputer, inputtime, synchstatus, synchdate, taxon_id, sourcesid_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -110,11 +114,11 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 				ps.setString(2, citation.getSciname());
 				ps.setString(3, citation.getAuthorship());
 				ps.setInt(4, citation.getNametype());
-				ps.setString(5,citation.getCitationstr());//引证原文
+				ps.setString(5, citation.getCitationstr());// 引证原文
 				ps.setString(6, citation.getShortrefs());
 				ps.setString(7, citation.getRefjson());
 				ps.setString(8, citation.getSourcesid());
-				ps.setInt(9,citation.getStatus());
+				ps.setInt(9, citation.getStatus());
 				ps.setString(10, citation.getInputer());
 				try {
 					ps.setDate(11, CommUtils.getSqlDate(inputtimeStr));
@@ -130,22 +134,24 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 				ps.setString(14, citation.getTaxon().getId());
 				ps.setString(15, citation.getSourcesid());
 			}
+
 			@Override
 			public int getBatchSize() {
 				return records.size();
 			}
 		});
 	}
-	
+
 	/**
 	 * Description 描述
+	 * 
 	 * @param records
 	 */
-	public void batchInsertDescription(List<Description> records,String inputtimeStr) {
+	public void batchInsertDescription(List<Description> records, String inputtimeStr) {
 		String insertSql = "INSERT INTO description (id, describer, desdate, destitle, descontent, destypeid, "
 				+ "rightsholder, licenseid, remark, `language`, relation, sourcesid, refjson, status, "
 				+ "inputer, inputtime, synchstatus, synchdate, descriptiontype_id, "
-				+ "taxon_id, license_id, traitdata_id, sourcesid_id, relation_des, relation_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";      
+				+ "taxon_id, license_id, traitdata_id, sourcesid_id, relation_des, relation_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -160,7 +166,7 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 				ps.setString(8, description.getLicenseid());
 				ps.setString(9, description.getRemark());
 				ps.setString(10, description.getLanguage());
-				ps.setString(11, null);//Json格式
+				ps.setString(11, null);// Json格式
 				ps.setString(12, description.getSourcesid());
 				ps.setString(13, description.getRefjson());
 				ps.setInt(14, description.getStatus());
@@ -179,26 +185,28 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 				ps.setString(19, description.getDescriptiontype().getId());
 				ps.setString(20, description.getTaxon().getId());
 				ps.setString(21, description.getLicenseid());
-				ps.setString(22, null);//traitdata_id
-				ps.setString(23, description.getSourcesid());//sourcesid_id
-				ps.setString(24, description.getRelationDes());//relation_des
-				ps.setString(25, description.getRelationId());//relation_id
-				
+				ps.setString(22, null);// traitdata_id
+				ps.setString(23, description.getSourcesid());// sourcesid_id
+				ps.setString(24, description.getRelationDes());// relation_des
+				ps.setString(25, description.getRelationId());// relation_id
+
 			}
+
 			@Override
 			public int getBatchSize() {
 				return records.size();
 			}
 		});
 	}
-	
+
 	/**
 	 * Distributiondata 分布
+	 * 
 	 * @param records
 	 */
-	public void batchInsertDistributiondata(List<Distributiondata> records, String inputtimeStr ) throws Exception {
+	public void batchInsertDistributiondata(List<Distributiondata> records, String inputtimeStr) throws Exception {
 		String insertSql = "INSERT INTO distributiondata (id, taxonid, lng, lat, refjson, sourcesid, status, inputer, inputtime, "
-				+ "synchstatus, synchdate, geojson, taxon_id, discontent) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,)";      
+				+ "synchstatus, synchdate, geojson, taxon_id, discontent) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,)";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -220,40 +228,57 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 					ps.setDate(11, CommUtils.getSqlDate(inputtimeStr));
 				} catch (ParseException e) {
 				}
-				ps.setString(12,distributiondata.getGeojson());
+				ps.setString(12, distributiondata.getGeojson());
 				ps.setString(13, distributiondata.getTaxon().getId());
-				ps.setString(14,distributiondata.getDiscontent() );
+				ps.setString(14, distributiondata.getDiscontent());
 			}
+
 			@Override
 			public int getBatchSize() {
 				return records.size();
 			}
 		});
 	}
-	
-	
+
 	/**
 	 * Commonname 俗名
+	 * 
 	 * @param records
 	 */
 	public void batchInsertCommonname(List<Commonname> records) {
-		String insertSql = "";      
+		String insertSql = "INSERT INTO commonname (id,commonname,inputer,inputtime,language,refjson,sourcesid,status,synchdate,synchstatus,"
+				+ "taxon_id,taxon,expert,remark) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+		
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
-			public void setValues(PreparedStatement ps, int i) throws SQLException {
-				records.get(i);
-				 
+			public void setValues(PreparedStatement pstmt, int i) throws SQLException {
+				Commonname commonname = records.get(i);
+				pstmt.setString(1, commonname.getId());
+				pstmt.setString(2, commonname.getCommonname());
+				pstmt.setString(3, commonname.getInputer());
+				pstmt.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+				pstmt.setString(5, commonname.getLanguage());
+				pstmt.setString(6, commonname.getRefjson());
+				pstmt.setString(7, commonname.getSourcesid());
+				pstmt.setInt(8, 1);
+				pstmt.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
+				pstmt.setInt(10, 1);
+				pstmt.setString(11, commonname.getTaxon().getId());
+				pstmt.setBytes(12, null);
+				pstmt.setString(13, commonname.getExpert());
+				pstmt.setString(14, commonname.getRemark());
+
 			}
+
 			@Override
 			public int getBatchSize() {
 				return records.size();
 			}
 		});
 	}
-	
-	
+
 	public void batchInsertTaxonHasTaxtree(List<TaxonHasTaxtree> records) {
-		String insertSql = "INSERT INTO taxon_has_taxtree (taxon_id, taxtree_id, pid, prev_taxon) VALUES ( ?, ?, ?, ?)";    
+		String insertSql = "INSERT INTO taxon_has_taxtree (taxon_id, taxtree_id, pid, prev_taxon) VALUES ( ?, ?, ?, ?)";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -263,12 +288,12 @@ public class BatchInsertServiceImpl implements BatchInsertService{
 				ps.setString(3, taxonHasTaxtree.getPid());
 				ps.setString(4, taxonHasTaxtree.getPrevTaxon());
 			}
+
 			@Override
 			public int getBatchSize() {
 				return records.size();
 			}
 		});
 	}
-
 
 }

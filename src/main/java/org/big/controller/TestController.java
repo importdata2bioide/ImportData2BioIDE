@@ -14,10 +14,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
+import org.big.common.UUIDUtils;
+import org.big.entity.Commonname;
 import org.big.entity.Geoobject;
+import org.big.entity.Taxon;
 import org.big.entityVO.ExcelWithColNumVO;
+import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
+import org.big.repository.CommonnameRepository;
 import org.big.repository.GeoobjectRepository;
+import org.big.service.BatchInsertService;
 import org.big.service.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +44,10 @@ public class TestController {
 	private GeoobjectRepository geoobjectRepository;
 //	@Autowired
 //	private TaxonRepository taxonRepository;
-//	@Autowired
-//	private CommonnameRepository commonnameRepository;
+	@Autowired
+	private CommonnameRepository commonnameRepository;
+	@Autowired
+	private BatchInsertService batchInsertService;
 //	@Autowired
 //	private DescriptionRepository descriptionRepository;
 //	@Autowired
@@ -67,7 +75,8 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		py(true);
+		insertCompare(true);
+		py(false);
 //		compareArea(response);
 //		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
 //		String data = "name=Anisodus tanguticus (Maxim.) Pascher var. viridulus";
@@ -126,13 +135,38 @@ public class TestController {
 //		return "OK,更新数量："+i+",总数："+taxonlist.size();
 //		return "OK";
 	}
-	private void updateGeoobjectPY(boolean execute) {
+	private void insertCompare(boolean execute) {
+		logger.info("execute insertCompare");
 		if(!execute) {
 			return;
 		}
-		
-		
+		List<Commonname> records = new ArrayList<>(3050);
+		for (int i = 0;i<10000;i++) {
+			Commonname commonname = new Commonname();
+			String uuid32 = UUIDUtils.getUUID32();
+			commonname.setId(uuid32);
+			commonname.setCommonname("测试"+uuid32);
+			commonname.setExpert("123");
+			commonname.setInputer("4a83e6bb2f2f4b588b2fd12ef22e507f");
+			commonname.setLanguage(String.valueOf(LanguageEnum.chinese.getIndex()));
+			commonname.setRemark("测试20190130");
+			commonname.setSourcesid("f8c51d42-b8bd-4d29-864a-e3ada935c47d");
+			Taxon taxon = new Taxon();
+			taxon.setId("76f0f697bcdd48c99448c04721005dcc");
+			commonname.setTaxon(taxon );
+			records.add(commonname);
+		}
+//		long startTime = System.currentTimeMillis();
+//		commonnameRepository.saveAll(records);
+//		logger.info("commonnameRepository.saveAll(records)：运行时间: " + (System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
+//		for (Commonname commonname : records) {
+//			commonname.setId(UUIDUtils.getUUID32());
+//		}
+		long startTime2 = System.currentTimeMillis();
+		batchInsertService.batchInsertCommonname(records);
+		logger.info(records.size()+"、batchInsertService.batchInsertCommonname(records);：运行时间: " + (System.currentTimeMillis() - startTime2)/60000+"min, "+(System.currentTimeMillis() - startTime2)/1000 + "s ( "+(System.currentTimeMillis() - startTime2)+"ms)");
 	}
+	
 	private void py(boolean execute) {
 		if(!execute) {
 			return;
