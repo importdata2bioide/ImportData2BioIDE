@@ -46,32 +46,46 @@ public class CommUtils {
 	public static String uploadPath = "upload/";// 文件在新采集系统的保存路径
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
-	
+
+	public static String cutNumber(String line) {
+		String regEx = "[^0-9]";
+		Pattern p = Pattern.compile(regEx);
+		Matcher m = p.matcher(line);
+		return m.replaceAll("").trim();
+	}
+
+	public static String removeChinese(String line) {
+		String REGEX_CHINESE = "[\u4e00-\u9fa5]";// 中文正则
+		Pattern pat = Pattern.compile(REGEX_CHINESE);
+		Matcher mat = pat.matcher(line);
+		return mat.replaceAll("");
+	}
+
 	/**
-     * 汉字转为拼音
-     * @param chinese
-     * @return
-     */
-    public static String ToPinyin(String chinese){          
-        String pinyinStr = "";  
-        char[] newChar = chinese.toCharArray();  
-        HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();  
-        defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);  
-        defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);  
-        for (int i = 0; i < newChar.length; i++) {  
-            if (newChar[i] > 128) {  
-                try {  
-                    pinyinStr += PinyinHelper.toHanyuPinyinStringArray(newChar[i], defaultFormat)[0];  
-                } catch (BadHanyuPinyinOutputFormatCombination e) {  
-                    e.printStackTrace();  
-                }  
-            }else{  
-                pinyinStr += newChar[i];  
-            }  
-        }  
-        return pinyinStr;  
-    } 
-	
+	 * 
+	 * @param chinese 汉字转为拼音
+	 * @return
+	 */
+	public static String ToPinyin(String chinese) {
+		String pinyinStr = "";
+		char[] newChar = chinese.toCharArray();
+		HanyuPinyinOutputFormat defaultFormat = new HanyuPinyinOutputFormat();
+		defaultFormat.setCaseType(HanyuPinyinCaseType.LOWERCASE);
+		defaultFormat.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
+		for (int i = 0; i < newChar.length; i++) {
+			if (newChar[i] > 128) {
+				try {
+					pinyinStr += PinyinHelper.toHanyuPinyinStringArray(newChar[i], defaultFormat)[0];
+				} catch (BadHanyuPinyinOutputFormatCombination e) {
+					e.printStackTrace();
+				}
+			} else {
+				pinyinStr += newChar[i];
+			}
+		}
+		return pinyinStr;
+	}
+
 	/**
 	 * 
 	 * @Description 首字母大写
@@ -80,11 +94,11 @@ public class CommUtils {
 	 * @author ZXY
 	 */
 	public static String captureName(String name) {
-		if(StringUtils.isEmpty(name)) {
+		if (StringUtils.isEmpty(name)) {
 			return null;
 		}
 		name = name.trim();
-		if(isStartWithEnglish(name)) {
+		if (isStartWithEnglish(name)) {
 			name = name.substring(0, 1).toUpperCase() + name.substring(1);
 		}
 		return name;
@@ -494,12 +508,14 @@ public class CommUtils {
 	 * @param path 文件路径
 	 * @param code 编码 GBK UTF-8...
 	 * @return
+	 * @throws IOException
 	 */
-	public static List<String> readTxt(String path, String code) {
+	public static List<String> readTxt(String path, String code) throws IOException {
 		/* 读取数据 */
-		List<String> thisList = new ArrayList<>(3000);
+		List<String> thisList = new ArrayList<>(1000);
+		BufferedReader br = null;
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path)), code));
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path)), code));
 			String lineTxt = null;
 			while ((lineTxt = br.readLine()) != null) {
 				if (CommUtils.isStrEmpty(lineTxt)) {// 空白行
@@ -512,9 +528,14 @@ public class CommUtils {
 				lineTxt.replace("）", ")");
 				thisList.add(lineTxt.trim());
 			}
-			br.close();
+
 		} catch (Exception e) {
 			System.err.println("CommUtils : read txt errors :" + e);
+		} finally {
+			if (br != null) {
+				br.close();
+			}
+
 		}
 		return thisList;
 	}

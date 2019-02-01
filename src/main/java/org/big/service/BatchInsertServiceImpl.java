@@ -38,57 +38,35 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 	 * @param records
 	 */
 	public void batchInsertTaxon(List<Taxon> records, String inputtimeStr) {
-		String insertSql = "INSERT INTO taxon (id, scientificname, authorstr, epithet, rankid, nomencode, remark, sourcesid, tci,"
-				+ " refjson, status, inputer, inputtime, synchstatus, synchdate, taxaset_id, rank_id, chname, sourcesid_id "
-				+ " ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,)";
+		String insertSql = " INSERT INTO taxon (id,scientificname,authorstr,epithet,rankid,nomencode,remark,"
+				+ "sourcesid,tci,refjson,status,inputer,inputtime,synchstatus,synchdate,"
+				+ "taxaset_id,rank_id,chname,taxon_condition,ref_class_sys,expert,taxon_examine) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
-			public void setValues(PreparedStatement ps, int i) throws SQLException {
+			public void setValues(PreparedStatement pstmt, int i) throws SQLException {
 				Taxon taxon = records.get(i);
-				String id = taxon.getId();
-				ps.setString(1, id);
-				String scientificname = taxon.getScientificname();
-				ps.setString(2, scientificname);
-				String authorstr = taxon.getAuthorstr();
-				ps.setString(3, authorstr);
-				String epithet = taxon.getEpithet();
-				ps.setString(4, epithet);
-				String id2 = taxon.getRank().getId();
-				ps.setString(5, id2);
-				String nomencode = taxon.getNomencode();
-				ps.setString(6, nomencode);
-				String remark = taxon.getRemark();
-				ps.setString(7, remark);
-				String sourcesid = taxon.getSourcesid();
-				ps.setString(8, sourcesid);
-				String tci = taxon.getTci();
-				ps.setString(9, tci);
-				String refjson = taxon.getRefjson();
-				ps.setString(10, refjson);
-				int status = taxon.getStatus();
-				ps.setInt(11, status);
-				String inputer = taxon.getInputer();
-				ps.setString(12, inputer);
-				try {
-					ps.setDate(13, CommUtils.getSqlDate(inputtimeStr));
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				int synchstatus = taxon.getSynchstatus();
-				ps.setInt(14, synchstatus);
-				try {
-					ps.setDate(15, CommUtils.getSqlDate(inputtimeStr));
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				String id3 = taxon.getTaxaset().getId();
-				ps.setString(16, id3);
-				String rankid = taxon.getRankid();
-				ps.setString(17, rankid);
-				String chname = taxon.getChname();
-				ps.setString(18, chname);
-				String sourcesid2 = taxon.getSourcesid();
-				ps.setString(19, sourcesid2);
+				pstmt.setString(1, taxon.getId());
+				pstmt.setString(2, taxon.getScientificname());
+				pstmt.setString(3, taxon.getAuthorstr());
+				pstmt.setString(4, taxon.getEpithet());
+				pstmt.setInt(5, Integer.parseInt(taxon.getRankid()));
+				pstmt.setString(6, taxon.getNomencode());
+				pstmt.setString(7, taxon.getRemark());
+				pstmt.setString(8, taxon.getSourcesid());
+				pstmt.setString(9, taxon.getTci());
+				pstmt.setString(10, taxon.getRefjson());
+				pstmt.setInt(11, taxon.getStatus());
+				pstmt.setString(12, taxon.getInputer());
+				pstmt.setTimestamp(13, new Timestamp(System.currentTimeMillis()));
+				pstmt.setInt(14, taxon.getSynchstatus());
+				pstmt.setTimestamp(15, new Timestamp(System.currentTimeMillis()));
+				pstmt.setString(16, taxon.getTaxaset().getId());//taxaset_id
+				pstmt.setInt(17, Integer.parseInt(taxon.getRankid()));
+				pstmt.setString(18, taxon.getChname());
+				pstmt.setInt(19, taxon.getTaxonCondition());
+				pstmt.setString(20, null);//参考分类体系
+				pstmt.setString(21, taxon.getExpert());
+				pstmt.setString(22, taxon.getTaxonExamine());
 			}
 
 			@Override

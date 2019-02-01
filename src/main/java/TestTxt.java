@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.List;
 
 import org.big.common.CommUtils;
@@ -5,7 +6,7 @@ import org.big.controller.SpeciesCatalogueController;
 
 public class TestTxt {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 				List<String> txt = CommUtils.readTxt("E:\\采集系统\\杨定-名录-导入\\双翅目蝇类名录 正文1.txt", "Unicode");
 		for (String s : txt) {

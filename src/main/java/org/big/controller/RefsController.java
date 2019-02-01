@@ -1,5 +1,6 @@
 package org.big.controller;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class RefsController {
 
 	@RequestMapping(value = "importRefs")
 	public void ImportRefs(HttpServletResponse response, HttpServletRequest request)
-			throws UnsupportedEncodingException {
+			throws IOException {
 		// 解析
 		paresRefs(response, request);
 		// 保存
@@ -48,7 +49,7 @@ public class RefsController {
 	}
 
 	public void paresRefs(HttpServletResponse response, HttpServletRequest request)
-			throws UnsupportedEncodingException {
+			throws IOException {
 		reflist.clear();
 		String txtUrl = "";
 		String code = "utf-8";
