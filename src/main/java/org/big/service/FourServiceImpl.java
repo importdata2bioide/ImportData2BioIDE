@@ -83,6 +83,35 @@ public class FourServiceImpl implements FourService {
 			if( indexOfIMG== -1) {
 				System.out.println("图片__"+line);
 			}
+//			System.out.println("--------------------");
+			String name = StringUtils.substring(line, 0, indexOfFLDW);
+			String fldw = StringUtils.substring(line, indexOfFLDW, indexOfDLFB);//分类地位
+			String dlfb = StringUtils.substring(line, indexOfDLFB, indexOfJZ);//地理分布
+			String jz = StringUtils.substring(line, indexOfJZ, indexOfIMG);//寄主
+			String img = StringUtils.substring(line, indexOfIMG);//图片
+//			System.out.println(name);
+//			System.out.println(fldw);
+//			System.out.println(dlfb);
+//			System.out.println(jz);
+//			System.out.println(img);
+			Taxon taxon = taxonRepository.findByTaxasetAndRemark(baseParamsForm.getmTaxasetId(), name);
+			
+			if(taxon == null) {
+				taxon = taxonRepository.findByTaxasetAndChname(baseParamsForm.getmTaxasetId(), CommUtils.cutChinese(name));
+				if(taxon == null) {
+					System.out.println("找不到taxon，name = "+name);
+				}
+			}
+			//拆分图片
+			String[] images = img.split("src");
+			for (String image : images) {
+				if(!image.contains("\'")) {
+					continue;
+				}
+				System.out.println(image);
+				image = image.substring(image.indexOf("\'")+1, image.lastIndexOf("\'"));
+				System.out.println("-----"+image);
+			}
 			
 			
 		}

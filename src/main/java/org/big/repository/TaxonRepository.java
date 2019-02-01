@@ -137,6 +137,12 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	
 	@Query(value = "select t from Taxon t where t.taxaset.id = ?1")
 	List<Taxon> findByTaxaset(String taxasetId);
+	
+	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.remark = ?2")
+	Taxon findByTaxasetAndRemark(String taxaset,String remark);
+	
+	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.chname = ?2")
+	Taxon findByTaxasetAndChname(String taxaset,String chname);
 
 	@Modifying
 	@Transactional
