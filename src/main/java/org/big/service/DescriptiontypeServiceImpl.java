@@ -33,4 +33,18 @@ public class DescriptiontypeServiceImpl implements DescriptiontypeService {
 		descriptiontypeRepository.save(d);
 		return d;
 	}
+
+	@Override
+	public Descriptiontype insertOrFind(String name) {
+		Descriptiontype descriptiontype = descriptiontypeRepository.findOneByName(name);
+		if(descriptiontype == null) {
+			descriptiontype = new Descriptiontype();
+			descriptiontype.setId(UUIDUtils.getUUID32());
+			descriptiontype.setName(name);
+			descriptiontype.setPid("0");
+			descriptiontype.setStyle(name);
+			descriptiontypeRepository.save(descriptiontype);
+		}
+		return descriptiontype;
+	}
 }

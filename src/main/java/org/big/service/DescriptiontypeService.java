@@ -31,4 +31,6 @@ public interface DescriptiontypeService {
 	 * @author ZXY
 	 */
 	Descriptiontype insertOneDescType(String name,String style);
+	
+	Descriptiontype insertOrFind(String name);
 }

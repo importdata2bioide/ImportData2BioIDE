@@ -1,10 +1,10 @@
 package org.big.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections4.map.HashedMap;
+
 import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.common.EntityInit;
@@ -23,8 +23,16 @@ public class FourServiceImpl implements FourService {
 	@Autowired
 	private TaxonRepository taxonRepository;
 
+	@Autowired
+	private DescriptionService descriptionService;
+	@Autowired
+	private DescriptiontypeService descriptiontypeService;
+	@Autowired
+	private MultimediaService multimediaService;
+
 	@Override
 	public void handleTxt(BaseParamsForm baseParamsForm) throws Exception {
+		
 		// 1、读取txt文件
 		String filePath = baseParamsForm.getFilePath();
 		String upperPath = StringUtils.substring(filePath, 0, filePath.lastIndexOf(".txt"));
@@ -41,7 +49,7 @@ public class FourServiceImpl implements FourService {
 		List<String> reList = new ArrayList<>();
 		int k = 0;
 		for (String line : cataloglist) {
-			if(line.contains("门")||line.contains("纲")) {
+			if (line.contains("门") || line.contains("纲")) {
 				continue;
 			}
 			k++;
@@ -62,7 +70,7 @@ public class FourServiceImpl implements FourService {
 			}
 			startIndex = allContent.indexOf(line);
 		}
-		//可以处理的list
+		// 可以处理的list
 		for (String line : reList) {
 			line = line.replace(":", "：");
 			line = line.replace("分布地区", "地理分布");
@@ -71,52 +79,71 @@ public class FourServiceImpl implements FourService {
 			int indexOfDLFB = line.indexOf("地理分布：");
 			int indexOfJZ = line.indexOf("寄主：");
 			int indexOfIMG = line.indexOf("<img");
-			if( indexOfFLDW== -1) {
-				System.out.println("分类地位__"+line);
+			if (indexOfFLDW == -1) {
+				System.out.println("找不到分类地位__原文：" + line);
 			}
-			if( indexOfDLFB== -1) {
-				System.out.println("地理分布__"+line);
+			if (indexOfDLFB == -1) {
+				System.out.println("找不到地理分布__原文：" + line);
 			}
-			if( indexOfJZ== -1) {
-				System.out.println("寄主__"+line);
+			if (indexOfJZ == -1) {
+				System.out.println("找不到寄主__原文：" + line);
 			}
-			if( indexOfIMG== -1) {
-				System.out.println("图片__"+line);
+			if (indexOfIMG == -1) {
+				System.out.println("找不到图片__原文：" + line);
 			}
 //			System.out.println("--------------------");
 			String name = StringUtils.substring(line, 0, indexOfFLDW);
-			String fldw = StringUtils.substring(line, indexOfFLDW, indexOfDLFB);//分类地位
-			String dlfb = StringUtils.substring(line, indexOfDLFB, indexOfJZ);//地理分布
-			String jz = StringUtils.substring(line, indexOfJZ, indexOfIMG);//寄主
-			String img = StringUtils.substring(line, indexOfIMG);//图片
+			String fldw = StringUtils.substring(line, indexOfFLDW, indexOfDLFB);// 分类地位
+			String dlfb = StringUtils.substring(line, indexOfDLFB, indexOfJZ);// 地理分布
+			String jz = StringUtils.substring(line, indexOfJZ, indexOfIMG);// 寄主
+			String img = StringUtils.substring(line, indexOfIMG);// 图片
 //			System.out.println(name);
 //			System.out.println(fldw);
 //			System.out.println(dlfb);
 //			System.out.println(jz);
 //			System.out.println(img);
 			Taxon taxon = taxonRepository.findByTaxasetAndRemark(baseParamsForm.getmTaxasetId(), name);
-			
-			if(taxon == null) {
-				taxon = taxonRepository.findByTaxasetAndChname(baseParamsForm.getmTaxasetId(), CommUtils.cutChinese(name));
-				if(taxon == null) {
-					System.out.println("找不到taxon，name = "+name);
-				}
-			}
-			//拆分图片
-			String[] images = img.split("src");
-			for (String image : images) {
-				if(!image.contains("\'")) {
+
+			if (taxon == null) {
+				taxon = taxonRepository.findByTaxasetAndChname(baseParamsForm.getmTaxasetId(),
+						CommUtils.cutChinese(name));
+				if (taxon == null) {
+					System.out.println("找不到taxon，name = " + name);
 					continue;
 				}
-				System.out.println(image);
-				image = image.substring(image.indexOf("\'")+1, image.lastIndexOf("\'"));
-				System.out.println("-----"+image);
 			}
+			//save desc 保存分类地位、地理分布、寄主到描述表
+			if(baseParamsForm.isInsert()) {
+				descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw, taxon, baseParamsForm);
+				descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb, taxon, baseParamsForm);
+				descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon, baseParamsForm);
+			}
+			// 拆分图片
+			String[] images = img.split("src");
 			
-			
-		}
+			for (String image : images) {
+				
+				if (!image.contains("\'") || image.contains("未知")) {
+					continue;
+				}
+				int firstIndex = image.indexOf("'")+1;
+				int lastIndexOf = image.lastIndexOf("'");
+				image = image.substring(firstIndex, lastIndexOf);
+				image = image.replace("：", ":");
+				File file=new File(image); 
+				if(!file.exists()) {
+					System.out.println("error 找不到这张图片："+image);
+					continue;
+				}
 
-	
+				//save image
+				if(baseParamsForm.isInsert()) {
+					multimediaService.saveMultimedia(taxon, baseParamsForm, image);
+				}
+				
+			}
+
+		}
 
 	}
 

@@ -55,9 +55,11 @@ public class License implements Serializable {
 	@JSONField(serialize=false)
 	@JsonIgnore
 	private List<Multimedia> multimedias;
-	
+
 	public License() {
 	}
+	
+	
 	
 	public License(String title) {
 		super();

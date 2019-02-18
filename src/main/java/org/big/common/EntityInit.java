@@ -110,8 +110,16 @@ public class EntityInit {
 	}
 
 	public static void initMultimedia(Multimedia record, BaseParamsForm params) {
-		Timestamp timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
-
+		//主键
+		if (StringUtils.isEmpty(record.getId())) {
+			record.setId(UUIDUtils.getUUID32());
+		}
+		Timestamp timestamp = null;
+		if (StringUtils.isEmpty(params.getmInputtimeStr())) {
+			timestamp = CommUtils.getTimestamp(CommUtils.getCurrentDate());
+		} else {
+			timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		}
 		record.setInputer(params.getmLoginUser());
 		record.setSourcesid(params.getmSourcesid());
 

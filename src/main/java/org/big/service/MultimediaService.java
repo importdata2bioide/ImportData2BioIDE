@@ -1,8 +1,12 @@
 package org.big.service;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.big.entity.Multimedia;
+import org.big.entity.Taxon;
+import org.big.entityVO.BaseParamsForm;
 
 
 public interface MultimediaService {
@@ -25,6 +29,16 @@ public interface MultimediaService {
 	 * @param thisMultimedia
 	 */
 	void saveMultimedia(String taxonId, Multimedia thisMultimedia);
+	/**
+	 * 
+	 * @Description 存储图片到本地和数据库
+	 * @param taxon
+	 * @param baseParamsForm
+	 * @param image
+	 * @author ZXY
+	 * @throws Exception 
+	 */
+	void saveMultimedia(Taxon taxon,BaseParamsForm baseParamsForm,String image) throws Exception;
 
 
 }
