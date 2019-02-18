@@ -34,12 +34,14 @@ import org.dom4j.Element;
 public class Tes {
 
 	public static void main(String[] args) {
-		String imagePath ="E:\\003采集系统\\0010四册版\\真菌\\图\\image2.png";
-		String[] split = imagePath.split("\\\\");
-		String imageNameAndSuffix = split[split.length-1];
-		System.out.println(imageNameAndSuffix);
-		String onlyName = imageNameAndSuffix.split("\\.")[0];
-		System.out.println(onlyName);
+		String s = "Pseudocercosporella herpotrichoides";
+		System.out.println(s.substring(s.indexOf(" ")+1));
+//		String imagePath ="E:\\003采集系统\\0010四册版\\真菌\\图\\image2.png";
+//		String[] split = imagePath.split("\\\\");
+//		String imageNameAndSuffix = split[split.length-1];
+//		System.out.println(imageNameAndSuffix);
+//		String onlyName = imageNameAndSuffix.split("\\.")[0];
+//		System.out.println(onlyName);
 //		String catalog = "马铃薯银屑病菌Helminthosporium solani Durieu et Mont.	11";
 //		catalog = catalog.substring(0, catalog.indexOf("	")).trim();
 //		System.out.println(catalog);

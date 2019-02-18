@@ -16,13 +16,16 @@ import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
+import org.big.entity.Description;
 import org.big.entity.Geoobject;
 import org.big.entity.Taxon;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.repository.CommonnameRepository;
+import org.big.repository.DescriptionRepository;
 import org.big.repository.GeoobjectRepository;
+import org.big.repository.TaxonRepository;
 import org.big.service.BatchInsertService;
 import org.big.service.ToolService;
 import org.slf4j.Logger;
@@ -42,14 +45,14 @@ public class TestController {
 
 	@Autowired
 	private GeoobjectRepository geoobjectRepository;
-//	@Autowired
-//	private TaxonRepository taxonRepository;
+	@Autowired
+	private TaxonRepository taxonRepository;
 	@Autowired
 	private CommonnameRepository commonnameRepository;
 	@Autowired
 	private BatchInsertService batchInsertService;
-//	@Autowired
-//	private DescriptionRepository descriptionRepository;
+	@Autowired
+	private DescriptionRepository descriptionRepository;
 //	@Autowired
 //	private DistributiondataRepository distributiondataRepository;
 //	@Autowired
@@ -75,7 +78,8 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		insertCompare(true);
+		updateTaxonBySciName(true);
+		insertCompare(false);
 		py(false);
 //		compareArea(response);
 //		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
@@ -134,6 +138,42 @@ public class TestController {
 //		}
 //		return "OK,更新数量："+i+",总数："+taxonlist.size();
 //		return "OK";
+	}
+	private void updateTaxonBySciName(boolean execute) {
+		logger.info("execute updateTaxonBySciName,");
+		if(!execute) {
+			return;
+		}
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("fefe280f56b94beb9bea301bf52454a9");
+		for (Taxon taxon : taxonList) {
+			String rankid = taxon.getRankid();
+			String scientificname = taxon.getScientificname();
+			List<Description> descriptionListByTaxonId = descriptionRepository.findDescriptionListByTaxonId(taxon.getId());
+			for (Description description : descriptionListByTaxonId) {
+				String destitle = description.getDestitle();
+				String newTitle = destitle.substring(destitle.indexOf("的")+1);
+				System.out.println(newTitle);
+				description.setDestitle(newTitle);
+				descriptionRepository.save(description);
+			}
+			
+			if("7".equals(rankid) && search(scientificname, " ")>=2) {//7	7	种	Species
+//				System.out.println("1、scientificname值是："+scientificname);
+				String nameBy2Blank = scientificname.substring(0, scientificname.indexOf(" ",scientificname.indexOf(" ")+1 ));//截取第二个空格之前的字符串
+				if(nameBy2Blank.contains("(")||nameBy2Blank.contains(")")||nameBy2Blank.contains("（")||nameBy2Blank.contains("）")) {
+					//jfjdf (sdfjfh)
+					System.out.println("2、A情况"+nameBy2Blank);
+				}else {
+					taxon.setScientificname(nameBy2Blank.trim());//学名
+					taxon.setAuthorstr(scientificname.replace(nameBy2Blank, "").trim());//命名人和年代
+					taxon.setEpithet(nameBy2Blank.substring(nameBy2Blank.indexOf(" ")+1));//种加词
+					System.out.println(nameBy2Blank);
+					//更新数据库
+//					taxonRepository.save(taxon);
+				}
+			}
+		}
+		
 	}
 	private void insertCompare(boolean execute) {
 		logger.info("execute insertCompare");
@@ -319,5 +359,18 @@ public class TestController {
 		}
 
 	}
+	
+	  public int search(String str,String strRes) {//查找字符串里与指定字符串相同的个数
+	        int n=0;//计数器
+//	      for(int i = 0;i<str.length();i++) {
+//	         
+//	      }
+	        while(str.indexOf(strRes)!=-1) {
+	            int i = str.indexOf(strRes);
+	            n++;
+	            str = str.substring(i+1);
+	        }
+	        return n;
+	    }
 
 }

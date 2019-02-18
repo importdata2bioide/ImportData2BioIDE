@@ -21,7 +21,14 @@ public class FourController {
 	@Autowired
 	private FourService fourService;
 	
-	
+	/**
+	 * 
+	 * @Description 保存基础信息、描述和多媒体
+	 * @param baseParamsForm
+	 * @param request
+	 * @return
+	 * @author ZXY
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/fourController_doSave",method = RequestMethod.POST)
 	public String doSave(BaseParamsForm baseParamsForm,HttpServletRequest request) {

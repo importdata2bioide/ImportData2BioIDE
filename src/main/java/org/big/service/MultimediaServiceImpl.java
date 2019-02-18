@@ -123,7 +123,7 @@ public class MultimediaServiceImpl implements MultimediaService {
 		license.setId(multimedia.getLisenceid());
 		multimedia.setLicense(license);
 		multimedia.setMediatype("4");
-		multimedia.setPath(relativePath);
+		multimedia.setPath(relativePath+newFileName);
 		
 		multimedia.setSuffix(suffix);
 		multimedia.setMediatype("1");

@@ -26,7 +26,7 @@ public class DescriptionServiceImpl implements DescriptionService {
 		Description d = new Description();
 		d.setTaxon(taxon);
 		d.setExpert(params.getmLoginUser());
-		d.setDestitle(taxon.getScientificname()+"的"+descriptiontype.getName());
+		d.setDestitle(descriptiontype.getName());
 		d.setDescontent(descontent);
 		d.setDescriptiontype(descriptiontype);
 		d.setDestypeid(descriptiontype.getId());
