@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
+import org.big.common.SciNameUtil;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
@@ -79,10 +81,10 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		updateRankByChname(false);
+		updateRankByChname(true);
 		
 		
-		updateTaxonBySciName(true);
+		updateTaxonBySciName(false);
 		insertCompare(false);
 		py(false);
 
@@ -91,36 +93,37 @@ public class TestController {
 		if(!execute) {
 			return;
 		}
-		List<Taxon> taxonList = taxonRepository.findByTaxaset("44cbb5dad5044b599c3125cf921274ec");
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("68d7c55db3934b588983a5a197147fff");
 		for (Taxon taxon : taxonList) {
 			String scientificname = taxon.getScientificname();
-			String targetChar = "()";
-			if(scientificname.contains(targetChar)) {
-				taxon.setScientificname(scientificname.replace(targetChar, ""));
+			String rankid = taxon.getRankid();
+			String remark = taxon.getRemark();
+			if(remark.contains(",")) {
+				String chinese = CommUtils.cutChinese(remark);
+				String eng = CommUtils.cutByStrAfter(remark, chinese).trim();
+				taxon.setScientificname(eng);
+				taxon.setAuthorstr(null);
 				taxonRepository.save(taxon);
 			}
-			String chname = taxon.getChname().trim();
-			if(CommUtils.isStrNotEmpty(chname)) {
-				if(StringUtils.isEmpty(taxon.getRankid())) {
-					taxon.setRankid("7");
-				}
-				if(chname.endsWith("科")) {
-					taxon.setRankid("5");
-				}else if(chname.contains("属")){
-					taxon.setRankid("6");
-				}else if(chname.endsWith("目")){
-					taxon.setRankid("4");
-				}else if(chname.endsWith("纲")){
-					taxon.setRankid("3");
-				}else if(chname.endsWith("门")){
-					taxon.setRankid("2");
-				}
-				Rank r = new Rank();
-				r.setId(taxon.getRankid());
-				taxon.setRank(r);
-				System.out.println(taxon.getRankid()+","+chname);
-				taxonRepository.save(taxon);
-			}
+			
+//			if("7".equals(rankid)) {
+//				Map<String, String> map = SciNameUtil.getSpecies(scientificname);
+//				if(map != null) {
+//					taxon.setScientificname(map.get("sciName"));
+//					taxon.setAuthorstr(map.get("author"));
+//					taxonRepository.save(taxon);
+//				}
+//				
+//			}
+//			if(scientificname.contains("subsp.")) {
+//				taxon.setRankid("42");
+//				Rank r = new Rank();
+//				r.setId(taxon.getRankid());
+//				taxon.setRank(r);
+//				taxonRepository.save(taxon);
+//			}
+		
+			
 			
 		}
 		

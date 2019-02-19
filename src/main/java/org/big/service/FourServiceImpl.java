@@ -60,9 +60,7 @@ public class FourServiceImpl implements FourService {
 			line = line.substring(0, line.indexOf("	")).trim();// 去除页码
 			if (allContent.contains(line)) {
 
-			} else if (allContent.contains(StringUtils.substring(line, 0, line.indexOf("菌")))) {
-				line = StringUtils.substring(line, 0, line.indexOf("菌"));
-			} else {
+			}else {
 				System.out.println("AZ001 ERROR 找不到、" + line);
 				continue;
 			}
