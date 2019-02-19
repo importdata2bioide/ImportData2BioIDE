@@ -34,8 +34,8 @@ import org.dom4j.Element;
 public class Tes {
 
 	public static void main(String[] args) {
-		String s = "Pseudocercosporella herpotrichoides";
-		System.out.println(s.substring(s.indexOf(" ")+1));
+//		String s = "Pseudocercosporella herpotrichoides";
+//		System.out.println(s.substring(s.indexOf(" ")+1));
 //		String imagePath ="E:\\003采集系统\\0010四册版\\真菌\\图\\image2.png";
 //		String[] split = imagePath.split("\\\\");
 //		String imageNameAndSuffix = split[split.length-1];
@@ -47,14 +47,14 @@ public class Tes {
 //		System.out.println(catalog);
 //		String importPath = "E:\\003采集系统\\0010四册版\\测试\\1.docx";
 //		readWord(importPath);
-//		readWordWithTextAndPic();
+		readWordWithTextAndPic();
 
 	}
 
 	private static void readWordWithTextAndPic() {
 		Map<String, String> map = new HashMap<String, String>();
-		String importPath = "E:\\003采集系统\\0010四册版\\真菌\\真菌.docx";
-		String absolutePath = "E:\\003采集系统\\0010四册版\\真菌\\图";
+		String importPath = "E:\\003采集系统\\0010四册版\\昆虫\\李仁蜂后面的部分昆虫.docx";
+		String absolutePath = "E:\\003采集系统\\0010四册版\\昆虫\\图";
 		try {
 			FileInputStream inputStream = new FileInputStream(importPath);
 			XWPFDocument xDocument = new XWPFDocument(inputStream);
@@ -122,7 +122,7 @@ public class Tes {
 			}
 			System.out.println("开始");
 			System.out.println(text);
-			System.out.println("结束");
+			System.out.println("结束，你要把这个text拷贝到一个txt文件中，然后读取");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

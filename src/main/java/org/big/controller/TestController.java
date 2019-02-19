@@ -18,6 +18,7 @@ import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
 import org.big.entity.Geoobject;
+import org.big.entity.Rank;
 import org.big.entity.Taxon;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.LanguageEnum;
@@ -78,86 +79,72 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		updateTaxonBySciName(true);
+		updateRankByChname(true);
+		
+		
+		updateTaxonBySciName(false);
 		insertCompare(false);
 		py(false);
-//		compareArea(response);
-//		String url = "http://www.zoology.csdb.cn/WebServices/taxonNameParser";
-//		String data = "name=Anisodus tanguticus (Maxim.) Pascher var. viridulus";
-//		String response = HttpUtils.doGet(url,data);
-//		System.out.println("响应："+response);
-//		testAsync();
+
+	}
+	private void updateRankByChname(boolean execute) {
+		if(!execute) {
+			return;
+		}
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("bcb6d656ca094fa38d59d08457ef732a");
+		for (Taxon taxon : taxonList) {
+			String scientificname = taxon.getScientificname();
+			String targetChar = "：";
+			if(scientificname.contains(targetChar)) {
+				taxon.setScientificname(scientificname.replace(targetChar, ""));
+				taxonRepository.save(taxon);
+			}
+//			String chname = taxon.getChname().trim();
+//			if(CommUtils.isStrNotEmpty(chname)) {
+//				if(StringUtils.isEmpty(taxon.getRankid())) {
+//					taxon.setRankid("7");
+//				}
+//				if(chname.endsWith("科")) {
+//					taxon.setRankid("5");
+//				}else if(chname.contains("属")){
+//					taxon.setRankid("6");
+//				}else if(chname.endsWith("目")){
+//					taxon.setRankid("4");
+//				}else if(chname.endsWith("纲")){
+//					taxon.setRankid("3");
+//				}else if(chname.endsWith("门")){
+//					taxon.setRankid("2");
+//				}
+//				Rank r = new Rank();
+//				r.setId(taxon.getRankid());
+//				taxon.setRank(r);
+//				System.out.println(taxon.getRankid()+","+chname);
+//				taxonRepository.save(taxon);
+//			}
+			
+		}
 		
-//		NationalListOfProtectedAnimals(res);
-
-//		distributiondata.geojson新换旧
-//		String oldChar = "A9B74666A075495893FEF53C1D6268B9";
-//		String newChar = "BB77C40FCBB94212BF71C622CE1B74D7";
-//		int i = 0;
-//		logger.info("开始...：distributiondata.geojson(替换吉林)");
-//		List<Distributiondata> distributionlist = distributiondataRepository.findDistrByLikeGeojson(oldChar);
-//		int size = distributionlist.size();
-//		logger.info("查询完成："+size);
-//		for (Distributiondata distributiondata : distributionlist) {
-//			String geojson = distributiondata.getGeojson();
-//			JSONObject jsonObject = CommUtils.strToJSONObject(geojson);
-//			String value = String.valueOf(jsonObject.get("geoIds"));
-//			if(CommUtils.isStrNotEmpty(value) && value.contains(oldChar)) {
-//				i++;
-//				jsonObject.put("geoIds", value.replace(oldChar, newChar));
-//				distributiondata.setGeojson(String.valueOf(jsonObject));
-//				distributiondataRepository.save(distributiondata);
-//				if(i%10 == 0) {
-//					logger.info("i = "+i+" ,总计："+size+",保存进度"+i*100/size+"%");
-//				}
-//			}
-//		}
-//		logger.info("i = "+i+" ,总计："+size+",保存进度"+i*100/size+"%");
-//		logger.info("OK, i = "+i+", 查询总数："+distributionlist.size());
-//		
-
-//		taxon 根据Scientificname更新Epithet
-//		int i = 0;
-//		List<Taxon> taxonlist = null;
-//		try {
-//			taxonlist = taxonRepository.findByTaxaset("");
-//			
-//			for (Taxon taxon : taxonlist) {
-//				if(taxon.getRank().getId().equals(String.valueOf(RankEnum.species.getIndex()))) {
-//					String[] strs = taxon.getScientificname().split(" ");
-//					if(strs.length == 2) {
-//						i++;
-//						taxon.setEpithet(strs[1]);
-//						taxonRepository.save(taxon);
-//					}
-//				}
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return e.getMessage();
-//		}
-//		return "OK,更新数量："+i+",总数："+taxonlist.size();
-//		return "OK";
 	}
 	private void updateTaxonBySciName(boolean execute) {
 		logger.info("execute updateTaxonBySciName,");
 		if(!execute) {
 			return;
 		}
-		List<Taxon> taxonList = taxonRepository.findByTaxaset("fefe280f56b94beb9bea301bf52454a9");
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("bcb6d656ca094fa38d59d08457ef732a");
 		for (Taxon taxon : taxonList) {
 			String rankid = taxon.getRankid();
 			String scientificname = taxon.getScientificname();
+			String chname = taxon.getChname();
 			List<Description> descriptionListByTaxonId = descriptionRepository.findDescriptionListByTaxonId(taxon.getId());
-			for (Description description : descriptionListByTaxonId) {
-				String destitle = description.getDestitle();
-				String newTitle = destitle.substring(destitle.indexOf("的")+1);
-				System.out.println(newTitle);
-				description.setDestitle(newTitle);
-				descriptionRepository.save(description);
-			}
+//			for (Description description : descriptionListByTaxonId) {
+//				String destitle = description.getDestitle();
+//				String newTitle = destitle.substring(destitle.indexOf("的")+1);
+//				System.out.println(newTitle);
+//				description.setDestitle(newTitle);
+//				descriptionRepository.save(description);
+//			}
 			
-			if("7".equals(rankid) && search(scientificname, " ")>=2) {//7	7	种	Species
+			if("7".equals(rankid) && search(scientificname, " ")>=2 && !chname.contains("中国")) {//7	7	种	Species
 //				System.out.println("1、scientificname值是："+scientificname);
 				String nameBy2Blank = scientificname.substring(0, scientificname.indexOf(" ",scientificname.indexOf(" ")+1 ));//截取第二个空格之前的字符串
 				if(nameBy2Blank.contains("(")||nameBy2Blank.contains(")")||nameBy2Blank.contains("（")||nameBy2Blank.contains("）")) {
@@ -169,7 +156,7 @@ public class TestController {
 					taxon.setEpithet(nameBy2Blank.substring(nameBy2Blank.indexOf(" ")+1));//种加词
 					System.out.println(nameBy2Blank);
 					//更新数据库
-//					taxonRepository.save(taxon);
+					taxonRepository.save(taxon);
 				}
 			}
 		}

@@ -22,7 +22,7 @@ public class FourController {
 	private FourService fourService;
 	
 	/**
-	 * 
+	 * @Description 
 	 * @Description 保存基础信息、描述和多媒体
 	 * @param baseParamsForm
 	 * @param request

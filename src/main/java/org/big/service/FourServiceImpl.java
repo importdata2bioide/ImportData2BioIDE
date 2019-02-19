@@ -38,7 +38,11 @@ public class FourServiceImpl implements FourService {
 		String upperPath = StringUtils.substring(filePath, 0, filePath.lastIndexOf(".txt"));
 		String catalogPath = upperPath + "目录.txt";
 		System.out.println("目录路径：" + catalogPath);
-//		parseCatalogAndInsert(true,catalogPath,baseParamsForm);
+		if(false) {
+			parseCatalogAndInsert(true,catalogPath,baseParamsForm);
+			return;
+		}
+		
 		List<String> list = CommUtils.readTxt(filePath, "utf-8");
 		String allContent = MergeStrings(list);
 		System.out.println("读取数据行数：" + list.size());
@@ -59,7 +63,8 @@ public class FourServiceImpl implements FourService {
 			} else if (allContent.contains(StringUtils.substring(line, 0, line.indexOf("菌")))) {
 				line = StringUtils.substring(line, 0, line.indexOf("菌"));
 			} else {
-				System.out.println("找不到、" + line);
+				System.out.println("AZ001 ERROR 找不到、" + line);
+				continue;
 			}
 			endIndex = allContent.indexOf(line);
 //			System.out.println(line);
@@ -72,6 +77,16 @@ public class FourServiceImpl implements FourService {
 		}
 		// 可以处理的list
 		for (String line : reList) {
+			if(org.apache.commons.lang3.StringUtils.isEmpty(line)) {
+				continue;
+			}
+			int indexOfMu = line.indexOf("目");
+			int indexOfKe = line.indexOf("科");
+			if((indexOfKe>=1)&&(indexOfKe<=4) || (indexOfMu>=1)&&(indexOfMu<=2)) {
+				//粉蚧科Pseudococcidae \蚧科Coccidae 等跳过
+				continue;
+			}
+			
 			line = line.replace(":", "：");
 			line = line.replace("分布地区", "地理分布");
 			line = line.replace("寄主名称", "寄主");
