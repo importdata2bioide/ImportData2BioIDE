@@ -19,6 +19,7 @@
 		<div class="row btn_row" >
 		<hr>
 			<button type="button" class="btn btn-primary btn_reset" style="margin-left:3%">重置[RESET]</button>
+			<button type="button" class="btn btn-primary btn_SCB_RXZ" style="margin-left:3%">四册版，软体动物、线虫和杂草</button>
 			<button type="button" class="btn btn-primary btn_SCB_kunchong" style="margin-left:3%">四册版，昆虫</button>
 			<button type="button" class="btn btn-primary btn_SCB_zhenJun" style="margin-left:3%">四册版，真菌</button>
 			<button type="button" class="btn btn-primary btn_plant" style="margin-left:3%">植物百科【14】</button>
@@ -175,6 +176,18 @@ $(function() {
 	    $('input[name=filePath]').val('E:\\003采集系统\\0010四册版\\真菌\\真菌.txt');//文件路径
 	});	
 
+	$(".btn_SCB_RXZ").click(function() {
+	    $(".executeResult").text("");
+	    $('input[name=mActionUrl]').val('/guest/fourController_doSave');//访问路径
+	    $('input[name=mLoginUser]').val('3a29945023d04ef8a134f0f017d31kkk');//录入人id
+	    $('input[name=mExpert]').val('');//审核人id
+	    $('input[name=mSourcesid]').val('9964f4fb4d854e9e93b014a833878c55');//数据源id
+	    $('input[name=mInputtimeStr]').val('2019-02-20 01:01:01');//录入时间（字符串）
+	    $('input[name=mTaxasetId]').val('44cbb5dad5044b599c3125cf921274ec');//分类单元集id
+	    $('input[name=mTaxtreeId]').val('');//分类树id
+	    $("input[name=insert][value=false]").attr("checked",true); //是否录入数据库
+	    $('input[name=filePath]').val('E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\软体动物、线虫和杂草.txt');//文件路径
+	});	
 	$(".btn_SCB_kunchong").click(function() {
 	    $(".executeResult").text("");
 	    $('input[name=mActionUrl]').val('/guest/fourController_doSave');//访问路径

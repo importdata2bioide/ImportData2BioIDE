@@ -93,6 +93,7 @@ public class FourServiceImpl implements FourService {
 			int indexOfFLDW = line.indexOf("分类地位：");
 			int indexOfDLFB = line.indexOf("地理分布：");
 			int indexOfJZ = line.indexOf("寄主：");
+			int indexOfWH = line.indexOf("危害：");
 			int indexOfIMG = line.indexOf("<img");
 			if (indexOfFLDW == -1) {
 				System.out.println("找不到分类地位__原文：" + line);
@@ -111,6 +112,7 @@ public class FourServiceImpl implements FourService {
 			String fldw = StringUtils.substring(line, indexOfFLDW, indexOfDLFB);// 分类地位
 			String dlfb = StringUtils.substring(line, indexOfDLFB, indexOfJZ);// 地理分布
 			String jz = StringUtils.substring(line, indexOfJZ, indexOfIMG);// 寄主
+			String wh = StringUtils.substring(line, indexOfWH, indexOfIMG);// 寄主
 			String img = StringUtils.substring(line, indexOfIMG);// 图片
 //			System.out.println(name);
 //			System.out.println(fldw);
@@ -129,9 +131,14 @@ public class FourServiceImpl implements FourService {
 			}
 			//save desc 保存分类地位、地理分布、寄主到描述表
 			if(baseParamsForm.isInsert()) {
-				descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw, taxon, baseParamsForm);
-				descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb, taxon, baseParamsForm);
-				descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon, baseParamsForm);
+				if(StringUtils.isNotEmpty(fldw))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw, taxon, baseParamsForm);
+				if(StringUtils.isNotEmpty(dlfb))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb, taxon, baseParamsForm);
+				if(StringUtils.isNotEmpty(jz))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon, baseParamsForm);
+				if(StringUtils.isNotEmpty(wh))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("危害"), wh, taxon, baseParamsForm);
 			}
 			// 拆分图片
 			String[] images = img.split("src");

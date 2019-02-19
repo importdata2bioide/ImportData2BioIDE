@@ -79,10 +79,10 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		updateRankByChname(true);
+		updateRankByChname(false);
 		
 		
-		updateTaxonBySciName(false);
+		updateTaxonBySciName(true);
 		insertCompare(false);
 		py(false);
 
@@ -91,36 +91,36 @@ public class TestController {
 		if(!execute) {
 			return;
 		}
-		List<Taxon> taxonList = taxonRepository.findByTaxaset("bcb6d656ca094fa38d59d08457ef732a");
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("44cbb5dad5044b599c3125cf921274ec");
 		for (Taxon taxon : taxonList) {
 			String scientificname = taxon.getScientificname();
-			String targetChar = "：";
+			String targetChar = "()";
 			if(scientificname.contains(targetChar)) {
 				taxon.setScientificname(scientificname.replace(targetChar, ""));
 				taxonRepository.save(taxon);
 			}
-//			String chname = taxon.getChname().trim();
-//			if(CommUtils.isStrNotEmpty(chname)) {
-//				if(StringUtils.isEmpty(taxon.getRankid())) {
-//					taxon.setRankid("7");
-//				}
-//				if(chname.endsWith("科")) {
-//					taxon.setRankid("5");
-//				}else if(chname.contains("属")){
-//					taxon.setRankid("6");
-//				}else if(chname.endsWith("目")){
-//					taxon.setRankid("4");
-//				}else if(chname.endsWith("纲")){
-//					taxon.setRankid("3");
-//				}else if(chname.endsWith("门")){
-//					taxon.setRankid("2");
-//				}
-//				Rank r = new Rank();
-//				r.setId(taxon.getRankid());
-//				taxon.setRank(r);
-//				System.out.println(taxon.getRankid()+","+chname);
-//				taxonRepository.save(taxon);
-//			}
+			String chname = taxon.getChname().trim();
+			if(CommUtils.isStrNotEmpty(chname)) {
+				if(StringUtils.isEmpty(taxon.getRankid())) {
+					taxon.setRankid("7");
+				}
+				if(chname.endsWith("科")) {
+					taxon.setRankid("5");
+				}else if(chname.contains("属")){
+					taxon.setRankid("6");
+				}else if(chname.endsWith("目")){
+					taxon.setRankid("4");
+				}else if(chname.endsWith("纲")){
+					taxon.setRankid("3");
+				}else if(chname.endsWith("门")){
+					taxon.setRankid("2");
+				}
+				Rank r = new Rank();
+				r.setId(taxon.getRankid());
+				taxon.setRank(r);
+				System.out.println(taxon.getRankid()+","+chname);
+				taxonRepository.save(taxon);
+			}
 			
 		}
 		
@@ -130,19 +130,13 @@ public class TestController {
 		if(!execute) {
 			return;
 		}
-		List<Taxon> taxonList = taxonRepository.findByTaxaset("bcb6d656ca094fa38d59d08457ef732a");
+		List<Taxon> taxonList = taxonRepository.findByTaxaset("44cbb5dad5044b599c3125cf921274ec");
 		for (Taxon taxon : taxonList) {
 			String rankid = taxon.getRankid();
 			String scientificname = taxon.getScientificname();
 			String chname = taxon.getChname();
 			List<Description> descriptionListByTaxonId = descriptionRepository.findDescriptionListByTaxonId(taxon.getId());
-//			for (Description description : descriptionListByTaxonId) {
-//				String destitle = description.getDestitle();
-//				String newTitle = destitle.substring(destitle.indexOf("的")+1);
-//				System.out.println(newTitle);
-//				description.setDestitle(newTitle);
-//				descriptionRepository.save(description);
-//			}
+
 			
 			if("7".equals(rankid) && search(scientificname, " ")>=2 && !chname.contains("中国")) {//7	7	种	Species
 //				System.out.println("1、scientificname值是："+scientificname);

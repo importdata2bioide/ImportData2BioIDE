@@ -53,8 +53,8 @@ public class Tes {
 
 	private static void readWordWithTextAndPic() {
 		Map<String, String> map = new HashMap<String, String>();
-		String importPath = "E:\\003采集系统\\0010四册版\\昆虫\\李仁蜂后面的部分昆虫.docx";
-		String absolutePath = "E:\\003采集系统\\0010四册版\\昆虫\\图";
+		String importPath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\软体动物、线虫和杂草.docx";
+		String absolutePath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\图";
 		try {
 			FileInputStream inputStream = new FileInputStream(importPath);
 			XWPFDocument xDocument = new XWPFDocument(inputStream);
