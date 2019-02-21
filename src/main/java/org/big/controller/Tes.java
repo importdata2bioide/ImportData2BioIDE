@@ -36,9 +36,9 @@ public class Tes {
 
 	public static void main(String[] args) {
 		
-		String cutChinese = CommUtils.cutChinese("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.");
-		System.out.println(cutChinese);
-		System.out.println(CommUtils.cutByStrAfter("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.", cutChinese));
+//		String cutChinese = CommUtils.cutChinese("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.");
+//		System.out.println(cutChinese);
+//		System.out.println(CommUtils.cutByStrAfter("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.", cutChinese));
 		//		System.out.println(s.substring(s.indexOf(" ")+1));
 //		String imagePath ="E:\\003采集系统\\0010四册版\\真菌\\图\\image2.png";
 //		String[] split = imagePath.split("\\\\");
@@ -51,14 +51,20 @@ public class Tes {
 //		System.out.println(catalog);
 //		String importPath = "E:\\003采集系统\\0010四册版\\测试\\1.docx";
 //		readWord(importPath);
-//		readWordWithTextAndPic();
+		readWordWithTextAndPic();
 
 	}
 
 	private static void readWordWithTextAndPic() {
 		Map<String, String> map = new HashMap<String, String>();
-		String importPath = "E:\\003采集系统\\0010四册版\\原核生物及病毒类\\原核生物及病毒类.docx";
-		String absolutePath = "E:\\003采集系统\\0010四册版\\原核生物及病毒类\\图";
+//		String importPath = "E:\\003采集系统\\0010四册版\\昆虫\\昆虫2.docx";
+//		String absolutePath = "E:\\003采集系统\\0010四册版\\昆虫\\图";
+		
+//		String importPath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\软体动物、线虫和杂草.docx";
+//		String absolutePath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\图";
+		
+		String importPath = "E:\\003采集系统\\0010四册版\\真菌\\真菌.docx";
+		String absolutePath = "E:\\003采集系统\\0010四册版\\真菌\\测试用图";
 		try {
 			FileInputStream inputStream = new FileInputStream(importPath);
 			XWPFDocument xDocument = new XWPFDocument(inputStream);
@@ -79,13 +85,14 @@ public class Tes {
 				String newName = picCount + fileExt;
 
 				File saveFile = new File(absolutePath + File.separator + rawName);
-				@SuppressWarnings("resource")
-				FileOutputStream fos = new FileOutputStream(saveFile);
-				fos.write(picture.getData());
-				fos.flush();
-				fos.close();
+//				@SuppressWarnings("resource")
+//				FileOutputStream fos = new FileOutputStream(saveFile);
+//				fos.write(picture.getData());
+//				fos.flush();
+//				fos.close();
 //				System.out.println("id = "+id+",rawName = "+rawName);
 //				System.out.println(saveFile.getAbsolutePath());
+				System.out.println(saveFile.getAbsolutePath());
 				map.put(id, saveFile.getAbsolutePath());
 			}
 //			System.out.println("图片总数：" + picCount);
@@ -131,12 +138,13 @@ public class Tes {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		System.out.println("---------找不到的-----------");
-//		Iterator<Entry<String, String>> entries = map.entrySet().iterator();
-//		while (entries.hasNext()) {
-//			Entry<String, String> entry = entries.next();
-//			System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-//		}
+		System.out.println("---------找不到的图片-----------");
+		Iterator<Entry<String, String>> entries = map.entrySet().iterator();
+		while (entries.hasNext()) {
+			Entry<String, String> entry = entries.next();
+			System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+		}
+		System.out.println("---------end-----------");
 
 	}
 

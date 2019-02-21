@@ -5,7 +5,13 @@ import java.util.Map;
 import org.apache.commons.collections4.map.HashedMap;
 
 public class SciNameUtil {
-	
+	/**
+	 * 
+	 * @Description 亚种的学名和命名解析
+	 * @param str 学名和命名信息的组合串（不能包含其他内容）
+	 * @return 返回学名和命名信息
+	 * @author ZXY
+	 */
 	public static Map<String,String> getSubsp(String str){
 		Map<String,String> map = null;
 		try {
@@ -22,7 +28,13 @@ public class SciNameUtil {
 		}
 		return map;
 	}
-	
+	/**
+	 * 
+	 * @Description  
+	 * @param str pv 学名和命名信息的组合串（不能包含其他内容）
+	 * @return
+	 * @author ZXY
+	 */
 	public static Map<String,String> getPV(String str){
 		Map<String,String> map = null;
 		try {
@@ -42,7 +54,7 @@ public class SciNameUtil {
 	
 	/**
 	 * 
-	 * @Description 最简单的形式，如 Xanthomonas populi (ex Ride) Ride et Ride
+	 * @Description 解析rank = species 学名最简单的形式（学名+命名信息），如 Xanthomonas populi (ex Ride) Ride et Ride
 	 * @param str
 	 * @return
 	 * @author ZXY
@@ -63,5 +75,8 @@ public class SciNameUtil {
 		}
 		return map;
 	}
+	
+	
+	
 
 }
