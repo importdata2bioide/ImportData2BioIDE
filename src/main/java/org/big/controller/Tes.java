@@ -33,6 +33,8 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
 public class Tes {
+	
+	
 
 	public static void main(String[] args) {
 		
@@ -51,7 +53,7 @@ public class Tes {
 //		System.out.println(catalog);
 //		String importPath = "E:\\003采集系统\\0010四册版\\测试\\1.docx";
 //		readWord(importPath);
-		readWordWithTextAndPic();
+//		readWordWithTextAndPic();
 
 	}
 
