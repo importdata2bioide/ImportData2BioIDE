@@ -14,11 +14,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
+import org.big.common.EntityInit;
 import org.big.common.FilesUtils;
 import org.big.common.SciNameUtil;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
+import org.big.entity.Descriptiontype;
 import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxon;
@@ -82,32 +84,62 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		threadLocalTest();
-		updateRankByChname(false);
-		updateTaxonBySciName(false);
-		insertCompare(false);
-		py(false);
+		up();
 
 	}
 
-	private void threadLocalTest() {
-		for(int f = 0;f<20;f++) {
-			new Thread() {
-				public void run() {
-					local.set(count);
-					System.out.println("读取："+Thread.currentThread().getName()+":"+count);
-				
-					count = local.get()+100;
-					System.out.println("第一次加100"+Thread.currentThread().getName()+":"+count);
-					count = local.get()+100;
-					System.out.println("第二次加100"+Thread.currentThread().getName()+":"+count);
-				};
-			}.start();;
-			
+
+
+
+
+	private void up() {
+//		
+//		
+//		
+		List<String> sourcesidlist = new ArrayList<>();
+		sourcesidlist.add("1123f4fb4d854e9e93b014a833878c55");
+		sourcesidlist.add("5246f4fb4d854e9e93b014a833878c55");
+		sourcesidlist.add("9964f4fb4d854e9e93b014a833878c55");
+		List<Description> list = descriptionRepository.findByDescontentLikeAndSourcesid("危害：", sourcesidlist);
+		for (Description description : list) {
+//			String descontent = description.getDescontent();
+//			String destitle = description.getDestitle();
+//			if(descontent.contains("地理分布")) {
+//				String fenbu = CommUtils.cutByStrBefore(descontent, "危害：");
+//				String weihai = CommUtils.cutByStrAfterInclude(descontent,  "危害：");
+//				System.out.println("-----------"+destitle);
+//				System.out.println(fenbu);
+//				System.out.println(weihai);
+//				description.setDescontent(fenbu);
+//				//危害
+//				Description d = new Description();
+//				d.setId(UUIDUtils.getUUID32());
+//				d.setDestitle("危害");
+//				d.setDescontent(weihai);
+//				d.setDestypeid("22b5f3a816cd471793f82a5044be1bfe");
+//				Descriptiontype descriptiontype = new Descriptiontype();
+//				descriptiontype.setId("22b5f3a816cd471793f82a5044be1bfe");
+//				d.setDescriptiontype(descriptiontype );
+//				d.setLicenseid("4");
+//				d.setLanguage("1");
+//				d.setSourcesid(description.getSourcesid());
+//				d.setStatus(1);
+//				d.setInputer(description.getInputer());
+//				d.setInputtime(new Date());
+//				d.setSynchstatus(0);
+//				d.setSynchdate(new Date());
+//				d.setTaxon(description.getTaxon());
+//				d.setExpert(description.getExpert());
+//				descriptionRepository.save(d);
+//				descriptionRepository.save(description);
+//				
+//			}
 		}
-		
-
 	}
+
+
+
+
 
 	private void updateRankByChname(boolean execute) {
 		if (!execute) {

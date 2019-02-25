@@ -354,6 +354,21 @@ public class CommUtils {
 		str = str.replaceAll(reg, "");
 		return str;
 	}
+	
+	public static int getLastIndexOfChinese(String line){
+		int i = -1;
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
+				i = index;
+				System.out.println("第一个中文的索引位置:" + index + ",值是：" + w);
+			}else {
+				break;
+			}
+		}
+		return i;
+	}
 
 	/**
 	 * 判断字符串中是否包含中文

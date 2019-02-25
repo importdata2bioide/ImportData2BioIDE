@@ -119,6 +119,10 @@ public interface DescriptionRepository extends BaseRepository<Description, Strin
 	@Query(value = "Select d from Description d Where d.sourcesid = ?1")
 	List<Description> searchBythisTime(String sourcesid);
 	
+	
+	@Query(value = "Select d from Description d Where d.descontent like %?1% and d.sourcesid in (?2)")
+	List<Description> findByDescontentLikeAndSourcesid(String descontent,List<String> sourcesid);
+	
 //	@Query(value = "Select d from Description d Where d.sourcesid = ?1  and zxyoldrelationid is not null")
 //	List<Description> searchBythisSources(String sourcesid);
 	

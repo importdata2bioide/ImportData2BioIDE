@@ -1,9 +1,9 @@
 package org.big.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 
 import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
@@ -32,17 +32,22 @@ public class FourServiceImpl implements FourService {
 
 	@Override
 	public void handleTxt(BaseParamsForm baseParamsForm) throws Exception {
-		
+		// insert
+		insertDesc(baseParamsForm);
+		if (true) {
+			return;
+		}
+
 		// 1、读取txt文件
 		String filePath = baseParamsForm.getFilePath();
 		String upperPath = StringUtils.substring(filePath, 0, filePath.lastIndexOf(".txt"));
 		String catalogPath = upperPath + "目录.txt";
 		System.out.println("目录路径：" + catalogPath);
-		if(false) {
-			parseCatalogAndInsert(true,catalogPath,baseParamsForm);
+		if (false) {
+			parseCatalogAndInsert(true, catalogPath, baseParamsForm);
 			return;
 		}
-		
+
 		List<String> list = CommUtils.readTxt(filePath, "utf-8");
 		String allContent = MergeStrings(list);
 		System.out.println("读取数据行数：" + list.size());
@@ -60,7 +65,7 @@ public class FourServiceImpl implements FourService {
 			line = line.substring(0, line.indexOf("	")).trim();// 去除页码
 			if (allContent.contains(line)) {
 
-			}else {
+			} else {
 				System.out.println("AZ001 ERROR 找不到、" + line);
 				continue;
 			}
@@ -75,16 +80,16 @@ public class FourServiceImpl implements FourService {
 		}
 		// 可以处理的list
 		for (String line : reList) {
-			if(org.apache.commons.lang3.StringUtils.isEmpty(line)) {
+			if (org.apache.commons.lang3.StringUtils.isEmpty(line)) {
 				continue;
 			}
 			int indexOfMu = line.indexOf("目");
 			int indexOfKe = line.indexOf("科");
-			if((indexOfKe>=1)&&(indexOfKe<=4) || (indexOfMu>=1)&&(indexOfMu<=2)) {
-				//粉蚧科Pseudococcidae \蚧科Coccidae 等跳过
+			if ((indexOfKe >= 1) && (indexOfKe <= 4) || (indexOfMu >= 1) && (indexOfMu <= 2)) {
+				// 粉蚧科Pseudococcidae \蚧科Coccidae 等跳过
 				continue;
 			}
-			
+
 			line = line.replace(":", "：");
 			line = line.replace("分布地区", "地理分布");
 			line = line.replace("寄主名称", "寄主");
@@ -127,42 +132,104 @@ public class FourServiceImpl implements FourService {
 					continue;
 				}
 			}
-			//save desc 保存分类地位、地理分布、寄主到描述表
-			if(baseParamsForm.isInsert()) {
-				if(StringUtils.isNotEmpty(fldw))
-					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw, taxon, baseParamsForm);
-				if(StringUtils.isNotEmpty(dlfb))
-					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb, taxon, baseParamsForm);
-				if(StringUtils.isNotEmpty(jz))
-					descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon, baseParamsForm);
-				if(StringUtils.isNotEmpty(wh))
-					descriptionService.insertDescription(descriptiontypeService.insertOrFind("危害"), wh, taxon, baseParamsForm);
+			// save desc 保存分类地位、地理分布、寄主到描述表
+			if (baseParamsForm.isInsert()) {
+				if (StringUtils.isNotEmpty(fldw))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw, taxon,
+							baseParamsForm);
+				if (StringUtils.isNotEmpty(dlfb))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb, taxon,
+							baseParamsForm);
+				if (StringUtils.isNotEmpty(jz))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon,
+							baseParamsForm);
+				if (StringUtils.isNotEmpty(wh))
+					descriptionService.insertDescription(descriptiontypeService.insertOrFind("危害"), wh, taxon,
+							baseParamsForm);
 			}
 			// 拆分图片
 			String[] images = img.split("src");
-			
+
 			for (String image : images) {
-				
+
 				if (!image.contains("\'") || image.contains("未知")) {
 					continue;
 				}
-				int firstIndex = image.indexOf("'")+1;
+				int firstIndex = image.indexOf("'") + 1;
 				int lastIndexOf = image.lastIndexOf("'");
 				image = image.substring(firstIndex, lastIndexOf);
 				image = image.replace("：", ":");
-				File file=new File(image); 
-				if(!file.exists()) {
-					System.out.println("error 找不到这张图片："+image);
+				File file = new File(image);
+				if (!file.exists()) {
+					System.out.println("error 找不到这张图片：" + image);
 					continue;
 				}
 
-				//save image
-				if(baseParamsForm.isInsert()) {
+				// save image
+				if (baseParamsForm.isInsert()) {
 					multimediaService.saveMultimedia(taxon, baseParamsForm, image);
 				}
-				
+
 			}
 
+		}
+
+	}
+
+	private void insertDesc(BaseParamsForm baseParamsForm) {
+		try {
+			List<String> list = CommUtils.readTxt("E:\\003采集系统\\0010四册版\\原核生物及病毒类\\描述补充.txt", "utf-8");
+			String fldw = null;
+			String dlfb = null;
+			String jz = null;
+			Taxon taxon = null;
+			String taxasetId = baseParamsForm.getmTaxasetId();
+			for (String line : list) {
+				if ("QQ".equals(line)) {
+					line = line.trim();
+					if (baseParamsForm.isInsert()) {
+						if (StringUtils.isNotEmpty(fldw))
+							descriptionService.insertDescription(descriptiontypeService.insertOrFind("分类学"), fldw,
+									taxon, baseParamsForm);
+						if (StringUtils.isNotEmpty(dlfb))
+							descriptionService.insertDescription(descriptiontypeService.insertOrFind("分布信息"), dlfb,
+									taxon, baseParamsForm);
+						if (StringUtils.isNotEmpty(jz))
+							descriptionService.insertDescription(descriptiontypeService.insertOrFind("寄主"), jz, taxon,
+									baseParamsForm);
+					}
+					fldw = null;
+					dlfb = null;
+					jz = null;
+					taxon = null;
+				} else if (line.startsWith("分类地位")) {
+					fldw = line;
+				} else if (line.startsWith("地理分布")) {
+					dlfb = line;
+				} else if (line.startsWith("寄主")) {
+					jz = line;
+				} else {
+					String chinese = CommUtils.cutChinese(line);
+					List<Taxon> taxonList = taxonRepository.findByRemarkLikeAndTaxaset(chinese, taxasetId);
+					if(taxonList.size() == 1) {
+						taxon = taxonList.get(0);
+					}else {
+						if(line.equals("桃X病植原体	Peach X-disease phytoplasma")) {
+							taxon = taxonRepository.findOneById("4deadf6cbd2b48939f384a4a600fc28b");
+						}else if(line.equals("香蕉细菌性枯萎病菌（2号小种）Ralstonia solanacearum ( Smith ) Yabuuchi et al.（race 2）")) {
+							taxon = taxonRepository.findOneById("e10ba2500a3a474486f1107215fdb440");
+						}else {
+							System.out.println("找不到:"+line);
+						}
+					}
+				}
+
+			}
+
+			// save desc 保存分类地位、地理分布、寄主到描述表
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
