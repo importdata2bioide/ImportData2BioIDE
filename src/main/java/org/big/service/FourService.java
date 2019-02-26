@@ -12,7 +12,7 @@ public interface FourService {
 	 * @param baseParamsForm
 	 * @author ZXY
 	 */
-	void turnDescToDistribution(String teamId);
+	void turnDescToDistribution(String teamId,boolean save);
 	
 
 }

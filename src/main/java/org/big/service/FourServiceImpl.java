@@ -2,7 +2,6 @@ package org.big.service;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +9,14 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.dictionary.DictionaryFactory;
 import org.apdplat.word.segmentation.PartOfSpeech;
 import org.apdplat.word.segmentation.Word;
 import org.apdplat.word.tagging.PartOfSpeechTagging;
 import org.big.common.CommUtils;
 import org.big.common.EntityInit;
 import org.big.entity.Description;
+import org.big.entity.Distributiondata;
 import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxon;
@@ -28,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
+
 @Service
 public class FourServiceImpl implements FourService {
 
@@ -37,7 +40,8 @@ public class FourServiceImpl implements FourService {
 	private BatchInsertService batchInsertService;
 	@Autowired
 	private TaxonRepository taxonRepository;
-
+	@Autowired
+	private DistributiondataService distributiondataService;
 	@Autowired
 	private DescriptionService descriptionService;
 	@Autowired
@@ -315,17 +319,18 @@ public class FourServiceImpl implements FourService {
 	String[] uselessArray = { "的", "北方", "等地", "等", "和", "以及", "记载", "也", "欧洲", "均有", "在", "主要" };
 
 	@Override
-	public void turnDescToDistribution(String teamId) {
+	public void turnDescToDistribution(String teamId, boolean save) {
+		
 		long startTime = System.currentTimeMillis();
 		// 查询地理分布描述信息
 		String descTypeId = "201";// 描述类型201代表：分布信息
 		List<Description> list = descriptionService.findByTeamAndDescType(teamId, descTypeId);
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();// 查询不到的分布地
 		logger.info("在描述表查询分布描述（数量）：" + list.size());
 		for (Description description : list) {
-			StringBuffer geojsonValue = new StringBuffer();
+			Map<String, String> geojsonValue = new HashMap<>();// 使用map,过滤重复数据
 			String descontent = description.getDescontent();
-			List<Word> words = WordSegmenter.seg(descontent);
+			List<Word> words = WordSegmenter.segWithStopWords(descontent);//分词，不移除停用词
 			PartOfSpeechTagging.process(words);// 词性标注
 			for (Word word : words) {
 				PartOfSpeech speech = word.getPartOfSpeech();
@@ -345,24 +350,38 @@ public class FourServiceImpl implements FourService {
 					}
 					// 处理查询结果，为空则放入map,不为空则append
 					if (obj != null) {
-						geojsonValue.append(obj.getId() + "&");
+						geojsonValue.put(obj.getId(), obj.getId());
 					} else {
 						map.put(text, des + ",原文：" + descontent);
 					}
 				}
+			} // end for
+				// 如果全部能查询到，则save ;一个描述对应保存一个分布
+			String keyString = CommUtils.getKeyString(geojsonValue);
+			if (StringUtils.isEmpty(keyString)) {
+				System.out.println("数据库没有查询到分布地,原文：" + descontent);
 			}
-			// 如果全部能查询到，则保存
-			if (map.size() == 0) {
-				// 一个描述对应保存一个分布
-				
+			if (save) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("geoIds", keyString);
+				Distributiondata record = new Distributiondata();
+				record.setTaxonid(description.getTaxon().getId());
+				record.setTaxon(description.getTaxon());
+				record.setSourcesid(description.getSourcesid());
+				record.setInputer(description.getInputer());
+				record.setGeojson(String.valueOf(jsonObject));
+				record.setDescid(description.getId());
+				distributiondataService.saveOne(record);
 			}
-		}
+		} // end for
 
 		// 遍历map
 		int k = 0;
 		for (Entry<String, String> entry : map.entrySet()) {
 			k++;
-			logger.info(k + "  , Key = " + entry.getKey() + "    Value = " + entry.getValue());
+			if(!entry.getValue().contains("未知"))
+				logger.info(entry.getKey());
+//			logger.info(" Key = " + entry.getKey() + "    Value = " + entry.getValue());
 		}
 
 		logger.info("执行时间：" + (System.currentTimeMillis() - startTime) / 60000 + "min, "
@@ -384,7 +403,7 @@ public class FourServiceImpl implements FourService {
 		if (list.size() > 0) {
 			object = list.get(0);
 		}
-		if(object == null) {
+		if (object == null) {
 			List<Geoobject> list2 = geoobjectRepository.findByLikeRemark(text);
 			if (list2.size() > 0) {
 				object = list2.get(0);
@@ -427,18 +446,24 @@ public class FourServiceImpl implements FourService {
 			queryText = "北京市";
 		} else if (text.contains("重庆")) {
 			queryText = "重庆市";
-		}else if (text.contains("上海")) {
+		} else if (text.contains("上海")) {
 			queryText = "上海市";
-		}else if (text.contains("天津")) {
+		} else if (text.contains("天津")) {
 			queryText = "天津市";
-		} 
+		}
+		//仅此次使用
+		else if (text.contains("刚果")) {
+			queryText = "刚果（金）";
+		}else if (text.contains("俄国")) {
+			queryText = "俄罗斯";
+		}else if (text.contains("捷克")) {
+			queryText = "捷克";
+		}
 
 		if (StringUtils.isNotEmpty(queryText)) {
 			return geoobjectRepository.findOneByCngeoname(queryText);
 		}
 		return null;
 	}
-
-	
 
 }

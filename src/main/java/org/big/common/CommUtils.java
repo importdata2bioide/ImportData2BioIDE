@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +60,19 @@ public class CommUtils {
 		Pattern pat = Pattern.compile(REGEX_CHINESE);
 		Matcher mat = pat.matcher(line);
 		return mat.replaceAll("");
+	}
+	
+	
+	public static String getKeyString(Map<String, String> map){
+		StringBuffer str = new StringBuffer();
+		for (Entry<String, String> entry : map.entrySet()) {
+			str.append(entry.getKey()+"&");
+		}
+		String result = str.toString();
+		if(result.endsWith("&")) {
+			result = result.substring(0,result.length()-1);
+		}
+		return result;
 	}
 
 	/**

@@ -26,6 +26,8 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.Word;
 import org.big.common.CommUtils;
 import org.big.common.ConstFile;
 import org.dom4j.Document;
@@ -37,26 +39,8 @@ public class Tes {
 	
 
 	public static void main(String[] args) {
-	String src = "南京市玄武区北京东路徐州市鼓楼区戏马台";
-	src = src.replaceAll("(?:江苏省|玄武区|鼓楼区)", "");
-	System.out.println(src);
-//		String cutChinese = CommUtils.cutChinese("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.");
-//		System.out.println(cutChinese);
-//		System.out.println(CommUtils.cutByStrAfter("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.", cutChinese));
-		//		System.out.println(s.substring(s.indexOf(" ")+1));
-//		String imagePath ="E:\\003采集系统\\0010四册版\\真菌\\图\\image2.png";
-//		String[] split = imagePath.split("\\\\");
-//		String imageNameAndSuffix = split[split.length-1];
-//		System.out.println(imageNameAndSuffix);
-//		String onlyName = imageNameAndSuffix.split("\\.")[0];
-//		System.out.println(onlyName);
-//		String catalog = "马铃薯银屑病菌Helminthosporium solani Durieu et Mont.	11";
-//		catalog = catalog.substring(0, catalog.indexOf("	")).trim();
-//		System.out.println(catalog);
-//		String importPath = "E:\\003采集系统\\0010四册版\\测试\\1.docx";
-//		readWord(importPath);
-//		readWordWithTextAndPic();
-
+		System.out.println(WordSegmenter.seg("日本。"));
+		
 	}
 
 	private static void readWordWithTextAndPic() {

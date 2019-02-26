@@ -35,7 +35,7 @@ public class FourController {
 		try {
 //			fourService.handleTxt(baseParamsForm);
 			String teamId = "99UU7c458a594b0b96641ef341a80adf";// 四册版
-			fourService.turnDescToDistribution(teamId);
+			fourService.turnDescToDistribution(teamId,false);
 			return "ok";
 		} catch (Exception e) {
 			e.printStackTrace();

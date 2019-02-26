@@ -2,6 +2,8 @@ package org.big.service;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.big.entity.Distributiondata;
+
 
 public interface DistributiondataService {
 	
@@ -12,6 +14,8 @@ public interface DistributiondataService {
 	 * @return
 	 */
 	boolean deleteOne(HttpServletRequest request);
+	
+	Distributiondata saveOne(Distributiondata record);
 	
 	
 }
