@@ -145,4 +145,13 @@ public interface DescriptionRepository extends BaseRepository<Description, Strin
 	@Modifying
 	@Query(value = "delete from description where taxon_id  in (select id from taxon where taxaset_id = ?1)", nativeQuery = true)
 	void delDescriptionByTaxaSetId(String tsId);
+	
+	
+	
+	@Query(value = "select * from description where taxon_id in (select id from taxon where taxaset_id in (select id from taxaset where dataset_id in (select id from dataset where team_id = ?1))) and destypeid = ?2", nativeQuery = true)
+	List<Description>  findByTeamAndDescType(String teamId,String destypeid);
+	
+	
+	
+	
 }

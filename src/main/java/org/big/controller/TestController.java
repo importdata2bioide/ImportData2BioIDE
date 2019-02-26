@@ -7,23 +7,19 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
-import org.big.common.EntityInit;
 import org.big.common.FilesUtils;
-import org.big.common.SciNameUtil;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
-import org.big.entity.Descriptiontype;
 import org.big.entity.Geoobject;
-import org.big.entity.Rank;
 import org.big.entity.Taxon;
+import org.big.entityVO.ExcelWithColNumHVO;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
@@ -38,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.alibaba.fastjson.JSONObject;
 
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
@@ -84,8 +82,58 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		up();
+		guojia();
 
+	}
+
+
+
+
+
+	private void guojia() {
+		List<ExcelWithColNumHVO> list = readExcel("E:\\003采集系统\\国家代码与名称.xlsx");
+		for (ExcelWithColNumHVO row : list) {
+			JSONObject jsonObject = new JSONObject();
+			String colA = row.getColA();
+			String colB = row.getColB();
+			String colC = row.getColC();
+			String colD = row.getColD();
+			String colE = row.getColE();
+			String colF = row.getColF();//中国惯用名
+			String colG = row.getColG();
+			String colH = row.getColH();
+			jsonObject.put("二位字母", colA);
+			jsonObject.put("三位字母", colB);
+			jsonObject.put("数字", colC);
+			jsonObject.put("ISO 3166-2相应代码", colD);
+			jsonObject.put("国家或地区（ISO英文用名）", colE);
+			jsonObject.put("台湾惯用名", colG);
+			jsonObject.put("香港惯用名", colH);
+			Geoobject obj = new Geoobject();
+			obj.setId(UUIDUtils.getUUID32());
+			obj.setCngeoname(colF);
+			obj.setGeogroupId("A1A25AA0D98C4441997D891A229F35E8");//世界国家与地区
+			obj.setRemark(String.valueOf(jsonObject));
+			obj.setStatus(1);
+			obj.setInputtime(new Date());
+			obj.setSynchstatus(0);
+			obj.setSynchdate(new Date());
+			geoobjectRepository.save(obj);
+		}
+	}
+	
+	private List<ExcelWithColNumHVO> readExcel(String path) {
+		ImportParams params = new ImportParams();
+		params.setTitleRows(0);
+		params.setHeadRows(1);
+		long start = new Date().getTime();
+		List<ExcelWithColNumHVO> list = ExcelImportUtil.importExcel(new File(path),
+				ExcelWithColNumHVO.class, params);
+		System.out.println("读取excel所消耗时间：" + (new Date().getTime() - start));
+		System.out.println("数量：" + list.size());
+		System.out.println(ReflectionToStringBuilder.toString(list.get(0)));
+		System.out.println("读取excel完成");
+		return list;
 	}
 
 

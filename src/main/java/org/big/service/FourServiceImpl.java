@@ -1,23 +1,38 @@
 package org.big.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
+import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.PartOfSpeech;
+import org.apdplat.word.segmentation.Word;
+import org.apdplat.word.tagging.PartOfSpeechTagging;
 import org.big.common.CommUtils;
 import org.big.common.EntityInit;
+import org.big.entity.Description;
+import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxon;
 import org.big.entityVO.BaseParamsForm;
 import org.big.entityVO.RankEnum;
+import org.big.repository.GeoobjectRepository;
 import org.big.repository.TaxonRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FourServiceImpl implements FourService {
+
+	private final static Logger logger = LoggerFactory.getLogger(FourServiceImpl.class);
+
 	@Autowired
 	private BatchInsertService batchInsertService;
 	@Autowired
@@ -29,6 +44,8 @@ public class FourServiceImpl implements FourService {
 	private DescriptiontypeService descriptiontypeService;
 	@Autowired
 	private MultimediaService multimediaService;
+	@Autowired
+	private GeoobjectRepository geoobjectRepository;
 
 	@Override
 	public void handleTxt(BaseParamsForm baseParamsForm) throws Exception {
@@ -211,15 +228,16 @@ public class FourServiceImpl implements FourService {
 				} else {
 					String chinese = CommUtils.cutChinese(line);
 					List<Taxon> taxonList = taxonRepository.findByRemarkLikeAndTaxaset(chinese, taxasetId);
-					if(taxonList.size() == 1) {
+					if (taxonList.size() == 1) {
 						taxon = taxonList.get(0);
-					}else {
-						if(line.equals("桃X病植原体	Peach X-disease phytoplasma")) {
+					} else {
+						if (line.equals("桃X病植原体	Peach X-disease phytoplasma")) {
 							taxon = taxonRepository.findOneById("4deadf6cbd2b48939f384a4a600fc28b");
-						}else if(line.equals("香蕉细菌性枯萎病菌（2号小种）Ralstonia solanacearum ( Smith ) Yabuuchi et al.（race 2）")) {
+						} else if (line
+								.equals("香蕉细菌性枯萎病菌（2号小种）Ralstonia solanacearum ( Smith ) Yabuuchi et al.（race 2）")) {
 							taxon = taxonRepository.findOneById("e10ba2500a3a474486f1107215fdb440");
-						}else {
-							System.out.println("找不到:"+line);
+						} else {
+							System.out.println("找不到:" + line);
 						}
 					}
 				}
@@ -292,6 +310,135 @@ public class FourServiceImpl implements FourService {
 		} else {
 			return RankEnum.species;
 		}
+	}
+
+	String[] uselessArray = { "的", "北方", "等地", "等", "和", "以及", "记载", "也", "欧洲", "均有", "在", "主要" };
+
+	@Override
+	public void turnDescToDistribution(String teamId) {
+		long startTime = System.currentTimeMillis();
+		// 查询地理分布描述信息
+		String descTypeId = "201";// 描述类型201代表：分布信息
+		List<Description> list = descriptionService.findByTeamAndDescType(teamId, descTypeId);
+		Map<String, String> map = new HashMap<>();
+		logger.info("在描述表查询分布描述（数量）：" + list.size());
+		for (Description description : list) {
+			StringBuffer geojsonValue = new StringBuffer();
+			String descontent = description.getDescontent();
+			List<Word> words = WordSegmenter.seg(descontent);
+			PartOfSpeechTagging.process(words);// 词性标注
+			for (Word word : words) {
+				PartOfSpeech speech = word.getPartOfSpeech();
+				String des = speech.getDes();// 词性
+				String text = word.getText();
+				if (des.equals("地名") || des.equals("未知")) {
+					// 查询
+					Geoobject obj = geoobjectRepository.findOneByCngeoname(text);// 精确查询
+					if (obj == null) {
+						obj = getSpecialProvinces(text);// 特殊的
+						if (obj == null) {
+							obj = findWithAddSheng(text);// 添加省字查询
+						}
+						if (obj == null) {
+							obj = fuzzyQuery(text);// 模糊查询
+						}
+					}
+					// 处理查询结果，为空则放入map,不为空则append
+					if (obj != null) {
+						geojsonValue.append(obj.getId() + "&");
+					} else {
+						map.put(text, des + ",原文：" + descontent);
+					}
+				}
+			}
+			// 如果全部能查询到，则保存
+			if (map.size() == 0) {
+				// 一个描述对应保存一个分布
+			}
+		}
+
+		// 遍历map
+		int k = 0;
+		for (Entry<String, String> entry : map.entrySet()) {
+			k++;
+			logger.info(k + "  , Key = " + entry.getKey() + "    Value = " + entry.getValue());
+		}
+
+		logger.info("执行时间：" + (System.currentTimeMillis() - startTime) / 60000 + "min, "
+				+ (System.currentTimeMillis() - startTime) / 1000 + "s ( " + (System.currentTimeMillis() - startTime)
+				+ "ms)");
+
+	}
+
+	/**
+	 * 
+	 * @Description 模糊查询
+	 * @param text
+	 * @return
+	 * @author ZXY
+	 */
+	private Geoobject fuzzyQuery(String text) {
+		Geoobject object = null;
+		List<Geoobject> list = geoobjectRepository.findByLikeCngeoname(text);
+		if (list.size() > 0) {
+			object = list.get(0);
+		}
+		if(object == null) {
+			List<Geoobject> list2 = geoobjectRepository.findByLikeRemark(text);
+			if (list2.size() > 0) {
+				object = list2.get(0);
+			}
+		}
+		return object;
+	}
+
+	private Geoobject findWithAddSheng(String text) {
+		text = text + "省";
+		return geoobjectRepository.findOneByCngeoname(text);
+	}
+
+	/**
+	 * 
+	 * @Description
+	 * @param text
+	 * @return
+	 * @author ZXY
+	 */
+	private Geoobject getSpecialProvinces(String text) {
+		String queryText = null;
+		if (text.contains("宁夏")) {
+			queryText = "宁夏回族自治区";
+		} else if (text.contains("天津")) {
+			queryText = "天津市";
+		} else if (text.contains("香港")) {
+			queryText = "香港特别行政区";
+		} else if (text.contains("西藏")) {
+			queryText = "西藏自治区";
+		} else if (text.contains("蒙古")) {
+			queryText = "内蒙古自治区";
+		} else if (text.contains("新疆")) {
+			queryText = "新疆维吾尔自治区";
+		} else if (text.contains("广西")) {
+			queryText = "广西壮族自治区";
+		} else if (text.contains("北京")) {
+			queryText = "北京市";
+		} else if (text.contains("重庆")) {
+			queryText = "重庆市";
+		} else if (text.contains("澳门")) {
+			queryText = "澳门特别行政区";
+		} else if (text.contains("上海")) {
+			queryText = "上海市";
+		}
+
+		if (StringUtils.isNotEmpty(queryText)) {
+			return geoobjectRepository.findOneByCngeoname(queryText);
+		}
+		return null;
+	}
+
+	private void parseByWordTool(String descontent) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

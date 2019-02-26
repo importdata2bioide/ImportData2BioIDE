@@ -33,7 +33,9 @@ public class FourController {
 	@RequestMapping(value = "/fourController_doSave",method = RequestMethod.POST)
 	public String doSave(BaseParamsForm baseParamsForm,HttpServletRequest request) {
 		try {
-			fourService.handleTxt(baseParamsForm);
+//			fourService.handleTxt(baseParamsForm);
+			String teamId = "99UU7c458a594b0b96641ef341a80adf";// 四册版
+			fourService.turnDescToDistribution(teamId);
 			return "ok";
 		} catch (Exception e) {
 			e.printStackTrace();

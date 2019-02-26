@@ -37,7 +37,9 @@ public class Tes {
 	
 
 	public static void main(String[] args) {
-		
+	String src = "南京市玄武区北京东路徐州市鼓楼区戏马台";
+	src = src.replaceAll("(?:江苏省|玄武区|鼓楼区)", "");
+	System.out.println(src);
 //		String cutChinese = CommUtils.cutChinese("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.");
 //		System.out.println(cutChinese);
 //		System.out.println(CommUtils.cutByStrAfter("水稻细菌性条斑病菌Xanthomonas oryzae pv. oryzicola (Fang et al.) Swings et al.", cutChinese));

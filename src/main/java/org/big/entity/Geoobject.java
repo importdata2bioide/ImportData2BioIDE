@@ -74,6 +74,17 @@ public class Geoobject implements Serializable {
 	//bi-directional many-to-one association to Geogroup
 	
 	private String geogroupId;
+	
+	private String remark;
+	
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
 
 	public Geoobject() {
 	}

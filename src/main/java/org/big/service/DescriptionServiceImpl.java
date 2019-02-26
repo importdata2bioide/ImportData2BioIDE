@@ -1,5 +1,7 @@
 package org.big.service;
 
+import java.util.List;
+
 import org.big.common.EntityInit;
 import org.big.entity.Description;
 import org.big.entity.Descriptiontype;
@@ -35,6 +37,12 @@ public class DescriptionServiceImpl implements DescriptionService {
 		EntityInit.initDescription(d, params);
 		d.setSourcesid(taxon.getSourcesid());
 		descriptionRepository.save(d);
+	}
+
+	@Override
+	public List<Description> findByTeamAndDescType(String teamId, String descTypeId) {
+		return descriptionRepository.findByTeamAndDescType(teamId,descTypeId);
+		
 	}
 
 
