@@ -354,6 +354,7 @@ public class FourServiceImpl implements FourService {
 			// 如果全部能查询到，则保存
 			if (map.size() == 0) {
 				// 一个描述对应保存一个分布
+				
 			}
 		}
 
@@ -408,13 +409,15 @@ public class FourServiceImpl implements FourService {
 		String queryText = null;
 		if (text.contains("宁夏")) {
 			queryText = "宁夏回族自治区";
-		} else if (text.contains("天津")) {
-			queryText = "天津市";
 		} else if (text.contains("香港")) {
 			queryText = "香港特别行政区";
+		} else if (text.contains("澳门")) {
+			queryText = "澳门特别行政区";
+		} else if (text.contains("台湾")) {
+			queryText = "台湾省";
 		} else if (text.contains("西藏")) {
 			queryText = "西藏自治区";
-		} else if (text.contains("蒙古")) {
+		} else if (text.contains("内蒙古")) {
 			queryText = "内蒙古自治区";
 		} else if (text.contains("新疆")) {
 			queryText = "新疆维吾尔自治区";
@@ -424,11 +427,11 @@ public class FourServiceImpl implements FourService {
 			queryText = "北京市";
 		} else if (text.contains("重庆")) {
 			queryText = "重庆市";
-		} else if (text.contains("澳门")) {
-			queryText = "澳门特别行政区";
-		} else if (text.contains("上海")) {
+		}else if (text.contains("上海")) {
 			queryText = "上海市";
-		}
+		}else if (text.contains("天津")) {
+			queryText = "天津市";
+		} 
 
 		if (StringUtils.isNotEmpty(queryText)) {
 			return geoobjectRepository.findOneByCngeoname(queryText);
@@ -436,9 +439,6 @@ public class FourServiceImpl implements FourService {
 		return null;
 	}
 
-	private void parseByWordTool(String descontent) {
-		// TODO Auto-generated method stub
-
-	}
+	
 
 }

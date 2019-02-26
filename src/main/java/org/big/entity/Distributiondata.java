@@ -24,12 +24,7 @@ import java.util.Date;
 @Table(name = "distributiondata", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
 public class Distributiondata implements Serializable {
-	
-	/**
-	 * @Description 
-	 * @author ZXY  
-	 */
-	private static final long serialVersionUID = 1755881123726450718L;
+	private static final long serialVersionUID = 1L;
 	@Id
 	private String id;
 	private String geojson;
@@ -63,6 +58,26 @@ public class Distributiondata implements Serializable {
 
 	private Integer synchstatus;
 	
+	private String remark;
+	
+	private String descid;
+	
+	public String getDescid() {
+		return descid;
+	}
+
+	public void setDescid(String descid) {
+		this.descid = descid;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
 	public String getProvince() {
 		return province;
 	}
@@ -172,7 +187,7 @@ public class Distributiondata implements Serializable {
 	
 	/*分布模板2*/
 	public Distributiondata(String province, String city, String county, String locality, double lat,
-			double lng, String sourcesid, String refjson, String expert, Taxon taxon) {
+			double lng, String refjson, String sourcesid, String expert, Taxon taxon) {
 		super();
 		this.province = province;
 		this.city = city;
@@ -180,8 +195,8 @@ public class Distributiondata implements Serializable {
 		this.locality = locality;
 		this.lat = lat;
 		this.lng = lng;
-		this.sourcesid = sourcesid;
 		this.refjson = refjson;
+		this.sourcesid = sourcesid;
 		this.expert = expert;
 		this.taxon = taxon;
 	}
