@@ -1,16 +1,16 @@
 package org.big.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.util.List;
-
-
 
 import org.big.common.CommUtils;
 import org.big.common.UUIDUtils;
 import org.big.entity.Citation;
 import org.big.entity.Distributiondata;
 import org.big.entity.Geoobject;
+import org.big.entity.Rank;
 import org.big.entity.Ref;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-
 @Service
 public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 
@@ -53,7 +52,8 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 	private BatchInsertService batchInsertService;
 	@Autowired
 	TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
-
+	@Autowired
+	private ToolService toolService;
 	
 
 //	List<Taxon> taxonList = new ArrayList<>();//默认为单例模式，并发线程不安全，可以使用ThreadLocal解决
@@ -241,7 +241,7 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 	}
 
 	/**
-	 *  query 查询引证匹配的参考文献 title: SpeciesCatalogueServiceImpl.java
+	 * query 查询引证匹配的参考文献 title: SpeciesCatalogueServiceImpl.java
 	 * 
 	 * @param t
 	 * @param   line;引证原文
@@ -253,28 +253,28 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 	private String getCitationRefJson(Citation t, String line, String year, BaseParamsForm params) {
 		String citationstr = t.getCitationstr();// 引证原文
 		com.alibaba.fastjson.JSONArray jsonArray = new com.alibaba.fastjson.JSONArray();
-		
+
 		String citationRegx = "(:\\s{0,}\\d+\\s{0,}(\\.|;))|(\\.\\s{0,}\\d+\\s{0,}\\.\\s{0,}Type)|(;)";// (:页码.)//获取引证页码,根据页码个数判断由几个参考文献组成
 		List<String> citationMatchGroup = CommUtils.getMatchGroup(citationstr, citationRegx);
 
 		if (citationMatchGroup.size() > 1) {// 引证原文中有多个参考文献信息
 			List<String> list = new ArrayList<>();
-			//将引证原文拆分为多个
+			// 将引证原文拆分为多个
 			for (String pageMsg : citationMatchGroup) {
 				String pageInfo = CommUtils.cutByStrBeforeInclude(citationstr, pageMsg).trim();
-				if(pageInfo.startsWith(";")) {
-					pageInfo = pageInfo.substring(1,pageInfo.length());
+				if (pageInfo.startsWith(";")) {
+					pageInfo = pageInfo.substring(1, pageInfo.length());
 				}
 				list.add(pageInfo);
 				citationstr = CommUtils.cutByStrAfter(line, pageMsg);
 			}
-			//查询每个引证原文可能对应的参考文献
+			// 查询每个引证原文可能对应的参考文献
 			for (String partCitationStr : list) {
 				String citationYear = null;
 				try {
 					citationYear = CommUtils.getCitationYear(partCitationStr).trim();
 				} catch (Exception e) {
-					logger.info("IY0001没有截取到命名年代："+partCitationStr);
+					logger.info("IY0001没有截取到命名年代：" + partCitationStr);
 					continue;
 				}
 				String citationAuthor = CommUtils.cutByStrBefore(partCitationStr, citationYear).trim();
@@ -293,7 +293,7 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 						jsonObject.put("refId", "" + ref.getId());
 						jsonObject.put("refType", "0");
 						jsonArray.add(jsonObject);
-					}else {
+					} else {
 						jsonArray.clear();
 						com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
 						jsonObject.put("refE", " 0");
@@ -332,9 +332,8 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 			}
 
 		}
-		
-		
-		if(jsonArray.size() == 0) {
+
+		if (jsonArray.size() == 0) {
 			return null;
 		}
 //		logger.info("jsonArray-----"+jsonArray.toString());
@@ -368,7 +367,7 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 //			logger.info("error M0002正则表达式没有解析出【参考文献】页码：【参考文献】" + refstr);
 		}
 		// 第二步：获取引证的页码 (:页码.)
-		if(CommUtils.isStrNotEmpty(partCitationstr)) {
+		if (CommUtils.isStrNotEmpty(partCitationstr)) {
 			citationstr = partCitationstr;
 		}
 		String citationRegx = "(:\\s{0,}\\d+\\s{0,}(\\.)?)|(\\.\\s{0,}\\d+\\s{0,}\\.\\s{0,}Type locality)";
@@ -377,34 +376,34 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 			citationPage = citationMatchGroup.get(0).replaceAll(":", "");
 			citationPage = citationPage.replaceAll(".", "");
 		} else {
-			logger.info("warn M0003正则表达式解析出"+citationMatchGroup.size()+"个【引证】页码：【引证原文】" + citationstr);
-			
+			logger.info("warn M0003正则表达式解析出" + citationMatchGroup.size() + "个【引证】页码：【引证原文】" + citationstr);
+
 		}
 		// 第三步：两个页码对比
-		if(CommUtils.isStrNotEmpty(refPage) && CommUtils.isStrNotEmpty(citationPage) ) {
+		if (CommUtils.isStrNotEmpty(refPage) && CommUtils.isStrNotEmpty(citationPage)) {
 			int citationPageInt = Integer.parseInt(citationPage);
-			if(refPage.contains(",")) {
+			if (refPage.contains(",")) {
 				String[] split = refPage.split(",");
 				for (String yearRange : split) {
 					int end = Integer.parseInt(CommUtils.cutByStrAfter(yearRange, "-"));
 					int begin = Integer.parseInt(CommUtils.cutByStrBefore(yearRange, "-"));
-					if(citationPageInt >= end || citationPageInt<=begin) {
+					if (citationPageInt >= end || citationPageInt <= begin) {
 						return false;
 					}
 				}
-			}else if(CommUtils.isNumeric(refstr)){
-				if(Integer.parseInt(refstr) != citationPageInt) {
+			} else if (CommUtils.isNumeric(refstr)) {
+				if (Integer.parseInt(refstr) != citationPageInt) {
 					return false;
 				}
-				
-			}else if (!refPage.contains(",")&&refPage.contains("-")) {
+
+			} else if (!refPage.contains(",") && refPage.contains("-")) {
 				int end = Integer.parseInt(CommUtils.cutByStrAfter(refPage, "-"));
 				int begin = Integer.parseInt(CommUtils.cutByStrBefore(refPage, "-"));
-				if(citationPageInt >= end && citationPageInt<=begin) {
+				if (citationPageInt >= end && citationPageInt <= begin) {
 					return false;
 				}
-			}else {
-				logger.info("无法识别的两个页码"+refPage+"||"+citationPage);
+			} else {
+				logger.info("无法识别的两个页码" + refPage + "||" + citationPage);
 			}
 		}
 
@@ -634,6 +633,56 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 //		taxonRepository.saveAll(speciesCatalogueService.getTaxonList());
 //		citationRepository.saveAll(speciesCatalogueService.getCitationList());
 //		distributiondataRepository.saveAll(speciesCatalogueService.getDistributionList());
+
+	}
+
+	@Override
+	public void addSeq(BaseParamsForm params) throws Exception {
+		params.setCode("Unicode");
+		// 读取txt文件
+		List<Taxon> taxonByTaxaset = taxonRepository.findByTaxaset("d9154ee24e89424c853f822363731cf4");// 双翅目蝇类名录
+		System.out.println("该分类单元集下有taxon条数："+taxonByTaxaset.size());
+		List<String> txt = CommUtils.readTxt("E:\\003采集系统\\0004杨定-名录-导入\\双翅目长角亚目名录.txt", params.getCode());
+//		List<String> txt2 = CommUtils.readTxt("E:\\003采集系统\\0004杨定-名录-导入\\双翅目蝇类名录 正文2.txt", params.getCode());
+//		txt.addAll(txt2);
+		int i = 0;
+		int orderNum = 0;
+		for (String line : txt) {
+			i++;
+			SpeciesCatalogueEnum isWhat = toolService.judgeIsWhat(line, i);
+			switch (isWhat) {
+			case citation:
+				// do nothing
+				break;
+			case distributiondata:
+				// do nothing
+				break;
+			default:
+				Taxon matchTaxon = null;
+				for (Taxon taxon : taxonByTaxaset) {
+					String remark = taxon.getRemark();
+					if (remark.contains(line)) {
+						matchTaxon = taxon;
+						break;
+					}
+				}
+				if (matchTaxon == null) {
+					System.out.println("没有找到：" + line);
+				} else {
+					orderNum++;
+					matchTaxon.setOrderNum(orderNum);
+					logger.info(matchTaxon.getOrderNum()+","+CommUtils.strToJSONObject(matchTaxon.getRemark()).get("originalText"));
+				}
+				break;
+			}
+
+		}
+		
+		System.out.println("orderNum最终结果"+orderNum);
+		
+		// 更新
+		batchInsertService.batchUpdateTaxonOrderNumById(taxonByTaxaset);
+		
 
 	}
 

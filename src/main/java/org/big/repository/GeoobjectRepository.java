@@ -70,8 +70,13 @@ public interface GeoobjectRepository extends BaseRepository<Geoobject, String> {
     @Query(value = "Select go from Geoobject go where remark like %?1%  order by adcode asc")
     List<Geoobject> findByLikeRemark(String remark);
     
+    
+    
     @Query(value = "Select go from Geoobject go where cngeoname = ?1")
     Geoobject findOneByCngeoname(String cngeoname);
     
+    List<Geoobject> findByEngeonameIsNull();
+    
+    List<Geoobject> findByGeogroupId(String geogroupId);
 
 }

@@ -360,8 +360,8 @@ public class FourServiceImpl implements FourService {
 			String keyString = CommUtils.getKeyString(geojsonValue);
 			if (StringUtils.isEmpty(keyString)) {
 				System.out.println("数据库没有查询到分布地,原文：" + descontent);
-			}
-			if (save) {
+			} 
+			if (save && StringUtils.isNotEmpty(keyString)) {
 				JSONObject jsonObject = new JSONObject();
 				jsonObject.put("geoIds", keyString);
 				Distributiondata record = new Distributiondata();
@@ -379,9 +379,7 @@ public class FourServiceImpl implements FourService {
 		int k = 0;
 		for (Entry<String, String> entry : map.entrySet()) {
 			k++;
-			if(!entry.getValue().contains("未知"))
-				logger.info(entry.getKey());
-//			logger.info(" Key = " + entry.getKey() + "    Value = " + entry.getValue());
+			logger.info(" Key = " + entry.getKey() + "    Value = " + entry.getValue());
 		}
 
 		logger.info("执行时间：" + (System.currentTimeMillis() - startTime) / 60000 + "min, "
@@ -458,6 +456,10 @@ public class FourServiceImpl implements FourService {
 			queryText = "俄罗斯";
 		}else if (text.contains("捷克")) {
 			queryText = "捷克";
+		}else if (text.contains("汶莱")) {
+			queryText = "文莱";
+		}else if (text.contains("加沙")) {
+			queryText = "巴勒斯坦";
 		}
 
 		if (StringUtils.isNotEmpty(queryText)) {

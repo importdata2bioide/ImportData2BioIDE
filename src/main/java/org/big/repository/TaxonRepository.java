@@ -153,5 +153,7 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query("Delete Taxon c where  c.taxaset.id =?1")
 	void deleteTaxonByTaxaSetId(String tsId);
 	
+	List<Taxon>  findByRemarkLike(String remark);
+	
 	
 }

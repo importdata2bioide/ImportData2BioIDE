@@ -53,8 +53,23 @@ public class Taxon implements Serializable {
 
 	
 	private String inputer;
+	
+	private int orderNum;//按照insert顺序在分类单元集内递增
 
 	
+	
+	
+
+	
+
+	public int getOrderNum() {
+		return orderNum;
+	}
+
+	public void setOrderNum(int orderNum) {
+		this.orderNum = orderNum;
+	}
+
 
 	/*@Excel(name="命名法规", orderNum = "4")*/
 	private String nomencode;

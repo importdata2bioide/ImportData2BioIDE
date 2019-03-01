@@ -274,4 +274,22 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 		});
 	}
 
+	@Override
+	public void batchUpdateTaxonOrderNumById(List<Taxon> records) {
+        String sql = "update taxon set order_num=? where id=?";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+                //这个方法设定更新记录数，通常List里面存放的都是我们要更新的，所以返回list.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Taxon taxon = records.get(i);
+                ps.setInt(1, taxon.getOrderNum());
+                ps.setString(2, taxon.getId());
+               
+            }
+        });
+		
+	}
+
 }

@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 import org.big.common.CommUtils;
+import org.big.entityVO.SpeciesCatalogueEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -216,6 +217,101 @@ public class ToolServiceImpl implements ToolService{
 			
 		}
 		return entityAttrNull;
+	}
+	
+	
+	
+	public SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum) {
+		SpeciesCatalogueEnum result = SpeciesCatalogueEnum.unknown;
+		int i = 0;
+		String errorMessage = "";
+		// superfamily 总科
+		if (line.contains("总科")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.superfamily;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.superfamily.getName();
+		}
+		// family 科
+		if (line.contains("科") && !line.contains("亚科") && !line.contains("总科") && !line.contains("(")
+				&& !line.startsWith("分布") && !CommUtils.isStartWithNum(line)) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.family;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.family.getName();
+		}
+		// 亚科
+		if (line.contains("亚科") && !line.contains("总")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.subfamily;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.subfamily.getName();
+		}
+		// 族
+		if (line.contains("族") && !line.contains("亚族") && !line.startsWith("(")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.tribe;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.tribe.getName();
+		}
+		// 亚族
+		if (line.contains("亚族")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.subtribe;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.subtribe.getName();
+		}
+		// genus 属(有属字，并且数字开头)
+		if (line.contains("属") && CommUtils.isStartWithNum(line) && !line.contains("亚属")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.genus;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.genus.getName();
+		}
+		// 亚属
+		if (line.contains("亚属")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.subgenus;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.subgenus.getName();
+		}
+		// species 种 (符合以"(数字)"开头的格式)
+		if (CommUtils.isStartWithSeq(line) && !line.contains("亚种")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.species;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.species.getName();
+		}
+		// 亚种
+		if (line.contains("亚种")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.subspecies;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.subspecies.getName();
+		}
+		// 引证 citation
+		if (CommUtils.isStartWithEnglish(line) && line.endsWith(".")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.citation;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.citation.getName();
+			if (line.length() < 37) {
+				result = SpeciesCatalogueEnum.unknown;
+				logger.info(rowNum + " || citation 长度不够 = " + line + "||" + line.length());
+			}
+		}
+		// 分布 distributiondata
+		if (line.startsWith("分布")) {
+			i = i + 1;
+			result = SpeciesCatalogueEnum.distributiondata;
+			errorMessage = errorMessage + "||" + SpeciesCatalogueEnum.distributiondata.getName();
+		}
+
+		if (i > 1) {
+			result = SpeciesCatalogueEnum.unknown;
+			logger.info("(error 000M Mutil definded)errorMessage:" + errorMessage + "\t||\tline = " + line);
+		}
+		// 引证
+		if (result == SpeciesCatalogueEnum.unknown) {
+			if (CommUtils.isStartWithEnglish(line)) {
+				result = SpeciesCatalogueEnum.citation;
+			} else {
+				logger.info("unknown line = " + line);
+			}
+		}
+
+		return result;
+
 	}
 
 }

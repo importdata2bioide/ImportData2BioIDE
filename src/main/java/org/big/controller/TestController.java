@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.Word;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
@@ -82,8 +84,33 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		guojia();
+		pinyin();
 
+	}
+
+
+
+
+
+	private void pinyin() {
+		List<Geoobject> list = geoobjectRepository.findByGeogroupId("A1A25AA0D98C4441997D891A229F35E8");
+		System.out.println(list.size());
+		for (Geoobject geoobject : list) {
+			String engeoname = geoobject.getEngeoname();
+			String cngeoname = geoobject.getCngeoname();
+			String remark = geoobject.getRemark();
+			JSONObject jsonObject = CommUtils.strToJSONObject(remark);
+			String name = (String) jsonObject.get("国家或地区（ISO英文用名）");
+			geoobject.setEngeoname(name);
+			geoobject.setAdcode("000000");
+			geoobject.setPid("0");
+			geoobjectRepository.save(geoobject);
+			
+		}
+		
+//		List<Word> words = WordSegmenter.segWithStopWords("《速度与激情7》的中国内地票房自4月12日上映以来，在短短两周内突破20亿人民币");
+//		System.out.println(words);
+		
 	}
 
 

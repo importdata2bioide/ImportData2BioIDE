@@ -2,6 +2,8 @@ package org.big.service;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.big.entityVO.SpeciesCatalogueEnum;
+
 public interface ToolService {
 	public void asy(int i);
 	/**
@@ -67,5 +69,15 @@ public interface ToolService {
 	 */
 	public boolean EntityAttrNull(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException;
+	
+	/**
+	 * 
+	 * @Description 
+	 * @param line
+	 * @param rowNum
+	 * @return
+	 * @author ZXY
+	 */
+	public SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
 
 }

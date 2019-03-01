@@ -36,6 +36,8 @@ public interface SpeciesCatalogueService {
 	 * @author ZXY
 	 */
 //	public void saveSpeciesCatalogue() throws Exception;
+
+	public void addSeq(BaseParamsForm params) throws Exception;
 	
 	
 }

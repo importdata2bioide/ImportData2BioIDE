@@ -9,6 +9,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.big.common.CommUtils;
 import org.big.entity.Rank;
 import org.big.entity.Taxon;
@@ -51,7 +53,20 @@ public class SpeciesCatalogueController {
 //        System.out.println("执行完了");
 //		
 //	}
-	
+	@ResponseBody
+	@RequestMapping(value = "/guest/SpeciesCatalogueController_addSeq")
+	public String addSeq(BaseParamsForm params) {
+		try {
+			speciesCatalogueService.addSeq(params);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "finish";
+		
+
+	}
 	/**
 	 * 读取并解析txt文件，根据params参数判断是否保存到数据库
 	 * title: SpeciesCatalogueController.java
