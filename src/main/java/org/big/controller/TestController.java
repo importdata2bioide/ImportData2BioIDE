@@ -84,8 +84,17 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		pinyin();
+		commname();
 
+	}
+
+
+
+
+
+	private void commname() {
+		
+		
 	}
 
 

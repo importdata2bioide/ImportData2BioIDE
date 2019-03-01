@@ -430,6 +430,8 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 				citation.setRefjson(turnTaxonRefToCitation(taxon.getRefjson()));
 				citation.setExpert(params.getmExpert());
 				citation.setSourcesid(taxon.getSourcesid());
+				citation.setSourcesidId(taxon.getSourcesid());
+				System.out.println(taxon.getSourcesid());
 				if (params.isInsert()) {
 					citationService.save(citation);
 				}
@@ -441,9 +443,14 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 
 		} else if (colA.contains("俗名信息")) {
 			if (CommUtils.isStrNotEmpty(colD)) {
-				colD = toolService.replaceAllChar(colD, ",，，", "、");
+				colD = toolService.replaceAllChar(colD, "[,，]", "、");
+				colD = colD.replace("）", "）、");
+				colD = colD.replace(")", ")、");
 				String[] commNames = colD.split("、");
 				for (String oneName : commNames) {
+					if(StringUtils.isEmpty(oneName)) {
+						continue;
+					}
 					Commonname commonname = new Commonname();
 					commonname.setCommonname(oneName);
 					EntityInit.initCommonname(commonname, params);

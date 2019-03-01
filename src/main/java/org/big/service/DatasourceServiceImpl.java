@@ -25,6 +25,7 @@ public class DatasourceServiceImpl implements DatasourceService {
 	public Datasource insertDSIfNotExist(String title, String inputerId, String expertId) {
 		Datasource datasource = datasourceRepository.findOneByTitleAndInputer(title, inputerId);
 		if(datasource == null || StringUtils.isBlank(datasource.getId())) {
+			System.out.println("insert数据源");
 			datasource = new Datasource();
 			datasource.setId(UUIDUtils.getUUID32());
 			datasource.setTitle(title);
@@ -40,6 +41,12 @@ public class DatasourceServiceImpl implements DatasourceService {
 			datasource.setInputtime(timestamp);
 			datasource.setSynchdate(timestamp);
 			datasourceRepository.save(datasource);
+			try {
+				Thread.currentThread().sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return datasource;
 	}

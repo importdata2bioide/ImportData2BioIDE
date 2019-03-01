@@ -20,7 +20,7 @@ public class CitationServiceImpl implements CitationService {
 	@Override
 	public List<Citation> findCitationListByTaxonId(String taxonId) {
 		if(StringUtils.isEmpty(taxonId)) {
-			
+			return null;
 		}
 		return  citationRepository.findCitationListByTaxonId(taxonId);
 		

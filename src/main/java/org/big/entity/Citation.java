@@ -58,6 +58,8 @@ public class Citation implements Serializable {
 	private String citationstr;
 	
 	
+	private String sourcesidId;
+	
 	@Excel(name="* 接受名（引证名称的接受名）", width=40.00)
 	@Transient
 	private String taxonName;
@@ -127,6 +129,15 @@ public class Citation implements Serializable {
 
 	public String getAuthorship() {
 		return this.authorship;
+	}
+	
+
+	public String getSourcesidId() {
+		return sourcesidId;
+	}
+
+	public void setSourcesidId(String sourcesidId) {
+		this.sourcesidId = sourcesidId;
 	}
 
 	public void setAuthorship(String authorship) {
