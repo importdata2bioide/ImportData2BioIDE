@@ -2,27 +2,33 @@ package org.big.controller;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apdplat.word.WordSegmenter;
-import org.apdplat.word.segmentation.Word;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
 import org.big.entity.Geoobject;
+import org.big.entity.Rank;
+import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
 import org.big.entityVO.ExcelWithColNumHVO;
 import org.big.entityVO.ExcelWithColNumVO;
+import org.big.entityVO.FileTypeEnum;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.repository.CommonnameRepository;
@@ -84,22 +90,100 @@ public class TestController {
 
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		commname();
+		test();
 
 	}
 
+	private void excelModel() {
+		String path = "E:\\003采集系统\\0011菌物百科\\菌物百科2018";
+		List<String> files = CommUtils.getAllFiles(path, null);
+		Map<FileTypeEnum, String> map = converToEnum(files);
+		Map<FileTypeEnum, String> expertMap = new HashMap<>();
+		Map<FileTypeEnum, String> dataSourceMap = new HashMap<>();
+		Map<FileTypeEnum, String> refMap = new HashMap<>();
+		readExpert(expertMap,map.get(FileTypeEnum.Expert));
+		String dataSourceExcelPath = map.get(FileTypeEnum.DataSource);
+		String refExcelPath = map.get(FileTypeEnum.Ref);
+		
+		
 
+	}
+	/**
+	 * 
+	 * @Description 读取专家excel
+	 * @param expertMap 返回结果 key:序号;value:id
+	 * @param string 文件路径
+	 * @author ZXY
+	 */
+	private void readExpert(Map<FileTypeEnum, String> expertMap, String string) {
+		
+		
+	}
 
+	private Map<FileTypeEnum, String> converToEnum(List<String> files) {
+		Map<FileTypeEnum, String> map = new HashMap<>();
+		for (String file : files) {
+			if (file.contains("专家")) {
+				map.put(FileTypeEnum.Expert, file);
+			} else if (file.contains("数据源")) {
+				map.put(FileTypeEnum.DataSource, file);
+			} else if (file.contains("参考文献")) {
+				map.put(FileTypeEnum.Ref, file);
+			} else if (file.contains("分类单元")) {
+				map.put(FileTypeEnum.Taxon, file);
+			} else if (file.contains("引证")) {
+				map.put(FileTypeEnum.Citation, file);
+			} else if (file.contains("描述")) {
+				map.put(FileTypeEnum.Description, file);
+			} else if (file.contains("俗名")) {
+				map.put(FileTypeEnum.Commname, file);
+			} else if (file.contains("分布")) {
+				map.put(FileTypeEnum.Distribution, file);
+			} else if (file.contains("特征")) {
+				map.put(FileTypeEnum.Features, file);
+			} else if (file.contains("保护")) {
+				map.put(FileTypeEnum.Protect, file);
+			} else if (file.contains("多媒体")) {
+				map.put(FileTypeEnum.MultiMedia, file);
+			} else {
+				System.out.println("I don't know what's this:" + file);
+			}
+		}
+		return map;
+	}
 
+	private void test() {
+		long startTime = System.currentTimeMillis();
+		int size = 10000;
+		try {
+			List<Taxon> list = new ArrayList<>(size  + 10);
+			for (int k = 0; k < size; k++) {
+				Taxon taxon = new Taxon();
+				taxon.setId(UUIDUtils.getUUID32());
+				Rank rank = new Rank();
+				rank.setId("7");
+				taxon.setRank(rank);
+				taxon.setRankid("7");
+				Taxaset taxaset = new Taxaset();
+				taxaset.setId("05313d7bbeb6417b8733cac3f74a830d");
+				taxon.setTaxaset(taxaset);
+				taxon.setRemark("20190306测试");
+				list.add(taxon);
+			}
+			batchInsertService.batchInsertTaxon(list, "2019-03-01 01:01:01");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(size + "  运行时间: " + (System.currentTimeMillis() - startTime) / 60000 + "min, "
+				+ (System.currentTimeMillis() - startTime) / 1000 + "s ( " + (System.currentTimeMillis() - startTime)
+				+ "ms)");
+
+	}
 
 	private void commname() {
-		
-		
+
 	}
-
-
-
-
 
 	private void pinyin() {
 		List<Geoobject> list = geoobjectRepository.findByGeogroupId("A1A25AA0D98C4441997D891A229F35E8");
@@ -114,17 +198,13 @@ public class TestController {
 			geoobject.setAdcode("000000");
 			geoobject.setPid("0");
 			geoobjectRepository.save(geoobject);
-			
+
 		}
-		
+
 //		List<Word> words = WordSegmenter.segWithStopWords("《速度与激情7》的中国内地票房自4月12日上映以来，在短短两周内突破20亿人民币");
 //		System.out.println(words);
-		
+
 	}
-
-
-
-
 
 	private void guojia() {
 		List<ExcelWithColNumHVO> list = readExcel("E:\\003采集系统\\国家代码与名称.xlsx");
@@ -135,7 +215,7 @@ public class TestController {
 			String colC = row.getColC();
 			String colD = row.getColD();
 			String colE = row.getColE();
-			String colF = row.getColF();//中国惯用名
+			String colF = row.getColF();// 中国惯用名
 			String colG = row.getColG();
 			String colH = row.getColH();
 			jsonObject.put("二位字母", colA);
@@ -148,7 +228,7 @@ public class TestController {
 			Geoobject obj = new Geoobject();
 			obj.setId(UUIDUtils.getUUID32());
 			obj.setCngeoname(colF);
-			obj.setGeogroupId("A1A25AA0D98C4441997D891A229F35E8");//世界国家与地区
+			obj.setGeogroupId("A1A25AA0D98C4441997D891A229F35E8");// 世界国家与地区
 			obj.setRemark(String.valueOf(jsonObject));
 			obj.setStatus(1);
 			obj.setInputtime(new Date());
@@ -157,24 +237,19 @@ public class TestController {
 			geoobjectRepository.save(obj);
 		}
 	}
-	
+
 	private List<ExcelWithColNumHVO> readExcel(String path) {
 		ImportParams params = new ImportParams();
 		params.setTitleRows(0);
 		params.setHeadRows(1);
 		long start = new Date().getTime();
-		List<ExcelWithColNumHVO> list = ExcelImportUtil.importExcel(new File(path),
-				ExcelWithColNumHVO.class, params);
+		List<ExcelWithColNumHVO> list = ExcelImportUtil.importExcel(new File(path), ExcelWithColNumHVO.class, params);
 		System.out.println("读取excel所消耗时间：" + (new Date().getTime() - start));
 		System.out.println("数量：" + list.size());
 		System.out.println(ReflectionToStringBuilder.toString(list.get(0)));
 		System.out.println("读取excel完成");
 		return list;
 	}
-
-
-
-
 
 	private void up() {
 //		
@@ -220,10 +295,6 @@ public class TestController {
 //			}
 		}
 	}
-
-
-
-
 
 	private void updateRankByChname(boolean execute) {
 		if (!execute) {

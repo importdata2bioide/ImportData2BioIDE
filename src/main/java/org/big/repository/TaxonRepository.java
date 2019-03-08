@@ -155,5 +155,11 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	
 	List<Taxon>  findByRemarkLike(String remark);
 	
+	@Override
+	default <S extends Taxon> List<S> saveAll(Iterable<S> entities) {
+		System.out.println("自定义");
+		return null;
+	}
+	
 	
 }

@@ -290,7 +290,7 @@ public class BirdListComparisonController {
 	}
 
 	public ResultSet query(String sql) throws SQLException {
-		Connection connDB = ConnDB.getConnDB();
+		Connection connDB = ConnDB.getConnDB(null);
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 				ResultSet.CONCUR_READ_ONLY);
 		ResultSet rs = prepareStatement.executeQuery();

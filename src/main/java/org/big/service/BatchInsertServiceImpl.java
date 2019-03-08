@@ -1,6 +1,7 @@
 package org.big.service;
 
 import java.sql.PreparedStatement;
+
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 
 import org.big.common.CommUtils;
 import org.big.entity.Citation;
@@ -21,7 +23,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-
+@Transactional
 @Service
 public class BatchInsertServiceImpl implements BatchInsertService {
 	@Autowired
@@ -36,11 +38,13 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 	 * Taxon
 	 * 
 	 * @param records
+	 * @throws SQLException 
 	 */
-	public void batchInsertTaxon(List<Taxon> records, String inputtimeStr) {
+	public void batchInsertTaxon(List<Taxon> records, String inputtimeStr) throws SQLException {
 		String insertSql = " INSERT INTO taxon (id,scientificname,authorstr,epithet,rankid,nomencode,remark,"
 				+ "sourcesid,tci,refjson,status,inputer,inputtime,synchstatus,synchdate,"
-				+ "taxaset_id,rank_id,chname,taxon_condition,ref_class_sys,expert,taxon_examine) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+				+ "taxaset_id,rank_id,chname,taxon_condition,ref_class_sys,expert,taxon_examine,order_num) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+		//jdbcTemplate.getDataSource().getConnection().setAutoCommit(false);
 		jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement pstmt, int i) throws SQLException {
@@ -67,6 +71,7 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 				pstmt.setString(20, null);//参考分类体系
 				pstmt.setString(21, taxon.getExpert());
 				pstmt.setString(22, taxon.getTaxonExamine());
+				pstmt.setInt(23, taxon.getOrderNum());
 			}
 
 			@Override
