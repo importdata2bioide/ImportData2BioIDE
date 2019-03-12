@@ -2,8 +2,9 @@ package org.big.service;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.apdplat.word.vector.T;
 import org.big.entityVO.SpeciesCatalogueEnum;
-
+import java.lang.annotation.Annotation;
 public interface ToolService {
 	public void asy(int i);
 	/**
@@ -79,5 +80,14 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	public SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
+	/**
+	 * 
+	 * @Description 获取类注解
+	 * @param cla
+	 * @param annotationClass
+	 * @return
+	 * @author ZXY
+	 */
+	Annotation getClassAnnotation(Class<?> cla, Class annotationClass);
 
 }

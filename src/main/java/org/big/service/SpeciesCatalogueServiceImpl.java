@@ -114,7 +114,7 @@ public class SpeciesCatalogueServiceImpl implements SpeciesCatalogueService {
 		Taxaset taxaset = new Taxaset();
 		taxaset.setId(params.getmTaxasetId());
 		t.setTaxaset(taxaset);
-		t.setRankid(t.getRank().getId());
+		t.setRankid(Integer.parseInt(t.getRank().getId()));
 		t.setTaxonCondition(params.getTaxonCondition());
 		// 保存到数据库
 		if (params.isInsert()) {

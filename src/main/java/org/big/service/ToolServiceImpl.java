@@ -1,5 +1,6 @@
 package org.big.service;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -313,5 +314,12 @@ public class ToolServiceImpl implements ToolService{
 		return result;
 
 	}
+
+	@Override
+	public Annotation getClassAnnotation(Class<?> cla, Class annotationClass) {
+		Annotation annotation = cla.getAnnotation(annotationClass);
+		return annotation;
+	}
+
 
 }

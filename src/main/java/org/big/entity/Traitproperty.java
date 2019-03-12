@@ -51,7 +51,8 @@ public class Traitproperty implements Serializable {
 
 	public Traitproperty() {
 	}
-
+	
+	
 	public String getId() {
 		return id;
 	}

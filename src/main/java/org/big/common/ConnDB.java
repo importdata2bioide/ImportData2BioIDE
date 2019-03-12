@@ -20,9 +20,9 @@ public class ConnDB {
 		if (connDB == null || connDB.isClosed()) {
 			Configuration configuration = new Configuration();
 			configuration.setDriver("com.mysql.jdbc.Driver");
-			configuration.setUrl("jdbc:mysql://159.226.67.87:3306/biodata?useSSL=false&rewriteBatchedStatements=true");
-			configuration.setUsername("bioide");
-			configuration.setPassword("big@bioide_2017");
+			configuration.setUrl("");
+			configuration.setUsername("");
+			configuration.setPassword("");
 			connDB = ConnDataBase(configuration);
 			threadLocal.set(connDB);
 		}

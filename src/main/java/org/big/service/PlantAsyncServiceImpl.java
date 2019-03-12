@@ -280,7 +280,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 		// 3. excel文件所有sheet处理完毕，最后更新一次taxon
 		if (params.isInsert() && StringUtils.isNotEmpty(taxon.getScientificname())
-				&& StringUtils.isNotEmpty(taxon.getRankid())) {
+				&& taxon.getRankid()!=0) {
 			taxonService.saveOne(taxon);
 		}
 
@@ -306,7 +306,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		}
 		// 更新分类等级
 		Rank rank = new Rank();
-		rank.setId(taxon.getRankid());
+		rank.setId(String.valueOf(taxon.getRankid()));
 		taxon.setRank(rank);
 		if (params.isInsert()) {
 			// update,读取整个excel完成后，更新实体信息
@@ -436,9 +436,9 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 					citationService.save(citation);
 				}
 			} else if (CommUtils.isStrNotEmpty(colD) && colD.contains("var.")) {
-				taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
+				taxon.setRankid(RankEnum.var.getIndex());
 			} else if (CommUtils.isStrNotEmpty(colD) && colD.contains("subsp.")) {
-				taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
+				taxon.setRankid(RankEnum.subsp.getIndex());
 			}
 
 		} else if (colA.contains("俗名信息")) {
@@ -535,7 +535,7 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 		String colF = row.getColF();// 审核专家，可能为空
 		// 根据路径确定分类等级
 		int rankId = judgeRankIsWhatByPath(path).getIndex();
-		taxon.setRankid(String.valueOf(rankId));
+		taxon.setRankid(rankId);
 		// colD 拉丁名和命名信息 按照空格拆分
 		if (CommUtils.isStartWithEnglish(colD)) {
 			// remove 去除注后面的内容
@@ -550,10 +550,10 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 					String flag = "";
 					if (colD.contains("var.")) {
 						flag = "var.";
-						taxon.setRankid(String.valueOf(RankEnum.var.getIndex()));
+						taxon.setRankid(RankEnum.var.getIndex());
 					} else {
 						flag = "subsp.";
-						taxon.setRankid(String.valueOf(RankEnum.subsp.getIndex()));
+						taxon.setRankid(RankEnum.subsp.getIndex());
 					}
 					try {
 						JSONObject object = varNameParser(colD, flag, path);

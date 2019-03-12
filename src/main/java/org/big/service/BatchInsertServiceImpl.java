@@ -23,7 +23,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-@Transactional
+
 @Service
 public class BatchInsertServiceImpl implements BatchInsertService {
 	@Autowired
@@ -53,7 +53,7 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 				pstmt.setString(2, taxon.getScientificname());
 				pstmt.setString(3, taxon.getAuthorstr());
 				pstmt.setString(4, taxon.getEpithet());
-				pstmt.setInt(5, Integer.parseInt(taxon.getRankid()));
+				pstmt.setInt(5, taxon.getRankid());
 				pstmt.setString(6, taxon.getNomencode());
 				pstmt.setString(7, taxon.getRemark());
 				pstmt.setString(8, taxon.getSourcesid());
@@ -65,7 +65,7 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 				pstmt.setInt(14, taxon.getSynchstatus());
 				pstmt.setTimestamp(15, new Timestamp(System.currentTimeMillis()));
 				pstmt.setString(16, taxon.getTaxaset().getId());//taxaset_id
-				pstmt.setInt(17, Integer.parseInt(taxon.getRankid()));
+				pstmt.setInt(17, taxon.getRankid());
 				pstmt.setString(18, taxon.getChname());
 				pstmt.setInt(19, taxon.getTaxonCondition());
 				pstmt.setString(20, null);//参考分类体系

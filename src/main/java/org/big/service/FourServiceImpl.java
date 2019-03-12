@@ -291,9 +291,9 @@ public class FourServiceImpl implements FourService {
 			taxon.setChname(chinesName);
 			line = CommUtils.removeChinese(line);// 删除中文
 			taxon.setScientificname(line.trim());
-			taxon.setRankid(String.valueOf(getRank(line, chinesName).getIndex()));
+			taxon.setRankid(getRank(line, chinesName).getIndex());
 			Rank rank = new Rank();
-			rank.setId(taxon.getRankid());
+			rank.setId(String.valueOf(taxon.getRankid()));
 			taxon.setRank(rank);
 
 			EntityInit.initTaxon(taxon, baseParamsForm);

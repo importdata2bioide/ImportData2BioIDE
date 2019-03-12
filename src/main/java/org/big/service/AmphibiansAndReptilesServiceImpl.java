@@ -189,7 +189,7 @@ public class AmphibiansAndReptilesServiceImpl implements AmphibiansAndReptilesSe
 				Rank r = new Rank();
 				r.setId(String.valueOf(RankEnum.family.getIndex()));
 				record.setRank(r);
-				record.setRankid(String.valueOf(RankEnum.family.getIndex()));
+				record.setRankid(RankEnum.family.getIndex());
 				EntityInit.initTaxon(record, amphibiansAndReptilesForm);
 				taxonFamilylist.add(record);
 
@@ -209,7 +209,7 @@ public class AmphibiansAndReptilesServiceImpl implements AmphibiansAndReptilesSe
 				Rank r = new Rank();
 				r.setId(String.valueOf(RankEnum.genus.getIndex()));
 				record.setRank(r);
-				record.setRankid(String.valueOf(RankEnum.genus.getIndex()));
+				record.setRankid(RankEnum.genus.getIndex());
 				EntityInit.initTaxon(record, amphibiansAndReptilesForm);
 				JSONObject js = new JSONObject();
 				js.put("parentId", familyTaxonId);
@@ -229,7 +229,7 @@ public class AmphibiansAndReptilesServiceImpl implements AmphibiansAndReptilesSe
 			Rank r = new Rank();
 			r.setId(String.valueOf(RankEnum.species.getIndex()));
 			record.setRank(r);
-			record.setRankid(String.valueOf(RankEnum.species.getIndex()));
+			record.setRankid(RankEnum.species.getIndex());
 			EntityInit.initTaxon(record, amphibiansAndReptilesForm);
 			JSONObject js = new JSONObject();
 			js.put("parentId", genusTaxonId);

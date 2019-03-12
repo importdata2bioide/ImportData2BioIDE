@@ -2,7 +2,6 @@ package org.big.controller;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -10,8 +9,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,7 +32,9 @@ import org.big.repository.CommonnameRepository;
 import org.big.repository.DescriptionRepository;
 import org.big.repository.GeoobjectRepository;
 import org.big.repository.TaxonRepository;
+import org.big.repository.TeamRepository;
 import org.big.service.BatchInsertService;
+import org.big.service.BatchSubmitService;
 import org.big.service.ToolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +46,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
+import io.netty.util.internal.SystemPropertyUtil;
 
 @Controller
 @RequestMapping(value = "guest")
@@ -75,8 +75,8 @@ public class TestController {
 //	private TaxasetRepository taxasetRepository;
 //	@Autowired
 //	private DatasetRepository datasetRepository;
-//	@Autowired
-//	private TeamRepository teamRepository;
+	@Autowired
+	private TeamRepository teamRepository;
 //	@Autowired
 //	private CitationRepository citationRepository;
 //	@Autowired
@@ -87,10 +87,38 @@ public class TestController {
 //	private TaxtreeService taxtreeService;
 	@Autowired
 	private ToolService toolService;
-
+//	@Autowired
+//	private EntityManager entityManager;
+//	
+//	@Autowired
+//	private JpaQueryMethod jpaQueryMethod;
+	@Autowired
+	private BatchSubmitService batchSubmitService;
+	
+	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		test();
+		List<Taxon> taxonlist = new ArrayList<>();
+		int total =100000;
+		for (int i = 0; i < total; i++) {
+			Taxon t = new Taxon();
+			t.setAuthorstr("作者测试20190312");
+			t.setId(UUIDUtils.getUUID32());
+			Rank rank = new Rank();
+			rank.setId("7");
+			t.setRank(rank);
+			Taxaset taxaset = new Taxaset();
+			taxaset.setId("05313d7bbeb6417b8733cac3f74a830d");
+			t.setTaxaset(taxaset);
+			taxonlist.add(t);
+		}
+		try {
+			System.out.println("数量："+taxonlist.size());
+			batchSubmitService.saveAll(taxonlist);
+//			batchSubmitService.saveAllValues(taxonlist);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -163,7 +191,7 @@ public class TestController {
 				Rank rank = new Rank();
 				rank.setId("7");
 				taxon.setRank(rank);
-				taxon.setRankid("7");
+				taxon.setRankid(7);
 				Taxaset taxaset = new Taxaset();
 				taxaset.setId("05313d7bbeb6417b8733cac3f74a830d");
 				taxon.setTaxaset(taxaset);
@@ -303,7 +331,7 @@ public class TestController {
 		List<Taxon> taxonList = taxonRepository.findByTaxaset("68d7c55db3934b588983a5a197147fff");
 		for (Taxon taxon : taxonList) {
 			String scientificname = taxon.getScientificname();
-			String rankid = taxon.getRankid();
+			String rankid = String.valueOf(taxon.getRankid());
 			String remark = taxon.getRemark();
 			if (remark.contains(",")) {
 				String chinese = CommUtils.cutChinese(remark);
@@ -341,7 +369,7 @@ public class TestController {
 		}
 		List<Taxon> taxonList = taxonRepository.findByTaxaset("44cbb5dad5044b599c3125cf921274ec");
 		for (Taxon taxon : taxonList) {
-			String rankid = taxon.getRankid();
+			String rankid = String.valueOf(taxon.getRankid());
 			String scientificname = taxon.getScientificname();
 			String chname = taxon.getChname();
 			List<Description> descriptionListByTaxonId = descriptionRepository

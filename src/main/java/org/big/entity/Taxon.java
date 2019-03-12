@@ -40,7 +40,7 @@ public class Taxon implements Serializable {
 	@Excel(name="命名信息", orderNum = "2")
 	private String authorstr;
 	@Excel(name="rank", orderNum = "3")
-	private String rankid;
+	private int rankid;
 	@Excel(name="备注", orderNum = "4", width = 50.00)
 	private String remark;
 	@Excel(name="种加词",  groupName = "亚种加词", orderNum = "5")
@@ -236,11 +236,11 @@ public class Taxon implements Serializable {
 	}
 
 	
-	public String getRankid() {
+	public int getRankid() {
 		return rankid;
 	}
 
-	public void setRankid(String rankid) {
+	public void setRankid(int rankid) {
 		this.rankid = rankid;
 	}
 

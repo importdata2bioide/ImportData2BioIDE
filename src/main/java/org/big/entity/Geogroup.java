@@ -3,7 +3,6 @@ package org.big.entity;
 import java.io.Serializable;
 import javax.persistence.*;
 
-import java.util.List;
 
 /**
  *<p><b>Geogroup的Entity类</b></p>
@@ -23,6 +22,8 @@ public class Geogroup implements Serializable {
 	 * @author ZXY  
 	 */
 	private static final long serialVersionUID = -5332756687515372112L;
+	
+	
 
 	@Id
 	private String id;
