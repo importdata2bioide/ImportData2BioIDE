@@ -98,28 +98,17 @@ public class TestController {
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		List<Taxon> taxonlist = new ArrayList<>();
-		int total =100000;
-		for (int i = 0; i < total; i++) {
-			Taxon t = new Taxon();
-			t.setAuthorstr("作者测试20190312");
-			t.setId(UUIDUtils.getUUID32());
-			Rank rank = new Rank();
-			rank.setId("7");
-			t.setRank(rank);
-			Taxaset taxaset = new Taxaset();
-			taxaset.setId("05313d7bbeb6417b8733cac3f74a830d");
-			t.setTaxaset(taxaset);
-			taxonlist.add(t);
+		List<Taxon> list = taxonRepository.findByTaxaset("d9154ee24e89424c853f822363731cf4");
+		int i = 0;
+		for (Taxon taxon : list) {
+			i++;
+			taxon.setScientificname(taxon.getScientificname().trim());
+//			taxon.setEpithet(taxon.getEpithet().trim());
+			taxonRepository.save(taxon);
+			if(i%100==0) {
+				System.out.println(i+"--"+list.size());
+			}
 		}
-		try {
-			System.out.println("数量："+taxonlist.size());
-			batchSubmitService.saveAll(taxonlist);
-//			batchSubmitService.saveAllValues(taxonlist);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	private void excelModel() {

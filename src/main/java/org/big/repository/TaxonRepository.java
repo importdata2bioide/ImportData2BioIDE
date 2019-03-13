@@ -1,8 +1,12 @@
 package org.big.repository;
 
+import java.util.Date;
+import java.util.List;
+
 import org.big.entity.Rank;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
+import org.big.entityVO.PartTaxonVO;
 import org.big.repository.base.BaseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +14,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
-import java.util.List;
 
 /**
  *<p><b>Taxon的DAO类接口</b></p>
@@ -138,6 +139,9 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query(value = "select t from Taxon t where t.taxaset.id = ?1")
 	List<Taxon> findByTaxaset(String taxasetId);
 	
+	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.rank.id = ?2")
+	List<Taxon> findByTaxasetAndRankId(String taxasetId,String rankId);
+	
 	
 	@Query(value = "select t from Taxon t where t.remark like %?1% and t.taxaset.id = ?2")
 	List<Taxon> findByRemarkLikeAndTaxaset(String remark,String taxaset);
@@ -155,11 +159,20 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	
 	List<Taxon>  findByRemarkLike(String remark);
 	
-	@Override
-	default <S extends Taxon> List<S> saveAll(Iterable<S> entities) {
-		System.out.println("自定义");
-		return null;
-	}
+	/**
+	 * 
+	 * @Description 为了节约内存，只查询部分字段
+	 * @param taxasetId
+	 * @return
+	 * @author ZXY
+	 */
+	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id,t.epithet from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname =?2",nativeQuery = true)
+	List<Object[]> findByTaxasetAndRank(String taxasetId,String rankName);
 	
+	
+	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname in(?2)",nativeQuery = true)
+	List<Object[]> findByTaxasetAndRankIn(String taxasetId,List<String> rankNames);
+	
+
 	
 }

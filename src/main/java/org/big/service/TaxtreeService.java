@@ -20,6 +20,8 @@ import java.util.List;
  * @since JDK 1.80_144
  */
 public interface TaxtreeService {
+	List<TaxonHasTaxtree> findByTaxtreeId(String taxtreeId);
+
 	
 	int deleteByTaxtreeId(String taxtreeId);
 	/**

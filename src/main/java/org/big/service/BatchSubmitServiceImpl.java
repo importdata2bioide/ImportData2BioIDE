@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.big.common.ConnDB;
 import org.big.common.OrmMapping;
-import org.big.entity.Taxon;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,12 +23,16 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 	public <T> int saveAll(List<T> entities) throws Exception {
 		Connection connection = null;
 		PreparedStatement pstmt = null;
+		if(entities == null || entities.size()==0) {
+			return 0;
+		}
+		Class<? extends Object> entityClass = entities.get(0).getClass();
 		try {
 			Map<Class, LinkedHashMap<String, String>> instance = OrmMapping.getInstance();
 			Map<Class, String> nameMap = OrmMapping.gettableNameMap();//
 			Map<Class, LinkedHashMap<String, String>> fieldTypeMap = OrmMapping.getFieldTypeMap();
-			String tableName = nameMap.get(Taxon.class);// 表名
-			LinkedHashMap<String, String> fieldMapping = instance.get(Taxon.class);
+			String tableName = nameMap.get(entityClass);// 表名
+			LinkedHashMap<String, String> fieldMapping = instance.get(entityClass);
 			StringBuffer columnNames = new StringBuffer();// 字段名称
 			StringBuffer placeholder = new StringBuffer();// 占位符
 			// 生成SQL
@@ -167,12 +170,16 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 	public <T> int saveAllValues(List<T> entities) throws Exception {
 		Connection connection = null;
 		PreparedStatement pstmt = null;
+		if(entities == null || entities.size()==0) {
+			return 0;
+		}
+		Class<? extends Object> entityClass = entities.get(0).getClass();
 		try {
 			Map<Class, LinkedHashMap<String, String>> instance = OrmMapping.getInstance();
 			Map<Class, String> nameMap = OrmMapping.gettableNameMap();//
 			Map<Class, LinkedHashMap<String, String>> fieldTypeMap = OrmMapping.getFieldTypeMap();
-			String tableName = nameMap.get(Taxon.class);// 表名
-			LinkedHashMap<String, String> fieldMapping = instance.get(Taxon.class);
+			String tableName = nameMap.get(entityClass);// 表名
+			LinkedHashMap<String, String> fieldMapping = instance.get(entityClass);
 			StringBuffer prefix = new StringBuffer();// 字段名称
 			prefix.append("INSERT INTO " + tableName + " ");
 			prefix.append("(");

@@ -142,5 +142,8 @@ public interface TaxonHasTaxtreeRepository extends BaseRepository<TaxonHasTaxtre
 	@Query(value = "delete from taxon_has_taxtree where taxon_id  in (select id from taxon where taxaset_id = ?1)", nativeQuery = true)
 	void deleteTaxonHasTaxtreesByTaxaSetId(String tsId);
 	
+	List<TaxonHasTaxtree> findByTaxtreeId(String taxtreeId);
+	
+	
 	
 }

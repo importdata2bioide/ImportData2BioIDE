@@ -553,4 +553,10 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 		
 		return records.size();
 	}
+
+	@Override
+	public List<TaxonHasTaxtree> findByTaxtreeId(String taxtreeId) {
+		return taxonHasTaxtreeRepository.findByTaxtreeId(taxtreeId);
+
+	}
 }
