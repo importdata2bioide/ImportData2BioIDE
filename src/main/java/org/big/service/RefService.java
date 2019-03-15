@@ -2,13 +2,15 @@ package org.big.service;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.big.entity.Ref;
+import org.big.sp2000.entity.Reference;
 
 
 public interface RefService {
+	
+	List<Reference> findRefByUserTurnToReference(String userId) throws Exception;
 	
 	/**
 	 * <b>根据id查询Datasource实体</b>
@@ -53,14 +55,6 @@ public interface RefService {
      */
 	void updateOneById(@Valid Ref thisRef);
 
-	/**
-     *<b>导出当前登录用户的数据源</b>
-     *<p> 导出当前登录用户的数据源</p>
-     * @author BINZI
-	 * @param response
-	 * @return
-	 */
-	List<Ref> export(HttpServletResponse response);
 	/**
 	 * <b>查询失败，创建一条参考文献</b>
 	 * title: RefService.java

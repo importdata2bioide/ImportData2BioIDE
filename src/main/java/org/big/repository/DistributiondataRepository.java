@@ -106,4 +106,7 @@ public interface DistributiondataRepository extends BaseRepository<Distributiond
 	@Modifying
 	@Query(value = "delete from distributiondata where taxon_id  in (select id from taxon where taxaset_id = ?1)", nativeQuery = true)
 	void delDistributiondataByTaxaSetId(String tsId);
+	
+	@Query(value = "select a.id,a.taxon_id,a.geojson,a.discontent from  distributiondata a left join taxon b on b.id = a.taxon_id where b.taxaset_id = ?1",nativeQuery = true)
+	List<Object[]> findDistributionByTaxaset(String taxasetId);
 }

@@ -1,6 +1,7 @@
 package org.big.service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.big.entity.UserDetail;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.PtypeEnum;
 import org.big.repository.RefRepository;
+import org.big.sp2000.entity.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,11 +64,7 @@ public class RefServiceImpl implements RefService {
 		this.refRepository.save(thisRef);
 	}
 
-	@Override
-	public List<Ref> export(HttpServletResponse response) {
-
-		return null;
-	}
+	
 
 	@Override
 	public Ref insertRefIfNotExist(String refstr, String inputerId,String remark) {
@@ -88,6 +86,29 @@ public class RefServiceImpl implements RefService {
 			refRepository.save(ref);
 		}
 		return ref;
+	}
+
+	@Override
+	public List<Reference> findRefByUserTurnToReference(String userId) throws Exception {
+		List<Ref> refslist = refRepository.findAllByUserId(userId);
+		List<Reference> resultlist = new ArrayList<>();
+		for (Ref ref : refslist) {
+			Reference obj = new Reference();
+			obj.setRecordId(ref.getId());
+			if(ref.getLanguages().equals("1")) {//中文
+				obj.setTitleC(ref.getTitle());
+				obj.setAuthorC(ref.getAuthor());
+				obj.setSourceC(ref.getRefstr());
+			}else {
+				obj.setTitle(ref.getTitle());
+				obj.setAuthor(ref.getAuthor());
+				obj.setSource(ref.getRefstr());
+			}
+			obj.setYear(ref.getPyear());
+			obj.setDatabaseId(null);
+			resultlist.add(obj);
+		}
+		return resultlist;
 	}
 
 	

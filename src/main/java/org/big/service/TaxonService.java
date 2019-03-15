@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.big.entity.Taxon;
 import org.big.entityVO.PartTaxonVO;
+import org.big.sp2000.entity.Distribution;
 import org.big.sp2000.entity.Family;
 import org.big.sp2000.entity.ScientificName;
 
@@ -51,5 +52,9 @@ public interface TaxonService {
 
 
 	List<ScientificName> getScientificNamesByTaxaset(String taxasetId, String taxtreeId);
+
+	
+
+	
 
 }

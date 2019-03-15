@@ -96,5 +96,10 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	@Modifying
 	@Query(value = "delete from citation where taxon_id  in (select id from taxon where taxaset_id = ?1)", nativeQuery = true)
 	void deleteCitationByTaxaSetId(String tsId);
+	
+	
+	
+	@Query(value = "select a.id,a.taxon_id,a.sciname,a.authorship,a.nameType,a.citationstr,b.rank_id from citation a left join taxon b on a.taxon_id = b.id where b.taxaset_id = ?1 and a.nametype!=?2",nativeQuery = true)
+	List<Object[]> findByNametypeAndTaxaSet(String taxasetId,int nametypeNotEq);
 
 }

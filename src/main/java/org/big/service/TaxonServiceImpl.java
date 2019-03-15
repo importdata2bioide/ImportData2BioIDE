@@ -4,17 +4,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.common.RankRange;
+import org.big.entity.Citation;
 import org.big.entity.Rank;
 import org.big.entity.Taxon;
 import org.big.entity.TaxonHasTaxtree;
+import org.big.entityVO.NametypeEnum;
 import org.big.entityVO.PartTaxonVO;
+import org.big.entityVO.RankEnum;
+import org.big.repository.CitationRepository;
 import org.big.repository.RankRepository;
 import org.big.repository.TaxonHasTaxtreeRepository;
 import org.big.repository.TaxonRepository;
@@ -23,7 +26,6 @@ import org.big.sp2000.entity.ScientificName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ServerWebInputException;
 
 @Service
 public class TaxonServiceImpl implements TaxonService {
@@ -36,6 +38,8 @@ public class TaxonServiceImpl implements TaxonService {
 	private TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
 	@Autowired
 	private RankRepository rankRepository;
+	@Autowired
+	private CitationRepository citationRepository;
 
 	@Override
 	public void saveOne(Taxon taxon) {
@@ -67,16 +71,18 @@ public class TaxonServiceImpl implements TaxonService {
 	public Map<String, PartTaxonVO> turnToPartTaxonVOMap(List<Object[]> higherThanfamilylist) {
 		Map<String, PartTaxonVO> map = new HashMap<>();
 		for (Object[] obj : higherThanfamilylist) {
-			
-			PartTaxonVO entity = turnPartTaxonVO(obj);;
+
+			PartTaxonVO entity = turnPartTaxonVO(obj);
+			;
 			map.put(entity.getId(), entity);
 		}
 		return map;
 	}
 
 	private PartTaxonVO turnPartTaxonVO(Object[] obj) {
-		 return new PartTaxonVO(String.valueOf(obj[0]), String.valueOf(obj[1]), String.valueOf(obj[2]),
-				Integer.parseInt(obj[3].toString()), String.valueOf(obj[4]),String.valueOf(obj[5]),String.valueOf(obj[6]));
+		return new PartTaxonVO(String.valueOf(obj[0]), String.valueOf(obj[1]), String.valueOf(obj[2]),
+				Integer.parseInt(obj[3].toString()), String.valueOf(obj[4]), String.valueOf(obj[5]),
+				String.valueOf(obj[6]));
 	}
 
 	private List<PartTaxonVO> turnObject2TaxonToFamiles(List<Object[]> objs) {
@@ -177,46 +183,141 @@ public class TaxonServiceImpl implements TaxonService {
 		// 分类单元集下的所有species
 		List<PartTaxonVO> specieslist = turnObject2TaxonToFamiles(
 				taxonRepository.findByTaxasetAndRank(taxasetId, "Species"));
+		List<ScientificName> scientificNamelist = new ArrayList<>();
 		for (PartTaxonVO speciesTaxon : specieslist) {
 			ScientificName scientificName = new ScientificName();
 			String id = speciesTaxon.getId();
 			scientificName.setNameCode(id);
 			getHigherUntilGenusInfo(scientificName, id, lowerThanfamilyMap, relationMap, taxtreeId);
-			scientificName.setSpecies(speciesTaxon.getScientificname());
+			scientificName.setSpecies(speciesTaxon.getEpithet().trim());
 			scientificName.setSpeciesC(speciesTaxon.getChname());
 			scientificName.setAcceptedNameCode(id);
-			scientificName.setScrutinyDate("2019-03-13");
+			scientificName.setScrutinyDate(CommUtils.getCurrentDate("yyyy-MM-dd"));
 			scientificName.setSp2000StatusId(1);
 			scientificName.setAuthor(speciesTaxon.getAuthorstr());
-			scientificName.setFamilyId(getFaimlyId(id,relationMap,lowerThanfamilyMap));
+			scientificName.setFamilyId(getPointRankId(id, relationMap, lowerThanfamilyMap, RankEnum.family.getIndex()));
 			scientificName.setIsAcceptedName(1);
-			scientificName.setCanonicalName(speciesTaxon.getScientificname());//种阶元是属+空格+种加词拉丁名
+			scientificName.setCanonicalName(scientificName.getGenus() + " " + scientificName.getSpecies());// 种阶元是属+空格+种加词拉丁名
 			String originalText = CommUtils.strToJSONObject(speciesTaxon.getRemark()).get("originalText").toString();
-			scientificName.setComments(CommUtils.cutByStrAfter(originalText, speciesTaxon.getChname()).trim());//一般是名称全称，即canonical_name+作者信息
+			scientificName.setComments(CommUtils.cutByStrAfter(originalText, speciesTaxon.getChname()).trim());// 一般是名称全称，即canonical_name+作者信息
+			scientificNamelist.add(scientificName);
 		}
 		// 某分类单元集下的所有subspecies
 		List<PartTaxonVO> subspecieslist = turnObject2TaxonToFamiles(
 				taxonRepository.findByTaxasetAndRank(taxasetId, "subspecies"));
-		
-		return null;
+		for (PartTaxonVO subspeciesTaxon : subspecieslist) {
+			ScientificName scientificName = new ScientificName();
+			String id = subspeciesTaxon.getId();
+			scientificName.setNameCode(id);
+			getHigherUntilGenusInfo(scientificName, id, lowerThanfamilyMap, relationMap, taxtreeId);
+			scientificName.setInfraspecies(subspeciesTaxon.getEpithet().trim());
+			scientificName.setInfraspeciesC(subspeciesTaxon.getChname());
+			scientificName.setAcceptedNameCode(
+					getPointRankId(id, relationMap, lowerThanfamilyMap, RankEnum.species.getIndex()));
+			scientificName.setScrutinyDate(CommUtils.getCurrentDate("yyyy-MM-dd"));
+			scientificName.setSp2000StatusId(1);
+			scientificName.setAuthor(subspeciesTaxon.getAuthorstr());
+			scientificName.setFamilyId(getPointRankId(id, relationMap, lowerThanfamilyMap, RankEnum.family.getIndex()));
+			scientificName.setIsAcceptedName(1);// 如果是接受名，则为1，否则为0
+			scientificName.setCanonicalName(scientificName.getGenus() + " " + scientificName.getSpecies() + " "
+					+ scientificName.getInfraspecies());// 种阶元是属+空格+种加词拉丁名
+			if (StringUtils.isNotEmpty(scientificName.getSpecies())
+					&& !subspeciesTaxon.getScientificname().contains(scientificName.getSpecies())) {
+				throw new ValidationException("亚种和种的父级关系不对：亚种id=" + subspeciesTaxon.getId() + "，亚种中文名="
+						+ subspeciesTaxon.getChname() + ",亚种学名=" + subspeciesTaxon.getScientificname());
+			}
+			String originalText = CommUtils.strToJSONObject(subspeciesTaxon.getRemark()).get("originalText").toString();
+			scientificName.setComments(CommUtils.cutByStrAfter(originalText, subspeciesTaxon.getChname()).trim());// 一般是名称全称，即canonical_name+作者信息
+			scientificName.setInfraspeciesMarker("subsp.");
+			scientificNamelist.add(scientificName);
+		}
+		// 异名
+		List<Citation> ctationlist = convertToCitation(
+				citationRepository.findByNametypeAndTaxaSet(taxasetId, NametypeEnum.acceptedName.getIndex()));
+		for (Citation citation : ctationlist) {
+			ScientificName scientificName = new ScientificName();
+			scientificName.setNameCode(citation.getId());//主键
+			String sciname = citation.getSciname();
+			int rankid = citation.getTaxon().getRankid();
+			switch (rankid) {
+			case 6:// 属的异名
+				scientificName.setGenus(sciname);
+				scientificName.setGenusC(" ");
+				
+				break; 
+			case 12:// 亚属的异名
+				scientificName.setGenus(sciname);
+				scientificName.setGenusC(" ");
+				break;
+			case 7:// 种的异名
+				getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
+						taxtreeId);
+				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
+				break;
+			case 42://亚种的异名
+				getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
+						taxtreeId);
+				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
+				break;
+			default:
+				throw new ValidationException("CITATION 0000C 未定义的rank:" + rankid);
+			}
+			scientificName.setSpeciesC(null);
+			scientificName.setAuthor(citation.getAuthorship());
+			scientificName.setAcceptedNameCode(citation.getTaxon().getId());//指向taxon
+			scientificName.setScrutinyDate(CommUtils.getCurrentDate("yyyy-MM-dd"));
+			scientificName.setSp2000StatusId(citation.getNametype());
+			scientificName.setFamilyId(getPointRankId(citation.getTaxon().getId(), relationMap, lowerThanfamilyMap,
+					RankEnum.family.getIndex()));
+			scientificName.setIsAcceptedName(1);//如果是接受名，则为1，否则为0
+			scientificName.setCanonicalName(citation.getSciname());
+			scientificName.setComments(citation.getCitationstr());
+			scientificNamelist.add(scientificName);
+		}
+		return scientificNamelist;
 	}
 
-	private String getFaimlyId(String id, Map<String, String> relationMap, Map<String, PartTaxonVO> lowerThanfamilyMap) {
-		String pid = relationMap.get(id);
-		PartTaxonVO parentTaxon = lowerThanfamilyMap.get(pid);
-		if(parentTaxon.getRankId()==5) {
-			return parentTaxon.getId();
-		}else {
-			getFaimlyId(parentTaxon.getId(),relationMap,lowerThanfamilyMap);
+	private List<Citation> convertToCitation(List<Object[]> findByNametypeAndTaxaSet) {
+		List<Citation> list = new ArrayList<>();
+		for (Object[] obj : findByNametypeAndTaxaSet) {
+			if (obj[2] == null) {
+				continue;
+			}
+			Citation c = new Citation();
+			c.setId(obj[0].toString());
+			c.setTaxon(new Taxon(obj[1].toString(), obj[6].toString()));
+			c.setSciname(obj[2].toString());
+			c.setAuthorship(obj[3].toString());
+			c.setNametype(Integer.parseInt(obj[4].toString()));
+			c.setCitationstr(obj[5].toString());
+			list.add(c);
 		}
-		return null;
+		return list;
+	}
+
+	private String getPointRankId(String id, Map<String, String> relationMap,
+			Map<String, PartTaxonVO> lowerThanfamilyMap, int rankId) {
+		String pid = "";
+		try {
+			pid = relationMap.get(id);
+			PartTaxonVO parentTaxon = lowerThanfamilyMap.get(pid);
+			if (parentTaxon.getRankId() == rankId) {
+				return parentTaxon.getId();
+			} else {
+				getPointRankId(parentTaxon.getId(), relationMap, lowerThanfamilyMap, rankId);
+			}
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ValidationException("获取指定rank失败，id=" + id + ",pid=" + pid);
+		}
 	}
 
 	/**
 	 * 
 	 * @Description 填充学名和中文名，直到属（包含属信息）
 	 * @param scientificName
-	 * @param id
+	 * @param id                 taxonId,此taxon的学名和中文名不会放到scientificName中
 	 * @param lowerThanfamilyMap
 	 * @param relationMap
 	 * @param taxtreeId
@@ -239,6 +340,7 @@ public class TaxonServiceImpl implements TaxonService {
 		if (RankRange.higherThanGenusRankNames().contains(rank.getEnname())) {
 			return;
 		}
+		String epither = parentTaxon.getEpithet();
 		String scientificname = parentTaxon.getScientificname();
 		String chname = parentTaxon.getChname();
 		switch (rankId) {
@@ -247,7 +349,7 @@ public class TaxonServiceImpl implements TaxonService {
 			scientificName.setGenusC(chname);
 			break;
 		case 7:// 种
-			scientificName.setSpecies(scientificname);
+			scientificName.setSpecies(epither);
 			scientificName.setSpeciesC(chname);
 			break;
 		default:

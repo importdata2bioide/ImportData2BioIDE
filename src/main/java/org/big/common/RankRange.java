@@ -28,6 +28,9 @@ public class RankRange {
 	public static List<String> lowerThanfamilyInculdeRankNames() {
 		List<String> list = new ArrayList<String>();
 		list.add("Family");//科
+		list.add("Subfamily");//亚科
+		list.add("Tribe");//族
+		list.add("subtribe");//亚族
 		list.add("Genus");//属
 		list.add("Subgenus");//亚属
 		list.add("Species");//种

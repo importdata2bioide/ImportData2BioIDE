@@ -163,6 +163,15 @@ public class Taxon implements Serializable {
 	}
 
 
+	public Taxon(String id,String rankId) {
+		this.id = id;
+		this.rankid = Integer.parseInt(rankId);
+		Rank r = new Rank();
+		r.setId(rankId);
+		this.rank = r;
+		
+	}
+
 	public String getExpert() {
 		return expert;
 	}

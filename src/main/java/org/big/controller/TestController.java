@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,6 +24,7 @@ import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
+import org.big.entity.TaxonHasTaxtree;
 import org.big.entityVO.ExcelWithColNumHVO;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.FileTypeEnum;
@@ -31,6 +33,7 @@ import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.repository.CommonnameRepository;
 import org.big.repository.DescriptionRepository;
 import org.big.repository.GeoobjectRepository;
+import org.big.repository.TaxonHasTaxtreeRepository;
 import org.big.repository.TaxonRepository;
 import org.big.repository.TeamRepository;
 import org.big.service.BatchInsertService;
@@ -94,21 +97,48 @@ public class TestController {
 //	private JpaQueryMethod jpaQueryMethod;
 	@Autowired
 	private BatchSubmitService batchSubmitService;
-	
+	@Autowired
+	private TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
+//		CorrectingIncorrectDataForSubspecies();
+	}
+
+	private void CorrectingIncorrectDataForSubspecies() {
+//		String taxtreeId = "";
+//		String taxonId = "418cfc0356ca4da9bc5d5a1f07eb8cff";
+//		Taxon yazhong = taxonRepository.findOneById(taxonId);
+//		String remark = yazhong.getRemark();
+//		String originalText = CommUtils.strToJSONObject(remark).get("originalText").toString();
+//		//录入一个种
+//		
+//		//构建属和种的父级关系
+//		//修改亚种的父级关系
+//		
+//		
+//		TaxonHasTaxtree hasTaxtree = taxonHasTaxtreeRepository.findTaxonHasTaxtreesByTaxonIdAndTaxtreeId(taxon.getId(), taxtreeId);
+		
+		
+	}
+
+	private void insertTest() {
 		List<Taxon> list = taxonRepository.findByTaxaset("d9154ee24e89424c853f822363731cf4");
 		int i = 0;
 		for (Taxon taxon : list) {
 			i++;
-			taxon.setScientificname(taxon.getScientificname().trim());
-//			taxon.setEpithet(taxon.getEpithet().trim());
-			taxonRepository.save(taxon);
+			if(taxon.getScientificname().contains(" ")||(StringUtils.isNotEmpty(taxon.getEpithet())&&taxon.getEpithet().contains(" "))) {
+				taxon.setScientificname(taxon.getScientificname().trim());
+				if(StringUtils.isNotEmpty(taxon.getEpithet())) {
+					taxon.setEpithet(taxon.getEpithet().trim());
+				}
+				taxonRepository.save(taxon);
+			}
 			if(i%100==0) {
 				System.out.println(i+"--"+list.size());
 			}
 		}
+		
 	}
 
 	private void excelModel() {

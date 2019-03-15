@@ -166,11 +166,11 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	 * @return
 	 * @author ZXY
 	 */
-	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id,t.epithet from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname =?2",nativeQuery = true)
+	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id,t.epithet,t.authorstr,t.remark from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname =?2",nativeQuery = true)
 	List<Object[]> findByTaxasetAndRank(String taxasetId,String rankName);
 	
 	
-	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname in(?2)",nativeQuery = true)
+	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id,t.epithet,t.authorstr,t.remark from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname in(?2)",nativeQuery = true)
 	List<Object[]> findByTaxasetAndRankIn(String taxasetId,List<String> rankNames);
 	
 
