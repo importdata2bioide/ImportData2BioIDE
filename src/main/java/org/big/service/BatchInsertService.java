@@ -66,5 +66,8 @@ public interface BatchInsertService {
 	public void batchInsertTaxonHasTaxtree(List<TaxonHasTaxtree> records);
 	
 	public void batchUpdateTaxonOrderNumById(List<Taxon> records);
+	
+	
+	public void batchUpdateTaxonAuthorstrById(List<Taxon> records);
 
 }
