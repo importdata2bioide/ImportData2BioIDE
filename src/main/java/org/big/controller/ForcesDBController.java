@@ -115,7 +115,12 @@ public class ForcesDBController {
 	 */
 	@RequestMapping(value = "/birdKeyitemInsert")
 	public String insertKeyitem(HttpServletRequest request) throws SQLException, ParseException {
-		forcesDBService.insertKeyitem(request);
+		try {
+			forcesDBService.insertKeyitem(request);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 
@@ -172,7 +177,12 @@ public class ForcesDBController {
 	// 俗名
 	@RequestMapping(value = "/birdCommNameInsert")
 	public String insertCommName(HttpServletRequest request) throws SQLException {
-		forcesDBService.insertCommName(request);
+		try {
+			forcesDBService.insertCommName(request);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return "insertCommName execute finish";
 
 	}

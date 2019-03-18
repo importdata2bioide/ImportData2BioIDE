@@ -99,7 +99,7 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	
 	
 	
-	@Query(value = "select a.id,a.taxon_id,a.sciname,a.authorship,a.nameType,a.citationstr,b.rank_id from citation a left join taxon b on a.taxon_id = b.id where b.taxaset_id = ?1 and a.nametype!=?2",nativeQuery = true)
-	List<Object[]> findByNametypeAndTaxaSet(String taxasetId,int nametypeNotEq);
+	@Query(value = "select a.id,a.taxon_id,a.sciname,a.authorship,a.nameType,a.citationstr,b.rank_id from citation a left join taxon b on a.taxon_id = b.id where b.taxaset_id = ?1 and a.nametype!=?2 and b.rank_id in (?3)",nativeQuery = true)
+	List<Object[]> findByNametypeAndTaxaSetAndRankIn(String taxasetId,int nametypeNotEq,List<String> rankNameIn);
 
 }

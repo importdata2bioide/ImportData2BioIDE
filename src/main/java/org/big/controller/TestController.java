@@ -1,9 +1,11 @@
 package org.big.controller;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
+import org.big.common.ConnDB;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
@@ -102,7 +105,7 @@ public class TestController {
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-//		CorrectingIncorrectDataForSubspecies();
+		testBatchInsert();
 	}
 
 	private void CorrectingIncorrectDataForSubspecies() {
@@ -199,25 +202,25 @@ public class TestController {
 		return map;
 	}
 
-	private void test() {
+	private void testBatchInsert() {
 		long startTime = System.currentTimeMillis();
-		int size = 10000;
+		int size = 1000;
 		try {
 			List<Taxon> list = new ArrayList<>(size  + 10);
 			for (int k = 0; k < size; k++) {
 				Taxon taxon = new Taxon();
 				taxon.setId(UUIDUtils.getUUID32());
 				Rank rank = new Rank();
-				rank.setId("7");
+				rank.setId("8");
 				taxon.setRank(rank);
 				taxon.setRankid(7);
 				Taxaset taxaset = new Taxaset();
 				taxaset.setId("05313d7bbeb6417b8733cac3f74a830d");
 				taxon.setTaxaset(taxaset);
-				taxon.setRemark("20190306测试");
+				taxon.setRemark("20190318测试");
 				list.add(taxon);
 			}
-			batchInsertService.batchInsertTaxon(list, "2019-03-01 01:01:01");
+			batchSubmitService.saveAll(list);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

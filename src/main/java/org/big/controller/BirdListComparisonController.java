@@ -53,7 +53,7 @@ public class BirdListComparisonController {
 
 	@RequestMapping("/importbirdListComparison")
 	public void ImportbirdListComparison(HttpServletResponse response)
-			throws UnsupportedEncodingException, SQLException {
+			throws Exception {
 		List<Citation> citationlist = new ArrayList<>();
 		// 第一步，读取excel
 		List<BirdListComparisonExcelVO> list = readExcel("E:\\003采集系统\\新版比对旧版结果.xlsx");
@@ -77,7 +77,7 @@ public class BirdListComparisonController {
 	}
 
 	private boolean parseAndSaveList(List<BirdListComparisonExcelVO> list, List<Citation> citationlist)
-			throws SQLException {
+			throws Exception {
 		boolean result = true;
 		// 逐条循环并解析，遇到错误返回false,并在控制台输出错误信息
 		int j = 0;
@@ -192,7 +192,7 @@ public class BirdListComparisonController {
 		
 	}
 
-	private Map<String, String> getCitationstrAndAuthorship(String taxaId, String sciName) throws SQLException {
+	private Map<String, String> getCitationstrAndAuthorship(String taxaId, String sciName) throws Exception {
 		Map<String, String> mapColum = new HashMap<>();
 		String authorship = "";
 		String citationstr = "";
@@ -289,7 +289,7 @@ public class BirdListComparisonController {
 		return list;
 	}
 
-	public ResultSet query(String sql) throws SQLException {
+	public ResultSet query(String sql) throws Exception {
 		Connection connDB = ConnDB.getConnDB(null);
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 				ResultSet.CONCUR_READ_ONLY);

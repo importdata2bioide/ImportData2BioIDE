@@ -1,5 +1,6 @@
 package org.big.service;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,8 +53,9 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 
 	/**
 	 * 数据放在内存中遍历查询
+	 * @throws IOException 
 	 */
-	public String getTaxonRefjson(String taxonId) throws SQLException {
+	public String getTaxonRefjson(String taxonId) throws SQLException, IOException {
 		JSONArray jsonArray = new JSONArray();
 		initSpeciesPaperlist();
 		// 查找数据
@@ -73,7 +75,7 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 		return jsonArray.toJSONString();
 	}
 
-	public String getAuthorship(String taxonId) throws SQLException {
+	public String getAuthorship(String taxonId) throws SQLException, IOException {
 		initSpecieslist();
 		// 查询数据
 		String authorstr = "";
@@ -102,7 +104,7 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 		return authorstr;
 	}
 
-	public String getCitationRefjson(String taxonId, int nameType) throws SQLException {
+	public String getCitationRefjson(String taxonId, int nameType) throws SQLException, IOException {
 		JSONArray jsonArray = new JSONArray();
 		initSpeciesPaperlist();
 		initSynonymPaper();
@@ -139,10 +141,10 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 		return jsonArray.toJSONString();
 	}
 
-	private void initSynonymPaper() throws SQLException {
+	private void initSynonymPaper() throws SQLException, IOException {
 		if (SynonymPaperList.size() <= 0) {
 			//在旧系统Synonym_Paper中查询数据
-			Connection connDB = ConnDB.getConnDB();
+			Connection connDB = ConnDB.getConnDB(null);
 			String synonymsql = "select PaperID,SynID as TaxaID from Synonym_Paper";
 			PreparedStatement pst2 = connDB.prepareStatement(synonymsql);
 			ResultSet rs = pst2.executeQuery();
@@ -157,10 +159,10 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 		
 	}
 
-	private  void initSpeciesPaperlist() throws SQLException {
+	private  void initSpeciesPaperlist() throws SQLException, IOException {
 		// 初始化数据
 		if (SpeciesPaperlist.size() <= 0) {
-			Connection connDB = ConnDB.getConnDB();
+			Connection connDB = ConnDB.getConnDB(null);
 			String Namesql = "select PaperID,TaxaID from Species_Paper order by  TaxaID desc";
 			PreparedStatement prepareStatement = connDB.prepareStatement(Namesql);
 			ResultSet rs = prepareStatement.executeQuery();
@@ -175,14 +177,14 @@ public class AQueryForcesDBImpl implements AQueryForcesDB {
 	}
 	
 	
-	private void initSpecieslist() throws SQLException {
+	private void initSpecieslist() throws SQLException, IOException {
 		// 初始化数据
 		if (Specieslist.size() <= 0) {
 			Connection connDB = null;
 			ResultSet rs = null;
 			PreparedStatement prepareStatement = null;
 			try {
-				connDB = ConnDB.getConnDB();
+				connDB = ConnDB.getConnDB(null);
 				String Namesql = "select Named_Person as person ,Named_Date as date,TaxaID from species order by TaxaID";
 				prepareStatement = connDB.prepareStatement(Namesql);
 				rs = prepareStatement.executeQuery();

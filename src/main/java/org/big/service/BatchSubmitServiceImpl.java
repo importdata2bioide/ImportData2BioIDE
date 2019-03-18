@@ -48,7 +48,7 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 			placeholder.append(")");
 			String insertSQL = "INSERT INTO " + tableName + " " + columnNames.toString().replace(",)", ")") + " VALUES"
 					+ placeholder.toString().replace(",)", ")");
-			connection = ConnDB.getConnDB();// 打开数据库连接
+			connection = ConnDB.getConnDB(null);// 打开数据库连接
 			connection.setAutoCommit(false);// 关闭自动提交
 			pstmt = connection.prepareStatement(insertSQL);// 预编译SQL
 			for (T t : entities) {
@@ -101,9 +101,9 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 			case "tinyint":
 				pstmt.setInt(parameterIndex, Integer.parseInt(value.toString()));
 				break;
-			case "tinyblob"://
-				pstmt.setBytes(parameterIndex, null);
-				break;
+//			case "tinyblob"://
+//				pstmt.setBytes(parameterIndex, null);
+//				break;
 			case "bigint":
 				pstmt.setInt(parameterIndex, Integer.parseInt(value.toString()));
 				break;
@@ -166,7 +166,6 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 		return getterMethod;
 	}
 
-	@Override
 	public <T> int saveAllValues(List<T> entities) throws Exception {
 		Connection connection = null;
 		PreparedStatement pstmt = null;
@@ -251,7 +250,7 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 			}
 			String finalSql = prefix.append(valuesStr).toString().replace(",)", ")");
 			finalSql = finalSql.substring(0, finalSql.length()-1);
-			connection = ConnDB.getConnDB();// 打开数据库连接
+			connection = ConnDB.getConnDB(null);// 打开数据库连接
 			connection.setAutoCommit(false);// 设置事务为非自动提交
 			pstmt = connection.prepareStatement(finalSql);// 预编译SQL
 			pstmt.addBatch();
@@ -273,7 +272,8 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 		if (value != null && returnType.getName().contains(OrmMapping.entityPackageName)) {
 			Method childMethod = null;
 			Class<? extends Object> childObj = value.getClass();
-			childMethod = childObj.getMethod(convertGetter(childObj, "id").getName());
+			String pk = OrmMapping.getPrimaryKeyMap().get(childObj);
+			childMethod = childObj.getMethod(convertGetter(childObj, pk).getName());
 			value = childMethod.invoke(value);
 			getEntityValue(value, childMethod.getReturnType());
 		} else {

@@ -40,8 +40,9 @@ public interface ForcesDBService {
 	 * @return
 	 * @throws SQLException
 	 * @throws ParseException
+	 * @throws Exception 
 	 */
-	public String insertKeyitem(HttpServletRequest request) throws SQLException, ParseException ;
+	public String insertKeyitem(HttpServletRequest request) throws SQLException, ParseException, Exception ;
 	
 	/**
 	 * 录入taxon
@@ -49,8 +50,9 @@ public interface ForcesDBService {
 	 * @return
 	 * @throws SQLException
 	 * @throws ParseException
+	 * @throws Exception 
 	 */
-	public String insertTaxon(HttpServletRequest request) throws SQLException, ParseException;
+	public String insertTaxon(HttpServletRequest request) throws SQLException, ParseException, Exception;
 	/**
 	 * 录入多媒体
 	 * @param request
@@ -77,15 +79,17 @@ public interface ForcesDBService {
 	 * @param request
 	 * @return
 	 * @throws SQLException
+	 * @throws Exception 
 	 */
-	public String insertCommName(HttpServletRequest request) throws SQLException;
+	public String insertCommName(HttpServletRequest request) throws SQLException, Exception;
 	/**
 	 * 录入参考文献
 	 * @return
 	 * @throws SQLException
 	 * @throws ParseException
+	 * @throws Exception 
 	 */
-	public String insertRefs() throws SQLException, ParseException ;
+	public String insertRefs() throws SQLException, ParseException, Exception ;
 	/**
 	 * 录入描述信息
 	 * @param request

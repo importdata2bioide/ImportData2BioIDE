@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,11 +37,15 @@ public class OrmMapping {
 	private static Map<Class, String> tableNameMap = new HashMap<>();
 	// 实体属性对应的数据库类型
 	private static volatile Map<Class, LinkedHashMap<String, String>> fieldTypeMap = new HashMap<>();
-
+	
+	private static Map<Class, String> primaryKeyMap = new HashMap<>();
 	// 私有构造
 	private OrmMapping() {
 
 	}
+	
+	
+
 
 	// 静态工厂方法
 	public static Map<Class, LinkedHashMap<String, String>> getInstance() throws Exception {
@@ -92,6 +97,12 @@ public class OrmMapping {
 				if (typeName.contains("java.util.List")) {
 					continue;
 				}
+				Id primarykey = field.getAnnotation(javax.persistence.Id.class);
+				if(primarykey!=null) {
+					//实体主键
+					primaryKeyMap.put(cls, field.getName());
+				}
+				
 				Column column = field.getAnnotation(javax.persistence.Column.class);
 				if (column != null && StringUtils.isNotEmpty(column.name())) {
 					databaseField = column.name();
@@ -148,7 +159,7 @@ public class OrmMapping {
 		PreparedStatement preStatement = null;
 		ResultSet result = null;
 		try {
-			Connection conn = ConnDB.getConnDB();
+			Connection conn = ConnDB.getConnDB(null);
 			String sql = "select TABLE_NAME,COLUMN_NAME,DATA_TYPE,IS_NULLABLE,COLUMN_COMMENT from INFORMATION_SCHEMA.Columns where table_name=?";
 			preStatement = conn.prepareStatement(sql);
 			preStatement.setString(1, tableName);
@@ -214,6 +225,16 @@ public class OrmMapping {
 		}
 		return fieldTypeMap;
 	}
+	
+	
+	public static Map<Class, String> getPrimaryKeyMap() throws Exception {
+		if (primaryKeyMap.size() == 0) {
+			getInstance();
+		}
+		return primaryKeyMap;
+	}
+
+
 
 	public static void main(String[] args) throws Exception {
 		Map<Class, LinkedHashMap<String, String>> instance = OrmMapping.getInstance();

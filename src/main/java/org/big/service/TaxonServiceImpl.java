@@ -180,7 +180,7 @@ public class TaxonServiceImpl implements TaxonService {
 		// 根据分类树查询出的上下级关系
 		Map<String, String> relationMap = convertToMap(taxonHasTaxtreeRepository.findByTaxtreeId(taxtreeId));
 		// insert的数据
-		// 分类单元集下的所有species
+		// 1、分类单元集下的所有species
 		List<PartTaxonVO> specieslist = turnObject2TaxonToFamiles(
 				taxonRepository.findByTaxasetAndRank(taxasetId, "Species"));
 		List<ScientificName> scientificNamelist = new ArrayList<>();
@@ -202,7 +202,7 @@ public class TaxonServiceImpl implements TaxonService {
 			scientificName.setComments(CommUtils.cutByStrAfter(originalText, speciesTaxon.getChname()).trim());// 一般是名称全称，即canonical_name+作者信息
 			scientificNamelist.add(scientificName);
 		}
-		// 某分类单元集下的所有subspecies
+		// 2、某分类单元集下的所有subspecies
 		List<PartTaxonVO> subspecieslist = turnObject2TaxonToFamiles(
 				taxonRepository.findByTaxasetAndRank(taxasetId, "subspecies"));
 		for (PartTaxonVO subspeciesTaxon : subspecieslist) {
@@ -231,47 +231,51 @@ public class TaxonServiceImpl implements TaxonService {
 			scientificName.setInfraspeciesMarker("subsp.");
 			scientificNamelist.add(scientificName);
 		}
-		// 异名
-		List<Citation> ctationlist = convertToCitation(
-				citationRepository.findByNametypeAndTaxaSet(taxasetId, NametypeEnum.acceptedName.getIndex()));
+		// 3、species和subspecies的所有异名
+		List<String> rankNameIn = new ArrayList<>();
+		rankNameIn.add(String.valueOf(RankEnum.species.getIndex()));
+		rankNameIn.add(String.valueOf(RankEnum.subsp.getIndex()));
+		List<Citation> ctationlist = convertToCitation(citationRepository.findByNametypeAndTaxaSetAndRankIn(taxasetId,
+				NametypeEnum.acceptedName.getIndex(), rankNameIn));
 		for (Citation citation : ctationlist) {
 			ScientificName scientificName = new ScientificName();
-			scientificName.setNameCode(citation.getId());//主键
+			scientificName.setNameCode(citation.getId());// 主键
 			String sciname = citation.getSciname();
+			getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
+					taxtreeId);
 			int rankid = citation.getTaxon().getRankid();
 			switch (rankid) {
-			case 6:// 属的异名
-				scientificName.setGenus(sciname);
-				scientificName.setGenusC(" ");
-				
-				break; 
-			case 12:// 亚属的异名
-				scientificName.setGenus(sciname);
-				scientificName.setGenusC(" ");
-				break;
-			case 7:// 种的异名
-				getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
-						taxtreeId);
+			case 7:// species的异名
 				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
 				break;
-			case 42://亚种的异名
-				getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
-						taxtreeId);
-				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
+			case 42:// subspecies的异名
+				if (sciname.contains("(")) {// 去掉亚属
+					sciname = CommUtils.cutByStrBefore(sciname, "(").trim() + " "
+							+ CommUtils.cutByStrAfter(sciname, ")").trim();
+				}
+				String[] splits = sciname.split(" ");
+				if (splits.length >= 2) {
+					scientificName.setSpecies(splits[1].trim());
+
+				}
+				if (splits.length >= 3) {
+					scientificName.setInfraspecies(splits[splits.length-1].trim());
+				}
 				break;
 			default:
 				throw new ValidationException("CITATION 0000C 未定义的rank:" + rankid);
 			}
 			scientificName.setSpeciesC(null);
 			scientificName.setAuthor(citation.getAuthorship());
-			scientificName.setAcceptedNameCode(citation.getTaxon().getId());//指向taxon
+			scientificName.setAcceptedNameCode(citation.getTaxon().getId());// 指向taxon
 			scientificName.setScrutinyDate(CommUtils.getCurrentDate("yyyy-MM-dd"));
 			scientificName.setSp2000StatusId(citation.getNametype());
 			scientificName.setFamilyId(getPointRankId(citation.getTaxon().getId(), relationMap, lowerThanfamilyMap,
 					RankEnum.family.getIndex()));
-			scientificName.setIsAcceptedName(1);//如果是接受名，则为1，否则为0
-			scientificName.setCanonicalName(citation.getSciname());
+			scientificName.setIsAcceptedName(0);// 如果是接受名，则为1，否则为0
+			scientificName.setCanonicalName(sciname);
 			scientificName.setComments(citation.getCitationstr());
+			scientificName.setInfraspeciesMarker("var.");
 			scientificNamelist.add(scientificName);
 		}
 		return scientificNamelist;
