@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.big.entity.Ref;
 import org.big.repository.base.BaseRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -106,7 +107,8 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 	@Query(value = "Select r from Ref r where (r.pyear like %?1%) and (r.author like %?2%)  and r.inputer = ?3 and r.remark = ?4")
 	List<Ref> searchByYearAndAuthorAndInpuAndRem(String year, String author ,String inputer,String remark);
 	
-	
+	@Cacheable(value = "findByRefstrAndInputer")
+	@Query(value = "Select r From Ref r Where r.refstr = ?1 and r.inputer = ?2")
 	Ref findByRefstrAndInputer(String refstr,String inputer);
 	
 

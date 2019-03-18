@@ -7,11 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.util.unit.DataSize;
 
 
-//@EnableCaching // 开启缓存支持
+@EnableCaching // 开启缓存支持
 @SpringBootApplication
 public class ImportData2BioIDE extends SpringBootServletInitializer {
 

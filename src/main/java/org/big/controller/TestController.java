@@ -105,7 +105,7 @@ public class TestController {
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		testBatchInsert();
+		geoobjectRepository.findOneById("0000DEFA5FF4434F9378AA1121106FF1");
 	}
 
 	private void CorrectingIncorrectDataForSubspecies() {
