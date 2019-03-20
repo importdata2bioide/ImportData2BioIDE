@@ -313,5 +313,25 @@ public class BatchInsertServiceImpl implements BatchInsertService {
         });
 		
 	}
+	
+	
+	
+	
+	public void batchUpdateCitationById(List<Citation> records) {
+		String sql = "update citation set authorship=?,citationstr=?,remark=? where id=?";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Citation record = records.get(i);
+                ps.setString(1, record.getAuthorship());
+                ps.setString(2, record.getCitationstr());
+                ps.setString(3, record.getRemark());
+                ps.setString(4, record.getId());
+            }
+        });
+		
+	}
 
 }

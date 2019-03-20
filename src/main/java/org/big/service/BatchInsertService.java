@@ -67,7 +67,19 @@ public interface BatchInsertService {
 	
 	public void batchUpdateTaxonOrderNumById(List<Taxon> records);
 	
-	
+	/**
+	 * 
+	 * @Description 
+	 * @param records
+	 * @author ZXY
+	 */
 	public void batchUpdateTaxonAuthorstrById(List<Taxon> records);
+	/**
+	 * 
+	 * @Description 根据主键更新authorship、citationstr、remark字段
+	 * @param records
+	 * @author ZXY
+	 */
+	public void batchUpdateCitationById(List<Citation> records);
 
 }

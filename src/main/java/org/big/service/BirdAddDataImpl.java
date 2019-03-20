@@ -20,6 +20,7 @@ import org.big.entityVO.ExcelUntilB;
 import org.big.entityVO.ExcelUntilK;
 import org.big.entityVO.ExcelUntilP;
 import org.big.entityVO.NametypeEnum;
+import org.big.repository.CitationRepository;
 import org.big.repository.RefRepository;
 import org.big.repository.TaxonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +42,15 @@ public class BirdAddDataImpl implements BirdAddData {
 	private BatchSubmitService batchSubmitService;
 	@Autowired
 	private BatchInsertService batchInsertService;
+	@Autowired
+	private CitationRepository citationRepository;
+	@Autowired
+	private ToolService toolService;
 
 	private String userId_wangtianshan = "95c24cdc24794909bd140664e2ee9c3b";
 	private String datasetId_2019bird = "7da1c0ac-18c6-4710-addd-c9d49e8a2532";
 	private String sourcesId_2019bird = "428700b4-449e-4284-a082-b2fe347682ff";
+	Map<String, String> sciNameMap = new HashMap<>();
 
 	@Override
 	public void importByExcel() throws Exception {
@@ -53,13 +59,13 @@ public class BirdAddDataImpl implements BirdAddData {
 		String UnPasseriformesCitationPath = folderPath + "非雀形目.xlsx";
 		String passeriformesCitationPath = folderPath + "雀形目（整理顺序）.xlsx";
 		String otherCitationPath = folderPath + "其他-引证信息.xlsx";
-		boolean save = false;
+		boolean save = true;
 		// 1、读取参考文献，并保存到map中
 		Map<String, String> refMap = readRefs(reffilePath);
 		// 2、导入非雀形目引证信息
-//		importUnPasseriformesCitation(refMap, UnPasseriformesCitationPath, save);
+//		importCitation(refMap, UnPasseriformesCitationPath, false);
 		// 3、导入雀形目引证信息
-//		importUnPasseriformesCitation(refMap, passeriformesCitationPath, save);
+//		importCitation(refMap, passeriformesCitationPath, false);
 		// 4、导入接受名引证信息
 		otherCitationPath(refMap, otherCitationPath, save);
 	}
@@ -74,15 +80,123 @@ public class BirdAddDataImpl implements BirdAddData {
 	 * @param otherCitationPath
 	 * @param save
 	 * @author ZXY
+	 * @throws Exception
 	 */
-	private void otherCitationPath(Map<String, String> refMap, String filePath, boolean save) {
+	private void otherCitationPath(Map<String, String> refMap, String filePath, boolean save) throws Exception {
 		List<ExcelUntilP> list = readExcel(filePath, ExcelUntilP.class);
+		List<Citation> resultAddlist = new ArrayList<>();
+		List<Citation> resultUpdatelist = new ArrayList<>();
+		List<Taxon> updateTaxonlist = new ArrayList<>();
+		
 		for (ExcelUntilP row : list) {
-			String acceptName = row.getColF().trim();
+			String acceptName = row.getColF();
+			if (StringUtils.isEmpty(acceptName)) {
+				continue;
+			}
+			acceptName = acceptName.trim();
 			List<Object[]> objlist = taxonRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName);
-			Taxon taxon = turnObjToTaxon(objlist, acceptName);
+			Taxon taxon = null;
+			try {
+				taxon = turnObjToTaxon(objlist, acceptName);
+			} catch (Exception e) {
+
+			}
+			if (taxon != null) {
+				String taxonId = taxon.getId();
+				Citation citation = citationRepository.findByTaxonIdAndSciname(taxonId, acceptName);
+				String page = row.getColM();
+				JSONObject remark = null;
+				if (StringUtils.isNotEmpty(page)) {
+					remark = new JSONObject();
+					remark.put("page", page.trim());
+				}
+				String authorship = row.getColK().trim() + "," + row.getColL().trim();
+				if (citation != null) {
+					// 前两个excel已经保存接受名引证，更新命名信息
+					System.out.println("前两个excel已经保存接受名引证了:" + acceptName);
+					// 更新（引证信息）操作,更新的字段有authorship、citationstr、remark
+					if (citation.getAuthorship().contains("(")) {
+						authorship = "(" + authorship + ")";
+					}
+					citation.setAuthorship(authorship);
+					citation.setCitationstr(row.getColN());
+					citation.setRemark(String.valueOf(remark));
+					resultUpdatelist.add(citation);
+				} else {
+					// 新增（引证信息）操作
+					Citation record = new Citation();
+					record.setId(UUIDUtils.getUUID32());
+					record.setSciname(acceptName);
+					record.setAuthorship(authorship);
+					record.setNametype(NametypeEnum.acceptedName.getIndex());
+					record.setCitationstr(row.getColN());
+					record.setSourcesid(sourcesId_2019bird);
+					record.setSourcesidId(sourcesId_2019bird);
+					record.setInputer(userId_wangtianshan);
+					record.setTaxon(taxon);
+					record.setRemark(String.valueOf(remark));
+					record.setStatus(1);
+					resultAddlist.add(record);
+				}
+				if(StringUtils.isNotEmpty(authorship)) {
+					taxon.setAuthorstr(authorship);
+					updateTaxonlist.add(taxon);
+				}
+			}
+
+//			Citation citation = null;
+			// 查询引证
+//			List<Object[]> citalist =  citationRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName); 
+//			try {
+//				citation = turnObjToCitation(citalist, acceptName);
+//			} catch (Exception e) {
+//				
+//			}
+//			boolean exist = existInCitationExcel(acceptName);
+//			if(taxon == null && citation==null) {
+//				System.out.println("1、在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
+////				throw new ValidationException("在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
+//			}
+//			if(taxon != null && citation!=null) {
+//				System.out.println("2、在taxon表和citation表都查询到记录：acceptName="+acceptName);
+////				throw new ValidationException("在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
+//			}
+			// 如果taxon 不等于空，更新taxon命名信息
+			// 如果引证不等于空，更新引证命名信息
+
+		}
+		for (Citation c : resultUpdatelist) {
+			toolService.printEntity(c);
+		}
+		if (save) {
+			batchSubmitService.saveAll(resultAddlist);
+			batchInsertService.batchUpdateCitationById(resultUpdatelist);
+			batchInsertService.batchUpdateTaxonAuthorstrById(updateTaxonlist);
 		}
 
+	}
+
+	private boolean existInCitationExcel(String acceptName) {
+		if (sciNameMap.get(acceptName) != null) {
+			return true;
+		}
+		return false;
+	}
+
+	private Citation turnObjToCitation(List<Object[]> objlist, String sciname) {
+		Citation citation = null;
+		if (objlist.size() != 1) {
+			throw new ValidationException("error turnObjToCitation 从数据库里查询出多条或0条引证数据, sciname=" + sciname);
+		} else {
+			citation = new Citation();
+			Object[] obj = objlist.get(0);
+			citation.setId(obj[0].toString());
+			citation.setSciname(obj[1].toString());
+			citation.setAuthorship(obj[2] == null ? null : obj[2].toString());
+			citation.setNametype(Integer.parseInt(obj[3].toString()));
+			citation.setTaxon(new Taxon(obj[4].toString()));
+		}
+		return citation;
 	}
 
 	/**
@@ -94,14 +208,17 @@ public class BirdAddDataImpl implements BirdAddData {
 	 * @author ZXY
 	 * @throws Exception
 	 */
-	private void importUnPasseriformesCitation(Map<String, String> refMap, String filePath, boolean save)
-			throws Exception {
+	private void importCitation(Map<String, String> refMap, String filePath, boolean save) throws Exception {
 		List<ExcelUntilK> list = readExcel(filePath, ExcelUntilK.class);
 		List<Citation> resultlist = new ArrayList<>();
 		List<Taxon> taxonlist = new ArrayList<>();
 		// 查询taxon
 		for (ExcelUntilK row : list) {
 			String acceptName = row.getColJ().trim();
+			if (StringUtils.isEmpty(acceptName)) {
+				continue;
+			}
+			sciNameMap.put(acceptName, filePath);
 			List<Object[]> objlist = taxonRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName);
 			Taxon taxon = turnObjToTaxon(objlist, acceptName);
 			String sciname = row.getColE().trim();
@@ -179,10 +296,11 @@ public class BirdAddDataImpl implements BirdAddData {
 	}
 
 	private Taxon turnObjToTaxon(List<Object[]> objlist, String acceptName) {
-		Taxon taxon = new Taxon();
+		Taxon taxon = null;
 		if (objlist.size() != 1) {
 			throw new ValidationException("error 从数据库里查询出多条或0条数据, scientificname=" + acceptName);
 		} else {
+			taxon = new Taxon();
 			Object[] obj = objlist.get(0);
 			taxon.setId(obj[0].toString());
 			taxon.setScientificname(obj[1].toString());

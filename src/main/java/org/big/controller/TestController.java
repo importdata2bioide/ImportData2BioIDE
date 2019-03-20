@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +29,7 @@ import org.big.entityVO.ExcelWithColNumHVO;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.FileTypeEnum;
 import org.big.entityVO.LanguageEnum;
+import org.big.entityVO.LineAttreEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.repository.CommonnameRepository;
 import org.big.repository.DescriptionRepository;
@@ -102,10 +105,121 @@ public class TestController {
 	private TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
 	
 	@RequestMapping(value = "/testController_test1")
-	public void test1(HttpServletResponse response) {
-		taxonRepository.findByDatasetAndSciName("111", "111");
-		refRepository.findByRefstrAndInputer("原始","用户id");
+	public void test1(HttpServletResponse response) throws Exception {
+		buchongBird2019();
 	}
+
+	private void buchongBird2019() throws Exception {
+		String txtPath = "E:\\003采集系统\\0002导入鸟类\\20190320-1补充.txt";
+		String fileCode = "UTF-8";
+		//按行读取txt文件
+		List<String> readTxt = CommUtils.readTxt(txtPath, fileCode);
+		for (String line : readTxt) {
+			LineAttreEnum lineAttr = isWhat(line);
+		}
+		
+	}
+
+	private LineAttreEnum isWhat(String line) {
+		LineAttreEnum attr = null;
+		int i =0;
+		System.out.println(line);
+		line = line.trim();
+		//是否为中文名，（以中文开头，以英文结尾）
+		if(isChinese(getChartASC(line,1)) && isEnglish(line.substring(line.length()-1, -1))) {
+			attr = LineAttreEnum.chname;
+			i++;
+		}
+		//是否为亚种
+		if(isSubSpecies(line)) {
+			i++;
+			attr = LineAttreEnum.subsp;
+		}
+		//是否为学名（以英文开头，以英文结尾）
+		if(isEnglish(getChartASC(line,1)) && isEnglish(line.substring(line.length()-1, -1))) {
+			attr = LineAttreEnum.species;
+			i++;
+		}
+		
+		
+		return null;
+	}
+	/**
+	 * 
+	 * @Description 是否为亚种
+	 * @param text
+	 * @param lastLineType
+	 * @return
+	 * @author ZXY
+	 */
+    public static boolean isSubSpecies(String text){
+        if (text.substring(0,1).equals("—")) {//—开头
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    
+    /**
+     * 
+     * @Description 判断是否为英文
+     * @param text
+     * @return
+     * @author ZXY
+     */
+    public static boolean isEnglish(String text){
+        return text.matches("^[a-zA-Z]*");
+    }
+
+    /**
+     * 
+     * @Description 判断是否为中文
+     * @param text
+     * @return
+     * @author ZXY
+     */
+    public static boolean isChinese(String text){
+        String regEx = "[\\u4e00-\\u9fa5]+";
+        Pattern p = Pattern.compile(regEx);
+        Matcher m = p.matcher(text);
+        if(m.find())
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * 
+     * @Description 判断是否为数字
+     * @param text
+     * @return
+     * @author ZXY
+     */
+    public static boolean isNumeric(String text){
+        Pattern pattern = Pattern.compile("[0-9]*");
+        Matcher isNum = pattern.matcher(text);
+        if( !isNum.matches() ){
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * 
+     * @Description 截取字符串的前几位
+     * @param text
+     * @param num
+     * @return
+     * @author ZXY
+     */
+    public  String getChartASC(String text,int num){
+        String result = "";
+        if (StringUtils.isNotEmpty(text)) {
+            result = text.substring(0,num);
+        }
+        return result;
+    }
 
 	private void CorrectingIncorrectDataForSubspecies() {
 		

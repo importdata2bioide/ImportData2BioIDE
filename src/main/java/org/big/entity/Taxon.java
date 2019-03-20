@@ -151,6 +151,13 @@ public class Taxon implements Serializable {
 	public Taxon() {
 	}
 	
+	
+	
+	public Taxon(String id) {
+		super();
+		this.id = id;
+	}
+
 	public Taxon(String scientificname, String chname, String authorstr, String epithet, String nomencode, 
 			String remark) {
 		super();

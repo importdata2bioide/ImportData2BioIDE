@@ -101,5 +101,11 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	
 	@Query(value = "select a.id,a.taxon_id,a.sciname,a.authorship,a.nameType,a.citationstr,b.rank_id from citation a left join taxon b on a.taxon_id = b.id where b.taxaset_id = ?1 and a.nametype!=?2 and b.rank_id in (?3)",nativeQuery = true)
 	List<Object[]> findByNametypeAndTaxaSetAndRankIn(String taxasetId,int nametypeNotEq,List<String> rankNameIn);
+	
+	@Query(value = "select c.id,c.sciname,c.authorship,c.nametype,c.taxon_id from citation c left join taxon t on c.taxon_id = t.id left join taxaset b on t.taxaset_id = b.id where b.dataset_id =?1 and c.sciname =?2",nativeQuery = true)
+	List<Object[]> findByDatasetAndSciName(String datasetId, String sciname);
+	
+	@Query(value = "Select c from Citation c Where c.taxon.id = ?1 and c.sciname = ?2")
+	Citation findByTaxonIdAndSciname(String taxonId, String acceptName);
 
 }

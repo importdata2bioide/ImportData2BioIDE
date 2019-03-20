@@ -81,7 +81,6 @@ public class Citation implements Serializable {
 	private String orderNameC;//注意首字母不要大写
 	
 	@Excel(name="备注", width=40.00)
-	@Transient
 	private String remark;
 	
 	
