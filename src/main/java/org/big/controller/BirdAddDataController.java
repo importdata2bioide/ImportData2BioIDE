@@ -6,6 +6,7 @@ import org.big.service.BirdAddData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 /**
  * 
  * @Description 2019鸟数据补充
@@ -23,9 +24,10 @@ public class BirdAddDataController {
 	 * @throws Exception
 	 * @author ZXY
 	 */
-	@RequestMapping(value = "/importByExcel")
-	public void importByExcel(HttpServletResponse response) throws Exception {
+	@RequestMapping(value = "/importByExcel",method = RequestMethod.GET)
+	public String importByExcel(HttpServletResponse response) throws Exception {
 		birdAddData.importByExcel();
+		return "index";
 	}
 
 

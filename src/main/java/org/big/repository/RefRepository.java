@@ -107,7 +107,7 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 	@Query(value = "Select r from Ref r where (r.pyear like %?1%) and (r.author like %?2%)  and r.inputer = ?3 and r.remark = ?4")
 	List<Ref> searchByYearAndAuthorAndInpuAndRem(String year, String author ,String inputer,String remark);
 	
-	@Cacheable(value = "findByRefstrAndInputer")
+	@Cacheable(value="findByRefstrAndInputer")
 	@Query(value = "Select r From Ref r Where r.refstr = ?1 and r.inputer = ?2")
 	Ref findByRefstrAndInputer(String refstr,String inputer);
 	

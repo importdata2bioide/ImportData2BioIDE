@@ -18,6 +18,7 @@ import org.big.entity.Ref;
 import org.big.entity.Taxon;
 import org.big.entityVO.ExcelUntilB;
 import org.big.entityVO.ExcelUntilK;
+import org.big.entityVO.ExcelUntilP;
 import org.big.entityVO.NametypeEnum;
 import org.big.repository.RefRepository;
 import org.big.repository.TaxonRepository;
@@ -50,10 +51,37 @@ public class BirdAddDataImpl implements BirdAddData {
 		String folderPath = "E:\\003采集系统\\0012鸟类名录\\";
 		String reffilePath = folderPath + "参考文献汇总_0308.xlsx";
 		String UnPasseriformesCitationPath = folderPath + "非雀形目.xlsx";
+		String passeriformesCitationPath = folderPath + "雀形目（整理顺序）.xlsx";
+		String otherCitationPath = folderPath + "其他-引证信息.xlsx";
+		boolean save = false;
 		// 1、读取参考文献，并保存到map中
 		Map<String, String> refMap = readRefs(reffilePath);
 		// 2、导入非雀形目引证信息
-		importUnPasseriformesCitation(refMap, UnPasseriformesCitationPath, false);
+//		importUnPasseriformesCitation(refMap, UnPasseriformesCitationPath, save);
+		// 3、导入雀形目引证信息
+//		importUnPasseriformesCitation(refMap, passeriformesCitationPath, save);
+		// 4、导入接受名引证信息
+		otherCitationPath(refMap, otherCitationPath, save);
+	}
+
+	/**
+	 * 
+	 * @Description 6、 导入引证信息“其他-引证信息.xlsx”，
+	 * @Description 这表都是接受名引证，请用“author”“year”两个字段更新命名信息“authorship”字段，
+	 * @Description 如果原来“authorhsip”字段带括号，请为新的authorship添加括号
+	 * @Description
+	 * @param refMap
+	 * @param otherCitationPath
+	 * @param save
+	 * @author ZXY
+	 */
+	private void otherCitationPath(Map<String, String> refMap, String filePath, boolean save) {
+		List<ExcelUntilP> list = readExcel(filePath, ExcelUntilP.class);
+		for (ExcelUntilP row : list) {
+			String acceptName = row.getColF().trim();
+			List<Object[]> objlist = taxonRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName);
+			Taxon taxon = turnObjToTaxon(objlist, acceptName);
+		}
 
 	}
 
@@ -77,8 +105,8 @@ public class BirdAddDataImpl implements BirdAddData {
 			List<Object[]> objlist = taxonRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName);
 			Taxon taxon = turnObjToTaxon(objlist, acceptName);
 			String sciname = row.getColE().trim();
-			String author = row.getColF();
-			String nametypeStr = row.getColG();
+			String author = row.getColF();// 可能空
+			String nametypeStr = row.getColG();// 可能空值
 			int nametype = -1;
 			String refType = "";
 			switch (nametypeStr) {
@@ -93,13 +121,14 @@ public class BirdAddDataImpl implements BirdAddData {
 			default:
 				throw new ValidationException("未定义的nameType:" + nametypeStr);
 			}
-			String citationstr = row.getColH();
+			String citationstr = row.getColH();// 可能空值
 			String ref = row.getColI();
 			JSONArray jsonArray = new JSONArray();
 			if (StringUtils.isNotEmpty(ref)) {
 				ref = ref.replace(",", ";");
 				String[] refSeqs = ref.split(";");
 				for (String seq : refSeqs) {
+					seq = seq.trim();
 					String refId = refMap.get(seq);
 					if (StringUtils.isEmpty(refId)) {
 						throw new ValidationException("未找到的参考文献序号：" + seq);
@@ -114,7 +143,8 @@ public class BirdAddDataImpl implements BirdAddData {
 
 			}
 			String remark = row.getColK();
-			if (remark.contains("新组合") && nametype == NametypeEnum.acceptedName.getIndex()) {
+			if (StringUtils.isNotEmpty(author) && remark.contains("新组合")
+					&& nametype == NametypeEnum.acceptedName.getIndex()) {
 				author = "(" + author + ")";
 			}
 			// 新建一条引证信息
@@ -131,10 +161,12 @@ public class BirdAddDataImpl implements BirdAddData {
 			record.setSourcesidId(sourcesId_2019bird);
 			record.setInputer(userId_wangtianshan);
 			record.setTaxon(taxon);
+			record.setRemark(remark);
+			record.setStatus(1);
 			resultlist.add(record);
-			//更新taxon的authorstr字段
+			// 更新taxon的authorstr字段
 			taxon.setAuthorstr(author);
-			if(StringUtils.isNotEmpty(author)) {
+			if (StringUtils.isNotEmpty(author)) {
 				taxonlist.add(taxon);
 			}
 

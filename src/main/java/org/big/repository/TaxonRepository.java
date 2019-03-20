@@ -174,7 +174,6 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query(value = "select t.id, t.scientificname,t.chname,t.rank_id,t.epithet,t.authorstr,t.remark from taxon t left join rank r on r.id = t.rank_id where  t.taxaset_id = ?1 and r.enname in(?2)",nativeQuery = true)
 	List<Object[]> findByTaxasetAndRankIn(String taxasetId,List<String> rankNames);
 
-	@Cacheable(value="findByDatasetAndSciName")
 	@Query(value = "select a.id,a.scientificname,a.authorstr,a.epithet,a.chname,a.rank_id from taxon a left join taxaset b on a.taxaset_id = b.id where b.dataset_id = ?1 and  a.scientificname =?2",nativeQuery = true)
 	List<Object[]> findByDatasetAndSciName(String datasetId,String sciName);
 	

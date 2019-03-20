@@ -1,24 +1,20 @@
 package org.big.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
-import org.big.common.ConnDB;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.entity.Commonname;
@@ -27,7 +23,6 @@ import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
-import org.big.entity.TaxonHasTaxtree;
 import org.big.entityVO.ExcelWithColNumHVO;
 import org.big.entityVO.ExcelWithColNumVO;
 import org.big.entityVO.FileTypeEnum;
@@ -36,6 +31,7 @@ import org.big.entityVO.NationalListOfProtectedAnimalsVO;
 import org.big.repository.CommonnameRepository;
 import org.big.repository.DescriptionRepository;
 import org.big.repository.GeoobjectRepository;
+import org.big.repository.RefRepository;
 import org.big.repository.TaxonHasTaxtreeRepository;
 import org.big.repository.TaxonRepository;
 import org.big.repository.TeamRepository;
@@ -52,7 +48,6 @@ import com.alibaba.fastjson.JSONObject;
 
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
-import io.netty.util.internal.SystemPropertyUtil;
 
 @Controller
 @RequestMapping(value = "guest")
@@ -99,16 +94,21 @@ public class TestController {
 //	@Autowired
 //	private JpaQueryMethod jpaQueryMethod;
 	@Autowired
+	private RefRepository refRepository;
+	
+	@Autowired
 	private BatchSubmitService batchSubmitService;
 	@Autowired
 	private TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) {
-		geoobjectRepository.findOneById("0000DEFA5FF4434F9378AA1121106FF1");
+		taxonRepository.findByDatasetAndSciName("111", "111");
+		refRepository.findByRefstrAndInputer("原始","用户id");
 	}
 
 	private void CorrectingIncorrectDataForSubspecies() {
+		
 //		String taxtreeId = "";
 //		String taxonId = "418cfc0356ca4da9bc5d5a1f07eb8cff";
 //		Taxon yazhong = taxonRepository.findOneById(taxonId);

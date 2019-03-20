@@ -84,28 +84,29 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 		if (value != null && returnType.getName().contains(OrmMapping.entityPackageName)) {
 			Method childMethod = null;
 			Class<? extends Object> childObj = value.getClass();
-			childMethod = childObj.getMethod(convertGetter(childObj, "id").getName());
+			String pk = OrmMapping.getPrimaryKeyMap().get(childObj);
+			childMethod = childObj.getMethod(convertGetter(childObj, pk).getName());
 			Object childValue = childMethod.invoke(value);
 			addParameter(pstmt, parameterIndex, childMethod.getReturnType(), dataTypeFromDB, childValue);
 		} else {
 			switch (dataTypeFromDB) {
 			case "varchar":
-				pstmt.setString(parameterIndex, String.valueOf(value));
+				pstmt.setString(parameterIndex, null==value?null:String.valueOf(value));
 				break;
 			case "json":
-				pstmt.setString(parameterIndex, String.valueOf(value));
+				pstmt.setString(parameterIndex, null==value?null:String.valueOf(value));
 				break;
 			case "int":
-				pstmt.setInt(parameterIndex, Integer.parseInt(value.toString()));
+				pstmt.setInt(parameterIndex, null==value?null:Integer.parseInt(value.toString()));
 				break;
 			case "tinyint":
-				pstmt.setInt(parameterIndex, Integer.parseInt(value.toString()));
+				pstmt.setInt(parameterIndex, null==value?null:Integer.parseInt(value.toString()));
 				break;
 //			case "tinyblob"://
 //				pstmt.setBytes(parameterIndex, null);
 //				break;
 			case "bigint":
-				pstmt.setInt(parameterIndex, Integer.parseInt(value.toString()));
+				pstmt.setInt(parameterIndex, null==value?null:Integer.parseInt(value.toString()));
 				break;
 			case "datetime":
 				pstmt.setTimestamp(parameterIndex, new Timestamp(System.currentTimeMillis()));
@@ -117,16 +118,16 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 				pstmt.setTimestamp(parameterIndex, new java.sql.Timestamp(new java.util.Date().getTime()));
 				break;
 			case "longtext":
-				pstmt.setString(parameterIndex, String.valueOf(value));
+				pstmt.setString(parameterIndex, null==value?null:String.valueOf(value));
 				break;
 			case "double":
-				pstmt.setDouble(parameterIndex, (double) value);
+				pstmt.setDouble(parameterIndex, null==value?null:(double) value);
 				break;
 			case "text":
-				pstmt.setString(parameterIndex, String.valueOf(value));
+				pstmt.setString(parameterIndex, null==value?null:String.valueOf(value));
 				break;
 			case "char":
-				pstmt.setString(parameterIndex, String.valueOf(value));
+				pstmt.setString(parameterIndex, null==value?null:String.valueOf(value));
 				break;
 			default:
 				throw new Exception("未定义的dataType : " + dataTypeFromDB);
