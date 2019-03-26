@@ -32,8 +32,6 @@ public class ExcelUtil {
 		this.wb = wb;
 		this.sheet = sheet;
 	}
-	
-
 
 	/**
 	 * 合并单元格后给合并后的单元格加边框
@@ -59,30 +57,7 @@ public class ExcelUtil {
 	 */
 	@SuppressWarnings("deprecation")
 	public XSSFCellStyle getHeadStyle() {
-		// 创建单元格样式
-		XSSFCellStyle cellStyle = wb.createCellStyle();
-		// 设置单元格的背景颜色为淡蓝色
-		cellStyle.setFillForegroundColor(HSSFColor.PALE_BLUE.index);
-		cellStyle.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-		// 设置单元格居中对齐
-		cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-		// 设置单元格垂直居中对齐
-		cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
-		// 创建单元格内容显示不下时自动换行
-		cellStyle.setWrapText(true);
-		// 设置单元格字体样式
-		XSSFFont font = wb.createFont();
-		// 设置字体加粗
-		font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
-		font.setFontName("宋体");
-		font.setFontHeight((short) 200);
-		cellStyle.setFont(font);
-		// 设置单元格边框为细线条
-		cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-		return cellStyle;
+		return null;
 	}
 
 	/**
@@ -92,27 +67,8 @@ public class ExcelUtil {
 	 */
 	@SuppressWarnings("deprecation")
 	public XSSFCellStyle getBodyStyle() {
-		// 创建单元格样式
-		XSSFCellStyle cellStyle = wb.createCellStyle();
-		// 设置单元格居中对齐
-		cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-		// 设置单元格垂直居中对齐
-		cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
-		// 创建单元格内容显示不下时自动换行
-		cellStyle.setWrapText(true);
-		// 设置单元格字体样式
-		XSSFFont font = wb.createFont();
-		// 设置字体加粗
-		font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
-		font.setFontName("宋体");
-		font.setFontHeight((short) 200);
-		cellStyle.setFont(font);
-		// 设置单元格边框为细线条
-		cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-		cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-		return cellStyle;
+		return null;
+
 	}
 
 	/**
@@ -124,28 +80,28 @@ public class ExcelUtil {
 	 * @throws IOException
 	 * @author ZXY
 	 */
-	public static List<List<String>> readXlsxOrXls(String filePath,String[] notReadSheetNames) throws IOException {
+	public static List<List<String>> readXlsxOrXls(String filePath, String[] notReadSheetNames) throws IOException {
 		if (filePath.contains("~$")) {
 			// 临时文件，目的是为了防止文档信息丢失
 			// 意外断电，也会造成那些文档不自动消失，也会像正常文件一样始终保存在电脑中
 			// 此类文件不处理
 			return null;
 		} else if (filePath.endsWith(".xlsx")) {
-			return readXlsx(filePath,notReadSheetNames);
+			return readXlsx(filePath, notReadSheetNames);
 		} else if (filePath.endsWith(".xls")) {
-			return readXls(filePath,notReadSheetNames);
+			return readXls(filePath, notReadSheetNames);
 		} else {
 			return null;
 		}
 
 	}
-	
+
 	public static XSSFWorkbook getXlsxWorkBook(String path) throws IOException {
 		InputStream input = new FileInputStream(path);
 		XSSFWorkbook workbook = new XSSFWorkbook(input);
 		return workbook;
 	}
-	
+
 	public static HSSFWorkbook getXlsWorkBook(String path) throws IOException {
 		InputStream input = new FileInputStream(path);
 		HSSFWorkbook workbook = new HSSFWorkbook(input);
@@ -153,18 +109,18 @@ public class ExcelUtil {
 	}
 
 	// 导入excel
-	public static List<List<String>> readXlsx(String path,String[] notReadSheetNames) throws IOException {
+	public static List<List<String>> readXlsx(String path, String[] notReadSheetNames) throws IOException {
 //		System.out.println(path);
 		InputStream input = new FileInputStream(path);
-		return readXlsx(input,notReadSheetNames);
+		return readXlsx(input, notReadSheetNames);
 	}
 
-	public static List<List<String>> readXls(String path,String[] notReadSheetNames) throws IOException {
+	public static List<List<String>> readXls(String path, String[] notReadSheetNames) throws IOException {
 		InputStream input = new FileInputStream(path);
-		return readXls(input,notReadSheetNames);
+		return readXls(input, notReadSheetNames);
 	}
 
-	public static List<List<String>> readXlsx(InputStream input,String[] notReadSheetNames) throws IOException {
+	public static List<List<String>> readXlsx(InputStream input, String[] notReadSheetNames) throws IOException {
 		List<List<String>> result = new ArrayList<List<String>>();
 		/*
 		 * HSSFWorkbook workbook = new HSSFWorkbook(input); for (int numSheet = 0;
@@ -178,9 +134,9 @@ public class ExcelUtil {
 			if (xssfSheet == null) {
 				continue;
 			}
-			//notReadSheetNames中的数据跳过，不读取
+			// notReadSheetNames中的数据跳过，不读取
 			for (String notReadSheetName : notReadSheetNames) {
-				if(xssfSheet.getSheetName().trim().equals(notReadSheetName)) {
+				if (xssfSheet.getSheetName().trim().equals(notReadSheetName)) {
 					continue;
 				}
 			}
@@ -201,7 +157,7 @@ public class ExcelUtil {
 					try {
 						String oneCell = cell.toString();
 						if (CommUtils.isStrNotEmpty(oneCell) && !"*".equals(oneCell.trim())) {
-							rowList.add(oneCell.replaceAll("\\s* ", " "));//replace special space
+							rowList.add(oneCell.replaceAll("\\s* ", " "));// replace special space
 						}
 					} catch (Exception e) {
 //						continue;
@@ -214,12 +170,12 @@ public class ExcelUtil {
 				}
 			}
 		}
-		
+
 		input.close();
 		return result;
 	}
 
-	public static List<List<String>> readXls(InputStream input,String[] notReadSheetNames) throws IOException {
+	public static List<List<String>> readXls(InputStream input, String[] notReadSheetNames) throws IOException {
 		List<List<String>> result = new ArrayList<List<String>>();
 		@SuppressWarnings("resource")
 		HSSFWorkbook workbook = new HSSFWorkbook(input);
@@ -228,9 +184,9 @@ public class ExcelUtil {
 			if (sheet == null) {
 				continue;
 			}
-			//notReadSheetNames中的数据跳过，不读取
+			// notReadSheetNames中的数据跳过，不读取
 			for (String notReadSheetName : notReadSheetNames) {
-				if(sheet.getSheetName().trim().equals(notReadSheetName)) {
+				if (sheet.getSheetName().trim().equals(notReadSheetName)) {
 					continue;
 				}
 			}
@@ -247,7 +203,7 @@ public class ExcelUtil {
 					try {
 						String oneCell = getStringVal(cell);
 						if (CommUtils.isStrNotEmpty(oneCell) && !"*".equals(oneCell.trim())) {
-							rowList.add(oneCell.replaceAll("\\s*", " "));//replace special space
+							rowList.add(oneCell.replaceAll("\\s*", " "));// replace special space
 						}
 					} catch (Exception e) {
 //						continue;
@@ -266,21 +222,7 @@ public class ExcelUtil {
 
 	@SuppressWarnings("deprecation")
 	private static String getStringVal(HSSFCell cell) {
-		switch (cell.getCellType()) {
-		case Cell.CELL_TYPE_BOOLEAN:
-			return cell.getBooleanCellValue() ? "TRUE" : "FALSE";
-		case Cell.CELL_TYPE_FORMULA:
-			return cell.getCellFormula();
-		case Cell.CELL_TYPE_NUMERIC:
-			cell.setCellType(Cell.CELL_TYPE_STRING);
-			return cell.getStringCellValue();
-		case Cell.CELL_TYPE_STRING:
-			return cell.getStringCellValue();
-		default:
-			return null;
-		}
+		return null;
 	}
-	
-	
-	
+
 }

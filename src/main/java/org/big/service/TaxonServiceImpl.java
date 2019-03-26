@@ -198,8 +198,8 @@ public class TaxonServiceImpl implements TaxonService {
 			scientificName.setFamilyId(getPointRankId(id, relationMap, lowerThanfamilyMap, RankEnum.family.getIndex()));
 			scientificName.setIsAcceptedName(1);
 			scientificName.setCanonicalName(scientificName.getGenus() + " " + scientificName.getSpecies());// 种阶元是属+空格+种加词拉丁名
-			String originalText = CommUtils.strToJSONObject(speciesTaxon.getRemark()).get("originalText").toString();
-			scientificName.setComments(CommUtils.cutByStrAfter(originalText, speciesTaxon.getChname()).trim());// 一般是名称全称，即canonical_name+作者信息
+			String comments = speciesTaxon.getScientificname().trim()+" "+speciesTaxon.getAuthorstr();
+			scientificName.setComments(comments.trim());// 一般是名称全称，即canonical_name+作者信息
 			scientificNamelist.add(scientificName);
 		}
 		// 2、某分类单元集下的所有subspecies
@@ -226,8 +226,8 @@ public class TaxonServiceImpl implements TaxonService {
 				throw new ValidationException("亚种和种的父级关系不对：亚种id=" + subspeciesTaxon.getId() + "，亚种中文名="
 						+ subspeciesTaxon.getChname() + ",亚种学名=" + subspeciesTaxon.getScientificname());
 			}
-			String originalText = CommUtils.strToJSONObject(subspeciesTaxon.getRemark()).get("originalText").toString();
-			scientificName.setComments(CommUtils.cutByStrAfter(originalText, subspeciesTaxon.getChname()).trim());// 一般是名称全称，即canonical_name+作者信息
+			String comments = subspeciesTaxon.getScientificname().trim()+" "+subspeciesTaxon.getAuthorstr();
+			scientificName.setComments(comments.trim());// 一般是名称全称，即canonical_name+作者信息
 			scientificName.setInfraspeciesMarker("subsp.");
 			scientificNamelist.add(scientificName);
 		}
@@ -240,19 +240,27 @@ public class TaxonServiceImpl implements TaxonService {
 		for (Citation citation : ctationlist) {
 			ScientificName scientificName = new ScientificName();
 			scientificName.setNameCode(citation.getId());// 主键
-			String sciname = citation.getSciname();
+			String sciname = citation.getSciname().trim();
+			if (sciname.contains("(")) {// 去掉亚属
+				sciname = CommUtils.cutByStrBefore(sciname, "(").trim() + " "
+						+ CommUtils.cutByStrAfter(sciname, ")").trim();
+			}
 			getHigherUntilGenusInfo(scientificName, citation.getTaxon().getId(), lowerThanfamilyMap, relationMap,
 					taxtreeId);
 			int rankid = citation.getTaxon().getRankid();
 			switch (rankid) {
 			case 7:// species的异名
-				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
+				String[] spli = sciname.split(" ");
+				if (spli.length >= 2) {
+					scientificName.setSpecies(spli[1].trim());
+
+				}
+				if (spli.length >= 3) {
+					scientificName.setInfraspecies(spli[spli.length-1].trim());
+				}
+//				scientificName.setSpecies(sciname.substring(sciname.lastIndexOf(" ")).trim());
 				break;
 			case 42:// subspecies的异名
-				if (sciname.contains("(")) {// 去掉亚属
-					sciname = CommUtils.cutByStrBefore(sciname, "(").trim() + " "
-							+ CommUtils.cutByStrAfter(sciname, ")").trim();
-				}
 				String[] splits = sciname.split(" ");
 				if (splits.length >= 2) {
 					scientificName.setSpecies(splits[1].trim());
@@ -279,6 +287,11 @@ public class TaxonServiceImpl implements TaxonService {
 			scientificNamelist.add(scientificName);
 		}
 		return scientificNamelist;
+	}
+
+	private void fileSpeciesAndInfraspecies(ScientificName scientificName, String sciname) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private List<Citation> convertToCitation(List<Object[]> findByNametypeAndTaxaSet) {

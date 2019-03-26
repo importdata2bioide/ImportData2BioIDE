@@ -59,13 +59,13 @@ public class BirdAddDataImpl implements BirdAddData {
 		String UnPasseriformesCitationPath = folderPath + "非雀形目.xlsx";
 		String passeriformesCitationPath = folderPath + "雀形目（整理顺序）.xlsx";
 		String otherCitationPath = folderPath + "其他-引证信息.xlsx";
-		boolean save = true;
+		boolean save = false;
 		// 1、读取参考文献，并保存到map中
 		Map<String, String> refMap = readRefs(reffilePath);
 		// 2、导入非雀形目引证信息
-//		importCitation(refMap, UnPasseriformesCitationPath, false);
+//		importCitation(refMap, UnPasseriformesCitationPath, save);
 		// 3、导入雀形目引证信息
-//		importCitation(refMap, passeriformesCitationPath, false);
+//		importCitation(refMap, passeriformesCitationPath, save);
 		// 4、导入接受名引证信息
 		otherCitationPath(refMap, otherCitationPath, save);
 	}
@@ -87,7 +87,7 @@ public class BirdAddDataImpl implements BirdAddData {
 		List<Citation> resultAddlist = new ArrayList<>();
 		List<Citation> resultUpdatelist = new ArrayList<>();
 		List<Taxon> updateTaxonlist = new ArrayList<>();
-		
+		int i = 0;
 		for (ExcelUntilP row : list) {
 			String acceptName = row.getColF();
 			if (StringUtils.isEmpty(acceptName)) {
@@ -102,6 +102,11 @@ public class BirdAddDataImpl implements BirdAddData {
 
 			}
 			if (taxon != null) {
+				String author = row.getColK();
+				String year = row.getColL();
+				if(StringUtils.isEmpty(author) &&StringUtils.isEmpty(year)) {
+					continue;
+				}
 				String taxonId = taxon.getId();
 				Citation citation = citationRepository.findByTaxonIdAndSciname(taxonId, acceptName);
 				String page = row.getColM();
@@ -113,7 +118,7 @@ public class BirdAddDataImpl implements BirdAddData {
 				String authorship = row.getColK().trim() + "," + row.getColL().trim();
 				if (citation != null) {
 					// 前两个excel已经保存接受名引证，更新命名信息
-					System.out.println("前两个excel已经保存接受名引证了:" + acceptName);
+//					System.out.println("前两个excel已经保存接受名引证了:" + acceptName);
 					// 更新（引证信息）操作,更新的字段有authorship、citationstr、remark
 					if (citation.getAuthorship().contains("(")) {
 						authorship = "(" + authorship + ")";
@@ -142,32 +147,17 @@ public class BirdAddDataImpl implements BirdAddData {
 					taxon.setAuthorstr(authorship);
 					updateTaxonlist.add(taxon);
 				}
+			}else {
+				i++;
+//				System.out.println(row.getColA()+"	"+row.getColB()+"	"+row.getColC()+"	"+row.getColD()+"	"+row.getColE()+"	"+row.getColF()+"	"+row.getColG()+"	"+row.getColH()+"	"+row.getColI()+"	"+row.getColJ()+"	"+row.getColK()+"	"+row.getColL()+"	"+row.getColM()+"	"+row.getColN()+"	"+row.getColO()+"	"+row.getColP());
 			}
-
-//			Citation citation = null;
-			// 查询引证
-//			List<Object[]> citalist =  citationRepository.findByDatasetAndSciName(datasetId_2019bird, acceptName); 
-//			try {
-//				citation = turnObjToCitation(citalist, acceptName);
-//			} catch (Exception e) {
-//				
-//			}
-//			boolean exist = existInCitationExcel(acceptName);
-//			if(taxon == null && citation==null) {
-//				System.out.println("1、在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
-////				throw new ValidationException("在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
-//			}
-//			if(taxon != null && citation!=null) {
-//				System.out.println("2、在taxon表和citation表都查询到记录：acceptName="+acceptName);
-////				throw new ValidationException("在taxon表和citation表都没有查询到一条记录：acceptName="+acceptName);
-//			}
-			// 如果taxon 不等于空，更新taxon命名信息
-			// 如果引证不等于空，更新引证命名信息
-
 		}
-		for (Citation c : resultUpdatelist) {
-			toolService.printEntity(c);
-		}
+//		for (Citation c : resultUpdatelist) {
+//			toolService.printEntity(c);
+//		}
+		System.out.println("更新："+resultUpdatelist.size());
+		System.out.println("新增："+resultAddlist.size());
+		System.out.println("没有找到的："+i);
 		if (save) {
 			batchSubmitService.saveAll(resultAddlist);
 			batchInsertService.batchUpdateCitationById(resultUpdatelist);

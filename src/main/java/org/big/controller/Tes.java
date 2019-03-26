@@ -2,6 +2,7 @@ package org.big.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -15,8 +16,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.POIXMLDocument;
+import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.BodyElementType;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -26,31 +28,54 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-import org.apdplat.word.WordSegmenter;
-import org.apdplat.word.segmentation.Word;
-import org.big.common.CommUtils;
 import org.big.common.ConstFile;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
+import com.google.common.collect.Range;
+
 public class Tes {
-	
-	
 
 	public static void main(String[] args) {
-		System.out.println(WordSegmenter.seg("日本。"));
 		
+
 	}
+
+	
+	/**
+	 * 
+	 * @Title: readWord2007
+	 * @Description: @param：
+	 * @return String @user： wangzg
+	 * @Date：2014-7-4 @throws
+	 */
+//	public static String readWord2007(String filePath) {
+//
+//		String text = null;
+//		try {
+//			OPCPackage oPCPackage = POIXMLDocument.openPackage(filePath);
+//			XWPFDocument xwpf = new XWPFDocument(oPCPackage);
+//			POIXMLTextExtractor ex = new XWPFWordExtractor(xwpf);
+//			text = ex.getText();
+//			System.out.println(text);
+//			oPCPackage.close();
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		return text;
+//	}
 
 	private static void readWordWithTextAndPic() {
 		Map<String, String> map = new HashMap<String, String>();
 //		String importPath = "E:\\003采集系统\\0010四册版\\昆虫\\昆虫2.docx";
 //		String absolutePath = "E:\\003采集系统\\0010四册版\\昆虫\\图";
-		
+
 //		String importPath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\软体动物、线虫和杂草.docx";
 //		String absolutePath = "E:\\003采集系统\\0010四册版\\软体动物、线虫和杂草\\图";
-		
+
 		String importPath = "E:\\003采集系统\\0010四册版\\真菌\\真菌.docx";
 		String absolutePath = "E:\\003采集系统\\0010四册版\\真菌\\测试用图";
 		try {
@@ -62,7 +87,7 @@ public class Tes {
 			for (XWPFPictureData picture : pictures) {
 				picCount++;
 				String id = picture.getParent().getRelationId(picture);// 这里获取图片在word中唯一标识
-				
+
 				File folder = new File(absolutePath);
 				if (!folder.exists()) {
 					folder.mkdirs();
@@ -95,7 +120,7 @@ public class Tes {
 						String runXmlText = null;
 						try {
 							runXmlText = run.getCTR().xmlText();
-							
+
 							int rIdIndex = runXmlText.indexOf("r:embed");
 							int rIdEndIndex = runXmlText.indexOf("/>", rIdIndex);
 							String rIdText = runXmlText.substring(rIdIndex, rIdEndIndex);
@@ -189,127 +214,127 @@ public class Tes {
 	 * @param filePath
 	 * @return
 	 */
-	public static Document readWord(String filePath) {
-
-		Document document = DocumentHelper.createDocument();
-		Element wordE = DocumentHelper.createElement("word");
-		document.add(wordE);
-
-		Map<String, String> picMap = new HashMap<String, String>();// 保存图片文件的word中id和生成的UUID作为文件名
-
-		String text = "";
-		File file = new File(filePath);
-		if (file.getName().endsWith(".docx")) { // 2007
-			try {
-				OPCPackage oPCPackage = POIXMLDocument.openPackage(filePath);
-				XWPFDocument xwpf = new XWPFDocument(oPCPackage);
-//				POIXMLTextExtractor ex = new XWPFWordExtractor(xwpf);
-
-				Iterator<IBodyElement> iter = xwpf.getBodyElementsIterator();
-				int curT = 0;// 当前操作表格对象索引
-				int curP = 0;// 当前操作文字对象索引
-				StringBuffer content = new StringBuffer();
-				int imageCount = 0;
-				while (iter.hasNext()) {
-					IBodyElement ibe = iter.next();
-					if (ibe.getElementType().equals(BodyElementType.TABLE)) {// 处理表格
-						XWPFTable table = ibe.getBody().getTableArray(curT);
-
-						Element tableE = DocumentHelper.createElement(ConstFile.TABLE);
-
-						List<XWPFTableRow> rowList = table.getRows();
-						if (rowList != null && rowList.size() > 0) {
-							for (XWPFTableRow row : rowList) {
-
-								Element rowE = DocumentHelper.createElement(ConstFile.ROW);
-
-								List<XWPFTableCell> cellList = row.getTableCells();
-								if (cellList != null && cellList.size() > 0) {
-									for (XWPFTableCell cell : cellList) {
-
-										Element colE = DocumentHelper.createElement(ConstFile.COL);
-										colE.setText(cell.getText());
-//										colE.addAttribute("color", cell.getColor()); //此处本来想提取table中文字颜色，发现返回基本是同一个，提取失败
-										rowE.add(colE);
-
-									}
-								}
-
-								tableE.add(rowE);
-							}
-						}
-
-						wordE.add(tableE);
-
-						curT++;
-					} else if (ibe.getElementType().equals(BodyElementType.PARAGRAPH)) {// 处理文字
-						boolean isPic = false;// 表示是否是图片标志
-						XWPFParagraph p = ibe.getBody().getParagraphArray(curP);
-						curP++;
-						// 下面的代码来确定图片所在位置
-						List<XWPFRun> runList = p.getRuns();
-						if (runList != null && runList.size() > 0) {
-							for (XWPFRun run : runList) {
-								String runXmlText = run.getCTR().xmlText();
-								// 图片索引
-								if (runXmlText.indexOf("<w:drawing") != -1) {
-									int rIdIndex = runXmlText.indexOf("r:embed=");
-									int ridEndIndex = runXmlText.indexOf("/>", rIdIndex);
-									/*
-									 * rIdText格式： rId4 rId5
-									 */
-									String rIdText = runXmlText.substring(rIdIndex + "r:embed=".length() + 1,
-											ridEndIndex - 1);
-									imageCount++;
-									String pfName = imageCount+"";
-									picMap.put(rIdText, pfName);
-									isPic = true;
-
-									Element pictureE = DocumentHelper.createElement(ConstFile.PICTURE);
-									pictureE.setText(pfName);
-									wordE.add(pictureE);
-								} else if (runXmlText.indexOf("<w:t") != -1) {// 文字
-									Element paragraphE = DocumentHelper.createElement(ConstFile.PARAGRAPH);
-//									paragraphE.addAttribute("color",
-//											OtherUtil.isNotEmpty(run.getColor()) ? run.getColor() : "000000");// 格式：0000FF
-//									paragraphE.addAttribute("fontSize", String.valueOf(run.getFontSize()));
-									paragraphE.setText(run.toString());
-									wordE.add(paragraphE);
-								}
-							}
-						}
-
-					}
-				}
-				// 这里输出只是为了看效果，不是工具类的一部分
-				System.out.println(content.toString());
-//				OutputFormat opf = new OutputFormat(" ",true);
-//		    	opf.setEncoding("UTF-8");
-//		    	XMLWriter xmlW = new XMLWriter(new FileOutputStream("d:\\tmp\\person.xml"),opf);
-//		    	xmlW.write(document);
-//		    	xmlW.close();
-				// 对word中读取生成一个xml格式
-				/*
-				 * 读取图片所在位置，然后保存图片 输出格式： rId4 rId5
-				 */
-				List<XWPFPictureData> xwpfPicList = xwpf.getAllPictures();
-				for (XWPFPictureData p : xwpfPicList) {
-					String id = p.getParent().getRelationId(p);
-					String pfName = picMap.get(id);
-					byte[] pb = p.getData();
-					String pName = p.getFileName();
-					FileOutputStream fos = new FileOutputStream(
-							ConstFile.PIC_PATH + File.separator + pfName + pName.substring(pName.indexOf(".")));
-					fos.write(pb);
-					fos.flush();
-					fos.close();
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return document;
-	}
+//	public static Document readWord(String filePath) {
+//
+//		Document document = DocumentHelper.createDocument();
+//		Element wordE = DocumentHelper.createElement("word");
+//		document.add(wordE);
+//
+//		Map<String, String> picMap = new HashMap<String, String>();// 保存图片文件的word中id和生成的UUID作为文件名
+//
+//		String text = "";
+//		File file = new File(filePath);
+//		if (file.getName().endsWith(".docx")) { // 2007
+//			try {
+//				OPCPackage oPCPackage = POIXMLDocument.openPackage(filePath);
+//				XWPFDocument xwpf = new XWPFDocument(oPCPackage);
+////				POIXMLTextExtractor ex = new XWPFWordExtractor(xwpf);
+//
+//				Iterator<IBodyElement> iter = xwpf.getBodyElementsIterator();
+//				int curT = 0;// 当前操作表格对象索引
+//				int curP = 0;// 当前操作文字对象索引
+//				StringBuffer content = new StringBuffer();
+//				int imageCount = 0;
+//				while (iter.hasNext()) {
+//					IBodyElement ibe = iter.next();
+//					if (ibe.getElementType().equals(BodyElementType.TABLE)) {// 处理表格
+//						XWPFTable table = ibe.getBody().getTableArray(curT);
+//
+//						Element tableE = DocumentHelper.createElement(ConstFile.TABLE);
+//
+//						List<XWPFTableRow> rowList = table.getRows();
+//						if (rowList != null && rowList.size() > 0) {
+//							for (XWPFTableRow row : rowList) {
+//
+//								Element rowE = DocumentHelper.createElement(ConstFile.ROW);
+//
+//								List<XWPFTableCell> cellList = row.getTableCells();
+//								if (cellList != null && cellList.size() > 0) {
+//									for (XWPFTableCell cell : cellList) {
+//
+//										Element colE = DocumentHelper.createElement(ConstFile.COL);
+//										colE.setText(cell.getText());
+////										colE.addAttribute("color", cell.getColor()); //此处本来想提取table中文字颜色，发现返回基本是同一个，提取失败
+//										rowE.add(colE);
+//
+//									}
+//								}
+//
+//								tableE.add(rowE);
+//							}
+//						}
+//
+//						wordE.add(tableE);
+//
+//						curT++;
+//					} else if (ibe.getElementType().equals(BodyElementType.PARAGRAPH)) {// 处理文字
+//						boolean isPic = false;// 表示是否是图片标志
+//						XWPFParagraph p = ibe.getBody().getParagraphArray(curP);
+//						curP++;
+//						// 下面的代码来确定图片所在位置
+//						List<XWPFRun> runList = p.getRuns();
+//						if (runList != null && runList.size() > 0) {
+//							for (XWPFRun run : runList) {
+//								String runXmlText = run.getCTR().xmlText();
+//								// 图片索引
+//								if (runXmlText.indexOf("<w:drawing") != -1) {
+//									int rIdIndex = runXmlText.indexOf("r:embed=");
+//									int ridEndIndex = runXmlText.indexOf("/>", rIdIndex);
+//									/*
+//									 * rIdText格式： rId4 rId5
+//									 */
+//									String rIdText = runXmlText.substring(rIdIndex + "r:embed=".length() + 1,
+//											ridEndIndex - 1);
+//									imageCount++;
+//									String pfName = imageCount + "";
+//									picMap.put(rIdText, pfName);
+//									isPic = true;
+//
+//									Element pictureE = DocumentHelper.createElement(ConstFile.PICTURE);
+//									pictureE.setText(pfName);
+//									wordE.add(pictureE);
+//								} else if (runXmlText.indexOf("<w:t") != -1) {// 文字
+//									Element paragraphE = DocumentHelper.createElement(ConstFile.PARAGRAPH);
+////									paragraphE.addAttribute("color",
+////											OtherUtil.isNotEmpty(run.getColor()) ? run.getColor() : "000000");// 格式：0000FF
+////									paragraphE.addAttribute("fontSize", String.valueOf(run.getFontSize()));
+//									paragraphE.setText(run.toString());
+//									wordE.add(paragraphE);
+//								}
+//							}
+//						}
+//
+//					}
+//				}
+//				// 这里输出只是为了看效果，不是工具类的一部分
+//				System.out.println(content.toString());
+////				OutputFormat opf = new OutputFormat(" ",true);
+////		    	opf.setEncoding("UTF-8");
+////		    	XMLWriter xmlW = new XMLWriter(new FileOutputStream("d:\\tmp\\person.xml"),opf);
+////		    	xmlW.write(document);
+////		    	xmlW.close();
+//				// 对word中读取生成一个xml格式
+//				/*
+//				 * 读取图片所在位置，然后保存图片 输出格式： rId4 rId5
+//				 */
+//				List<XWPFPictureData> xwpfPicList = xwpf.getAllPictures();
+//				for (XWPFPictureData p : xwpfPicList) {
+//					String id = p.getParent().getRelationId(p);
+//					String pfName = picMap.get(id);
+//					byte[] pb = p.getData();
+//					String pName = p.getFileName();
+//					FileOutputStream fos = new FileOutputStream(
+//							ConstFile.PIC_PATH + File.separator + pfName + pName.substring(pName.indexOf(".")));
+//					fos.write(pb);
+//					fos.flush();
+//					fos.close();
+//				}
+//
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		return document;
+//	}
 
 }

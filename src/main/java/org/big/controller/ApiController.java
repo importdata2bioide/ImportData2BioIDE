@@ -29,7 +29,7 @@ public class ApiController {
 	private DistributiondataService distributiondataService;
 	/**
 	 * 
-	 * @Description 参考文献
+	 * @Description 某用户的所有参考文献
 	 * @param userId
 	 * @return
 	 * @author ZXY
@@ -51,7 +51,7 @@ public class ApiController {
 	
 	/**
 	 * 
-	 * @Description 高阶元
+	 * @Description 某分类单元集下的所有高阶元taxon
 	 * @param taxasetId
 	 * @param taxtreeId
 	 * @return
@@ -75,7 +75,7 @@ public class ApiController {
 	
 	/**
 	 * 
-	 * @Description 低阶元
+	 * @Description 某分类单元集下的所有低阶元taxon
 	 * @param taxasetId
 	 * @param taxtreeId
 	 * @return
@@ -97,7 +97,7 @@ public class ApiController {
 	
 	/**
 	 * 
-	 * @Description 分布
+	 * @Description 某分类单元集下的所有分布数据
 	 * @param taxasetId
 	 * @return
 	 * @author ZXY

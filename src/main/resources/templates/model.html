@@ -19,6 +19,7 @@
 		<div class="row btn_row" >
 		<hr>
 			<button type="button" class="btn btn-primary btn_reset" style="margin-left:3%">重置[RESET]</button>
+			<button type="button" class="btn btn-primary btn_ml_fish" style="margin-left:3%">2019鱼类名录</button>
 			<button type="button" class="btn btn-primary btn_SCB_yhAndbd" style="margin-left:3%">四册版，原核生物及病毒</button>
 			<button type="button" class="btn btn-primary btn_SCB_RXZ" style="margin-left:3%">四册版，软体动物、线虫和杂草</button>
 			<button type="button" class="btn btn-primary btn_SCB_kunchong" style="margin-left:3%">四册版，昆虫</button>
@@ -230,6 +231,19 @@ $(function() {
 	    $('input[name=filePath]').val('E:\\003采集系统\\0007-5-2-1-金效华\\汇交专项-植物专题\\植物志数据修改后\\');//文件路径
 	});	
 	
+	//btn_ml_fish
+	$(".btn_ml_fish").click(function() {
+	    $(".executeResult").text("");
+	    $('input[name=mActionUrl]').val('/guest/fishController_addFish');//访问路径
+	    $('input[name=mLoginUser]').val('');//录入人id
+	    $('input[name=mExpert]').val('');//审核人id
+	    $('input[name=mSourcesid]').val('');//数据源id
+	    $('input[name=mInputtimeStr]').val('2019-03-26 01:01:01');//录入时间（字符串）
+	    $('input[name=mTaxasetId]').val('');//分类单元集id
+	    $('input[name=mTaxtreeId]').val('');//分类树id
+	    $("input[name=insert][value=false]").attr("checked",true); //是否录入数据库
+	    $('input[name=filePath]').val('');//文件路径
+	});		
 
 	
     

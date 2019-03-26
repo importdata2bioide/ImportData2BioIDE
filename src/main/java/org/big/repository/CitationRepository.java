@@ -107,5 +107,11 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	
 	@Query(value = "Select c from Citation c Where c.taxon.id = ?1 and c.sciname = ?2")
 	Citation findByTaxonIdAndSciname(String taxonId, String acceptName);
-
+	
+	//Containing 	like '%xxx%'
+	List<Citation> findByAuthorshipContaining(String authorship);
+	
+	List<Citation> findByScinameEndingWith(String sciname);
+	
+	
 }

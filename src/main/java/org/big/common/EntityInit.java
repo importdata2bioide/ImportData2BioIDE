@@ -97,10 +97,11 @@ public class EntityInit {
 		taxaset.setId(params.getmTaxasetId());
 		record.setTaxaset(taxaset);
 		//rank 分类等级,默认为species
-		
 		if(record.getRankid() == 0 && record.getRank() == null) {
-			Rank rank = new Rank();
 			record.setRankid(RankEnum.species.getIndex());
+		}
+		if(record.getRankid()!= 0) {
+			Rank rank = new Rank();
 			rank.setId(String.valueOf(record.getRankid()));
 			record.setRank(rank);
 		}

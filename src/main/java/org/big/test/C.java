@@ -1,7 +1,10 @@
 package org.big.test;
 
+import java.util.List;
 import java.util.Locale;
 
+import org.big.common.CommUtils;
+import org.big.entity.Taxon;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.internal.util.StringHelper;
@@ -10,10 +13,13 @@ import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 public class C {
 	
 	public static void main(String[] args) {
-		C c = new C();
-		
-		String apply = c.apply("loginName");
-		System.out.println(apply);
+		String rgex = "\\([0-9]*\\)|\\（[0-9]*\\）";  
+		String line = "()蒲氏黏盲鳗(斯蒂芬)";
+		List<String> subUtil = CommUtils.getSubUtil(line , rgex);
+		for (String str : subUtil) {
+			line = line.replace(str, "");
+		}
+		System.out.println(line);
 	}
 	
 	public String apply(String name) {

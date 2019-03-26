@@ -47,12 +47,57 @@ public class CommUtils {
 	public static String uploadPath = "upload/";// 文件在新采集系统的保存路径
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
-
+	
+	public static final String yuanwen= "originalText";
+	public static final String parentId = "parentId";
+	public static final String parentName = "parentName";
+	
 	public static String cutNumber(String line) {
 		String regEx = "[^0-9]";
 		Pattern p = Pattern.compile(regEx);
 		Matcher m = p.matcher(line);
 		return m.replaceAll("").trim();
+	}
+	
+	/**
+	 * 
+	 * @Description 正则表达式匹配两个指定字符串中间的内容 
+	 * @param str
+	 * @param rgex
+	 * @return
+	 * @author ZXY
+	 */
+    public static List<String> getSubUtil(String str,String rgex){  
+        List<String> list = new ArrayList<String>();  
+        Pattern pattern = Pattern.compile(rgex);// 匹配的模式  
+        Matcher m = pattern.matcher(str);  
+        while (m.find()) {  
+        	int i = 0;  
+            list.add(m.group(i));  
+            i++;  
+        }  
+        return list;  
+    }  
+	
+	/**
+	 * 
+	 * @Description 第一个英文字母的位置
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	public static int indexOfFirstLetter(String line) {
+		int index = -1;
+		for (int i = 0; i < line.length(); i++) {
+			char charAt = line.charAt(i);
+			if (String.valueOf(charAt).matches("[a-zA-Z]")) {
+				return index+1;
+				
+			}
+			index++;
+		}
+		return index;
+
 	}
 
 	public static String removeChinese(String line) {
@@ -302,7 +347,7 @@ public class CommUtils {
 		if (isStrNotEmpty(str)) {
 			return JSONObject.parseObject(str);
 		}
-		return null;
+		return new JSONObject();
 
 	}
 

@@ -19,6 +19,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
+import org.big.entity.Citation;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
 import org.big.entity.Geoobject;
@@ -31,6 +32,7 @@ import org.big.entityVO.FileTypeEnum;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.LineAttreEnum;
 import org.big.entityVO.NationalListOfProtectedAnimalsVO;
+import org.big.repository.CitationRepository;
 import org.big.repository.CommonnameRepository;
 import org.big.repository.DescriptionRepository;
 import org.big.repository.GeoobjectRepository;
@@ -81,8 +83,8 @@ public class TestController {
 //	private DatasetRepository datasetRepository;
 	@Autowired
 	private TeamRepository teamRepository;
-//	@Autowired
-//	private CitationRepository citationRepository;
+	@Autowired
+	private CitationRepository citationRepository;
 //	@Autowired
 //	private KeyitemService keyitemService;
 //	@Autowired
@@ -106,7 +108,41 @@ public class TestController {
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) throws Exception {
-		buchongBird2019();
+		updateCitationSciName();
+	}
+	
+	private void updateCitationSciName() {
+		List<Citation> list = citationRepository.findByScinameEndingWith(",");
+		for (Citation citation : list) {
+			String id = citation.getId();
+			String sciname = citation.getSciname();
+			if(sciname.endsWith(",")) {
+				String newSciname = sciname.substring(0, sciname.length()-1);
+				citation.setSciname(newSciname.trim());
+				System.out.println(sciname+"||"+newSciname);
+//				citationRepository.save(citation);
+			}
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private void updateCitation() {
+		List<Citation> list = citationRepository.findByAuthorshipContaining("var.");
+		System.out.println(list.size());
+		for (Citation citation : list) {
+			String id = citation.getId();
+			String sciname = citation.getSciname();
+			String authorship = citation.getAuthorship();
+			String delVar = CommUtils.cutByStrAfter(authorship, "var.").trim();
+			String trueAuthor = delVar.substring(delVar.indexOf(" ")+1).trim();
+			String partSciName = CommUtils.cutByStrBefore(authorship, trueAuthor);
+			String trueSciName = sciname.trim()+" "+partSciName.trim();
+			System.out.println(sciname+"||"+authorship+"||"+trueAuthor+"||"+trueSciName);
+			citation.setAuthorship(trueAuthor.trim());
+			citation.setSciname(trueSciName.trim());
+		}
+		batchInsertService.batchUpdateNameAndAuthorById(list);
+	
 	}
 
 	private void buchongBird2019() throws Exception {

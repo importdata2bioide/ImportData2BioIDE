@@ -3,7 +3,9 @@ package org.big.test;
 import java.util.List;
 
 import org.apdplat.word.WordSegmenter;
+import org.apdplat.word.segmentation.PartOfSpeech;
 import org.apdplat.word.segmentation.Word;
+import org.apdplat.word.tagging.PartOfSpeechTagging;
 
 /**
  * 
@@ -15,15 +17,15 @@ import org.apdplat.word.segmentation.Word;
 public class ApdplatWordTest {
 	
 	public static void main(String[] args) {
-		 long startTime = System.currentTimeMillis();
-		System.out.println("执行时间："+(System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
-		System.out.println(WordSegmenter.segWithStopWords("地理分布：美洲的美国、加拿大、墨西哥、巴西、智力，大洋洲的澳大利亚、新西兰，欧洲的英国、捷克、斯洛伐克、意大利，亚洲的日本、沙特阿拉伯等"));
-		System.out.println("执行时间："+(System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
-		System.out.println(WordSegmenter.segWithStopWords("某些炎热、干燥的柑桔产区, 包括美国加利福尼亚州, 北非的多数地区, 东地中海盆地和中东。"));
-		System.out.println("执行时间："+(System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
-		System.out.println(WordSegmenter.segWithStopWords("地理分布：原产欧洲，盛产于叙利亚和巴勒斯坦一带，在我国分布于黑龙江、吉林、辽宁、内蒙古、山东、宁夏、青海、新疆、江苏、江西、湖北、云南、西藏、河北、山西、上海、浙江、湖南、福建、北京、陕西、河南、甘肃、安徽、四川和广东等省（市、区）。"));
-		System.out.println("执行时间："+(System.currentTimeMillis() - startTime)/60000+"min, "+(System.currentTimeMillis() - startTime)/1000 + "s ( "+(System.currentTimeMillis() - startTime)+"ms)");
-		
+		String descontent = "I. 盲鳗纲Myxini";
+		List<Word> words = WordSegmenter.segWithStopWords(descontent );//分词，不移除停用词
+		PartOfSpeechTagging.process(words);// 词性标注
+		for (Word word : words) {
+			PartOfSpeech speech = word.getPartOfSpeech();
+			String des = speech.getDes();// 词性
+			String text = word.getText();
+			System.out.println(des+"__"+text);
+		}
 	}
 
 }
