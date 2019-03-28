@@ -114,6 +114,10 @@ public interface TaxonHasTaxtreeRepository extends BaseRepository<TaxonHasTaxtre
 	@Query(value = "select tht from TaxonHasTaxtree tht where tht.pid = ?1 and tht.taxtreeId = ?2 ")
 	TaxonHasTaxtree findTaxonHasTaxtreesByPidAndTaxtreeId(String taxonId,String taxtreeId);
 	
+	@Query(value = "select tht from TaxonHasTaxtree tht where tht.pid = ?1 and tht.taxtreeId = ?2 ")
+	List<TaxonHasTaxtree> findRootNodeByTaxtreeId(String pid,String taxtreeId);
+	
+	
 	@Query(value = "select tht from TaxonHasTaxtree tht where tht.taxonId = ?1 and tht.taxtreeId = ?2 ")
 	TaxonHasTaxtree findTaxonHasTaxtreesByTaxonIdAndTaxtreeId(String taxonId,String taxtreeId);
 	/**

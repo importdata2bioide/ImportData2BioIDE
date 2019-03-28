@@ -5,6 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -22,6 +23,7 @@ import java.sql.Timestamp;
  * @since JDK 1.80_144
  */
 @Entity
+@Table(name = "commonname")
 public class Commonname implements Serializable{
    
 	/**

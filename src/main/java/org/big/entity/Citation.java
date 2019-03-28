@@ -12,6 +12,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.big.common.StringJsonUserType;
 import org.hibernate.annotations.TypeDef;
 
@@ -140,6 +141,9 @@ public class Citation implements Serializable {
 	}
 
 	public void setAuthorship(String authorship) {
+		if(StringUtils.isNotEmpty(authorship)) {
+			authorship = authorship.trim();
+		}
 		this.authorship = authorship;
 	}
 
@@ -148,6 +152,9 @@ public class Citation implements Serializable {
 	}
 
 	public void setCitationstr(String citationstr) {
+		if(StringUtils.isNotEmpty(citationstr)) {
+			citationstr = citationstr.trim();
+		}
 		this.citationstr = citationstr;
 	}
 
@@ -188,6 +195,9 @@ public class Citation implements Serializable {
 	}
 
 	public void setSciname(String sciname) {
+		if(StringUtils.isNotEmpty(sciname)) { 
+			sciname = sciname.trim();
+		}
 		this.sciname = sciname;
 	}
 

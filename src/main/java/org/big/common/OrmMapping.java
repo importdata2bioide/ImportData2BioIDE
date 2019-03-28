@@ -71,6 +71,7 @@ public class OrmMapping {
 			javax.persistence.Table table = (javax.persistence.Table) annotation;
 			String tableName = table.name();
 			if (StringUtils.isEmpty(table.name())) {
+				System.out.println(cls.getSimpleName());
 				continue;
 			}
 			tableNameMap.put(cls, tableName);

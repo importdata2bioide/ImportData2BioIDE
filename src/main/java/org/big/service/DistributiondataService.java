@@ -28,5 +28,14 @@ public interface DistributiondataService {
 	 */
 	List<Distribution> getDistributionByTaxaset(String taxasetId);
 	
+	/**
+	 * 
+	 * @Description 解析文本中的分布地
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	String getDisJsonByLine(String line);
+	
 	
 }

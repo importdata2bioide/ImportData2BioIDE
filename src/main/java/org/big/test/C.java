@@ -1,26 +1,35 @@
 package org.big.test;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.big.common.CommUtils;
-import org.big.entity.Taxon;
+import org.big.service.ToolServiceImpl;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.internal.util.StringHelper;
-import org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy;
 
 public class C {
 	
 	public static void main(String[] args) {
-		String rgex = "\\([0-9]*\\)|\\（[0-9]*\\）";  
-		String line = "()蒲氏黏盲鳗(斯蒂芬)";
-		List<String> subUtil = CommUtils.getSubUtil(line , rgex);
-		for (String str : subUtil) {
-			line = line.replace(str, "");
+		ToolServiceImpl t = new ToolServiceImpl();
+		String line = "Ep(Tatretus burgeri (Girard, 1855)";
+		int caseIndex = t.getSecondUpperCaseIndex(line);
+		System.out.println(line.substring(caseIndex-1,caseIndex));
 		}
-		System.out.println(line);
+	
+	public int getYearStart(String line) {
+		int start = -1;
+		for (int i = 0; i < line.length() - 4; i++) {
+			String tmp = line.substring(i, i + 4);
+			if (CommUtils.isNumeric(tmp)) {
+				start = i;
+				break;
+			}
+		}
+		return start;
+
 	}
+
 	
 	public String apply(String name) {
 		if (name == null) {

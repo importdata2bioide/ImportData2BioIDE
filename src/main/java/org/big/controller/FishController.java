@@ -12,11 +12,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class FishController {
 	@Autowired
 	private ParseWordService parseWordService;
-	
+	/**
+	 * 
+	 * @Description 2019鱼类名录5个word
+	 * @param baseParamsForm
+	 * @return
+	 * @throws Exception
+	 * @author ZXY
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/fishController_addFish",method=RequestMethod.POST)
 	public String addFish(BaseParamsForm baseParamsForm) throws Exception {
-		parseWordService.readExcelAndOutputWord(baseParamsForm);
+		try {
+			parseWordService.readExcelAndOutputWord(baseParamsForm);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return e.getMessage();
+		}
 		return "success";
 	}
 

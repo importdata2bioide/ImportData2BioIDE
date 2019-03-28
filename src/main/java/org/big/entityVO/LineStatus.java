@@ -9,23 +9,29 @@ import org.big.entity.Taxon;
  *
  */
 public class LineStatus {
-	public Taxon class_;// 纲
-	public Taxon order;// 目
-	public Taxon superfamily;// 超科
-	public Taxon family;// 科
-	public Taxon subfamily;// 亚科
-	public Taxon tribe;// 族
-	public Taxon subtribe;// 亚族
-	public Taxon genus;// 属
-	public Taxon subgenus;// 亚属
-	public Taxon species;// 种
-	public Taxon subspecies;// 亚种
+	private Taxon class_;// 纲
+	private Taxon order;// 目
+	private Taxon superfamily;// 超科
+	private Taxon family;// 科
+	private Taxon subfamily;// 亚科
+	private Taxon tribe;// 族
+	private Taxon subtribe;// 亚族
+	private Taxon genus;// 属
+	private Taxon subgenus;// 亚属
+	private Taxon species;// 种
+	private Taxon subspecies;// 亚种
 
-	public SpeciesCatalogueEnum lastLineType;
+	private SpeciesCatalogueEnum lastLineType;
 	
 	public Taxon getParentOfSubspecies() {
 		if (species != null) {
 			return species;
+		}
+		if (subgenus != null) {
+			return subgenus;
+		}
+		if (genus != null) {
+			return genus;
 		}
 		return null;
 	}

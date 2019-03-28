@@ -5,7 +5,9 @@ import java.sql.Timestamp;
 
 import javax.persistence.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.big.common.StringJsonUserType;
+import org.big.entityVO.RankEnum;
 import org.hibernate.annotations.TypeDef;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
@@ -208,6 +210,9 @@ public class Taxon implements Serializable {
 	}
 
 	public void setChname(String chname) {
+		if(StringUtils.isNotEmpty(chname)) {
+			chname = chname.trim();
+		}
 		this.chname = chname;
 	}
 
@@ -216,6 +221,9 @@ public class Taxon implements Serializable {
 	}
 
 	public void setAuthorstr(String authorstr) {
+		if(StringUtils.isNotEmpty(authorstr)) {
+			authorstr = authorstr.trim();
+		}
 		this.authorstr = authorstr;
 	}
 
@@ -224,6 +232,9 @@ public class Taxon implements Serializable {
 	}
 
 	public void setEpithet(String epithet) {
+		if(StringUtils.isNotEmpty(epithet)) {
+			epithet = epithet.trim();
+		}
 		this.epithet = epithet;
 	}
 
@@ -257,7 +268,18 @@ public class Taxon implements Serializable {
 	}
 
 	public void setRankid(int rankid) {
+		scinameAndRankToEpithet(rankid,this.scientificname);
 		this.rankid = rankid;
+	}
+	
+	private void scinameAndRankToEpithet(int rankid,String sciname) {
+		if(rankid!=0 && StringUtils.isNotEmpty(sciname)) {
+			if(rankid == RankEnum.species.getIndex()) {
+				this.epithet = sciname.substring(sciname.lastIndexOf(" ")+1).trim();
+			}else if(rankid == RankEnum.subsp.getIndex()) {
+				this.epithet = sciname.substring(sciname.lastIndexOf(" ")+1).trim();
+			}
+		}
 	}
 
 	public void setInputtime(Date inputtime) {
@@ -289,6 +311,10 @@ public class Taxon implements Serializable {
 	}
 
 	public void setScientificname(String scientificname) {
+		if(StringUtils.isNotEmpty(scientificname)) {
+			scientificname = scientificname.trim();
+		}
+		scinameAndRankToEpithet(this.rankid,scientificname);
 		this.scientificname = scientificname;
 	}
 

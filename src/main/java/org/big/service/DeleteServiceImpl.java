@@ -294,7 +294,7 @@ public class DeleteServiceImpl implements DeleteService {
 
 	@Override
 	public List<Team> findAllTeams() {
-		return teamRepository.findAll();
+		return teamRepository.findAllOrderByAdddateDesc();
 	}
 
 	@Override

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class RedisAspect {
 	@Autowired
 	private RedisTools redisTools;
-	//   execution( * org.big.repository.RefRepository.findByRefstrAndInputer(..))
-	@Pointcut("execution( * org.big.repository.TaxonRepository.findByDatasetAndSciName(..))")
+	//   execution( * org.big.repository.GeoobjectRepository.findOneByCngeoname(..))
+	@Pointcut("execution( * org.big.repository.DescriptiontypeRepository.findOneByName(..)) or execution( * org.big.repository.GeoobjectRepository.find*(..))")
 	public void redisCacheMethod() {
 	}
 

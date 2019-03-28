@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.big.entity.Geoobject;
 import org.big.repository.base.BaseRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -64,14 +65,15 @@ public interface GeoobjectRepository extends BaseRepository<Geoobject, String> {
     @Query(value = "Select go from Geoobject go where cngeoname like %?1% and (go.citycode in  ('0') or go.id in ('DEA27AFE9A4A480B9D9F1061DFAE85F9','6240992072A5401AA54EC65986C6A1C6','D8041FB023F246E5BACA74A62C4B3622','C07768E11C894F7BAE7AA4A6AAE9C307','E5359306A80541A1BB12338548F4CC53'))")
     Geoobject findOneByLikeCngeoname(String cngeoname);
     
+    
+    @Cacheable("org.big.repository.GeoobjectRepository.findByLikeCngeoname(String)")
     @Query(value = "Select go from Geoobject go where cngeoname like %?1%  order by adcode asc")
     List<Geoobject> findByLikeCngeoname(String cngeoname);
     
     @Query(value = "Select go from Geoobject go where remark like %?1%  order by adcode asc")
     List<Geoobject> findByLikeRemark(String remark);
     
-    
-    
+    @Cacheable("org.big.repository.GeoobjectRepository.findOneByCngeoname(String)")
     @Query(value = "Select go from Geoobject go where cngeoname = ?1")
     Geoobject findOneByCngeoname(String cngeoname);
     

@@ -88,5 +88,12 @@ public interface BatchInsertService {
 	 * @author ZXY
 	 */
 	public void batchUpdateNameAndAuthorById(List<Citation> records);
+	/**
+	 * 
+	 * @Description 更新TaxonHasTaxtree.preTaxon
+	 * @param list
+	 * @author ZXY
+	 */
+	public void updateTaxonHasTaxtree(List<TaxonHasTaxtree> list);
 
 }

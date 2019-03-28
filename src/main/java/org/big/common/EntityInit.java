@@ -18,7 +18,16 @@ import org.big.entityVO.RankEnum;
 public class EntityInit {
 
 	public static void initDistributiondata(Distributiondata record, BaseParamsForm params) {
-		Timestamp timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		String id = record.getId();
+		if (CommUtils.isStrEmpty(id)) {
+			record.setId(UUIDUtils.getUUID32());
+		}
+		Timestamp timestamp = null;
+		if (StringUtils.isEmpty(params.getmInputtimeStr())) {
+			timestamp = CommUtils.getTimestamp(CommUtils.getCurrentDate());
+		} else {
+			timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		}
 		record.setInputer(params.getmLoginUser());
 		record.setSourcesid(params.getmSourcesid());
 		record.setInputtime(timestamp);
@@ -41,7 +50,12 @@ public class EntityInit {
 			record.setSourcesid(params.getmSourcesid());
 		}
 
-		Timestamp timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		Timestamp timestamp = null;
+		if (StringUtils.isEmpty(params.getmInputtimeStr())) {
+			timestamp = CommUtils.getTimestamp(CommUtils.getCurrentDate());
+		} else {
+			timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		}
 		record.setInputtime(timestamp);
 		record.setSynchdate(timestamp);
 
@@ -63,7 +77,12 @@ public class EntityInit {
 		if (CommUtils.isStrEmpty(params.getmInputtimeStr())) {
 			params.setmInputtimeStr(CommUtils.getCurrentDate());
 		}
-		Timestamp timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		Timestamp timestamp = null;
+		if (StringUtils.isEmpty(params.getmInputtimeStr())) {
+			timestamp = CommUtils.getTimestamp(CommUtils.getCurrentDate());
+		} else {
+			timestamp = CommUtils.getTimestamp(params.getmInputtimeStr());
+		}
 		record.setInputtime(timestamp);
 		record.setSynchdate(timestamp);
 
@@ -152,6 +171,9 @@ public class EntityInit {
 
 		record.setStatus(1);
 		record.setSynchstatus(0);
+		if(StringUtils.isEmpty(record.getLicenseid())) {
+			record.setLicenseid("4");
+		}
 	}
 
 }

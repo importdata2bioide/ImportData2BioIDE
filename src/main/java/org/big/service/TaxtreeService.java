@@ -292,5 +292,13 @@ public interface TaxtreeService {
      * @author ZXY
      */
     int saveTreeByJsonRemark(List<Taxon> taxonlist,String taxtreeId);
+    /**
+     * 
+     * @Description 根据taxon.order_num字段更新整棵树的preTaxon字段
+     * @Description 第一个节点的preTaxon字段值为null
+     * @param taxtreeId
+     * @author ZXY
+     */
+    public void updatePreTaxonByOrderNum(String taxtreeId);
 
 }

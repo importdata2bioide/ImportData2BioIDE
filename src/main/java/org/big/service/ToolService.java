@@ -2,11 +2,10 @@ package org.big.service;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.apdplat.word.vector.T;
 import org.big.entityVO.SpeciesCatalogueEnum;
 import java.lang.annotation.Annotation;
 public interface ToolService {
-	public void asy(int i);
+	 void asy(int i);
 	/**
 	 * 
 	 * title: ToolService.java
@@ -16,7 +15,7 @@ public interface ToolService {
 	 * @return
 	 * @author ZXY
 	 */
-	public String replaceAllChar(String line,String expression,String newChar) ;
+	 String replaceAllChar(String line,String expression,String newChar) ;
 	/**
 	 * target在line中存在的个数
 	 * title: ToolService.java
@@ -25,7 +24,7 @@ public interface ToolService {
 	 * @return
 	 * @author ZXY
 	 */
-	public int countTargetStr(String line,String target);
+	 int countTargetStr(String line,String target);
 	/**
 	 * 通过反射机制，更改属性值
 	 * title: PlantEncyclopediaServiceImpl.java
@@ -40,7 +39,7 @@ public interface ToolService {
 	 * @throws InstantiationException
 	 * @author ZXY
 	 */
-	public void reflectChangeValue(Object model, String oldChar, String newChar)
+	 void reflectChangeValue(Object model, String oldChar, String newChar)
 			throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, InstantiationException ;
 	/**
@@ -54,7 +53,7 @@ public interface ToolService {
 	 * @throws InvocationTargetException
 	 * @author ZXY
 	 */
-	public void printEntity(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+	 void printEntity(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException;
 	/**
 	 * 
@@ -68,7 +67,7 @@ public interface ToolService {
 	 * @throws InvocationTargetException
 	 * @author ZXY
 	 */
-	public boolean EntityAttrNull(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+	 boolean EntityAttrNull(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException;
 	
 	/**
@@ -79,7 +78,7 @@ public interface ToolService {
 	 * @return
 	 * @author ZXY
 	 */
-	public SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
+	 SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
 	/**
 	 * 
 	 * @Description 获取类注解
@@ -88,6 +87,41 @@ public interface ToolService {
 	 * @return
 	 * @author ZXY
 	 */
+	@SuppressWarnings("rawtypes")
 	Annotation getClassAnnotation(Class<?> cla, Class annotationClass);
+	/**
+	 * 
+	 * @Description 获取学名
+	 * @param line
+	 * @param count
+	 * @return
+	 * @author ZXY
+	 */
+	String getSciNameFromCitation(String line, int count);
+	
+	/**
+	 * 
+	 * @Description 返回年份
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	String getYear(String line);
+	/**
+	 * 
+	 * @Description 统计字符串中大写字母的个数
+	 * @param str
+	 * @return
+	 * @author ZXY
+	 */
+	 int getUpperCaseCount(String str);
+	 /**
+	  * 
+	  * @Description 获取第二个大写字母的位置
+	  * @param str
+	  * @return
+	  * @author ZXY
+	  */
+	 int getSecondUpperCaseIndex(String str);
 
 }

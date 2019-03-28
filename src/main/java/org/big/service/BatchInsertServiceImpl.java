@@ -349,4 +349,21 @@ public class BatchInsertServiceImpl implements BatchInsertService {
         });
 	}
 
+	@Override
+	public void updateTaxonHasTaxtree(List<TaxonHasTaxtree> records) {
+		String sql = "update taxon_has_taxtree set prev_taxon=? where taxon_id=? and taxtree_id=?";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	TaxonHasTaxtree record = records.get(i);
+                ps.setString(1, record.getPrevTaxon());
+                ps.setString(2, record.getTaxonId());
+                ps.setString(3, record.getTaxtreeId());
+            }
+        });
+		
+	}
+
 }

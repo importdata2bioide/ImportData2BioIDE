@@ -37,7 +37,36 @@ public class ToolServiceImpl implements ToolService{
 		
 	}
 	
+	public int getUpperCaseCount(String str){
+		int count = 0;
+		for(int i = 0; i < str.length(); i++){
+			char ch = str.charAt(i);
+			if (Character.isUpperCase(ch)) {
+				count++;
+			}
+		}
+		return count;
+	}
 	
+	@Override
+	public int getSecondUpperCaseIndex(String line) {
+		int index = -1;
+		int count = 0;
+		for(int i = 0; i < line.length(); i++){
+			char charAt = line.charAt(i);
+			index++;
+			if (charAt >= 'A' && charAt <= 'Z') {
+				count++;
+				if(count == 2) {
+					break;
+				}
+			}
+		}
+		return index;
+	}
+
+	
+	@Override
     public int countTargetStr(String line,String target) {//查找字符串里与指定字符串相同的个数
         int n=0;//计数器
         while(line.indexOf(target)!=-1) {
@@ -48,7 +77,7 @@ public class ToolServiceImpl implements ToolService{
         return n;
     }
 	/**
-	 * 通过反射机制，更改属性值
+	 * @Description通过反射机制，更改属性值
 	 * title: ToolServiceImpl.java
 	 * @param model
 	 * @param oldChar
@@ -130,7 +159,7 @@ public class ToolServiceImpl implements ToolService{
 	}
 
 	/**
-	 * 打印实体中的所有属性值
+	 * @Description打印实体中的所有属性值
 	 * title: ToolServiceImpl.java
 	 * @param model
 	 * @throws NoSuchMethodException
@@ -176,8 +205,8 @@ public class ToolServiceImpl implements ToolService{
 	}
 	
 	/**
-	 * 实体中的属性是否都为空(包含多个空格也算空)，都为空返回true,否则返回false
-	 * 无法处理boolean类型
+	 * @Description实体中的属性是否都为空(包含多个空格也算空)，都为空返回true,否则返回false
+	 * @Description无法处理boolean类型
 	 * title: CommUtils.java
 	 * @param model
 	 * @return
@@ -315,11 +344,73 @@ public class ToolServiceImpl implements ToolService{
 
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Annotation getClassAnnotation(Class<?> cla, Class annotationClass) {
 		Annotation annotation = cla.getAnnotation(annotationClass);
 		return annotation;
 	}
+	@Override
+	public String getSciNameFromCitation(String line, int count) {
+		int index = 0;
+		int flagCount = 0;
+		for (int i = 0; i < line.length(); i++) {
+			String str = String.valueOf(line.charAt(i));
+			index++;
+			if (str.equals(" ") || str.equals("：") || str.equals(":") || str.equals("(") || str.equals("（")
+					|| str.equals("{")||str.equals(",")||str.equals("，")) {
+				flagCount++;
+				if (count == flagCount) {
+					return line.substring(0, index - 1);
+				}
+			}
+		}
+		return line;
+	}
+
+	@Override
+	public String getYear(String line) {
+		int spos = getYearStart(line);
+		if(spos == -1) {
+			return null;
+		}
+		String year = "";
+		try {
+			year = line.substring(spos, spos + 4).trim();
+			String title = line.substring(spos + 4).trim();
+			if (title.startsWith("-")) {
+				year = line.substring(spos, spos + 9).trim();
+				title = line.substring(spos + 10).trim();
+			}else {
+				title = line.substring(spos + 5).trim();
+			}
+
+			if (title.startsWith(".")) {
+				title = line.substring(spos + 6).trim();
+				year = line.substring(spos, spos + 6).trim();
+			}
+			year = year.replace(".", "");
+		} catch (Exception e) {
+			
+		}
+		return year;
+	}
+	
+	public int getYearStart(String line) {
+		int start = -1;
+		for (int i = 0; i < line.length() - 4; i++) {
+			String tmp = line.substring(i, i + 4);
+			if (CommUtils.isNumeric(tmp)) {
+				start = i;
+				break;
+			}
+		}
+		return start;
+
+	}
+
+	
+
 
 
 }

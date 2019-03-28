@@ -47,38 +47,54 @@ public class CommUtils {
 	public static String uploadPath = "upload/";// 文件在新采集系统的保存路径
 
 	public static String imageUploadPath = uploadPath + "images/";// 文件在新采集系统的保存路径
-	
-	public static final String yuanwen= "originalText";
-	public static final String parentId = "parentId";
-	public static final String parentName = "parentName";
-	
+
+	public static final String TAXON_REMARK_FROM_FILE = "originalText";
+	public static final String TAXON_REMARK_PARENT_ID = "parentId";
+	public static final String TAXON_REMARK_PARENT_NAME = "parentName";
+
 	public static String cutNumber(String line) {
 		String regEx = "[^0-9]";
 		Pattern p = Pattern.compile(regEx);
 		Matcher m = p.matcher(line);
 		return m.replaceAll("").trim();
 	}
-	
 	/**
 	 * 
-	 * @Description 正则表达式匹配两个指定字符串中间的内容 
+	 * @Description  计算指定字符在字符串中出现的次数
+	 * @param src
+	 * @param find
+	 * @return
+	 * @author ZXY
+	 */
+	public static int getOccur(String src, String find) {
+		int num = 0;
+		int index = -1;
+		while ((index = src.indexOf(find, index)) > -1) {
+			++index;
+			++num;
+		}
+		return num;
+	}
+
+	/**
+	 * 
+	 * @Description 正则表达式匹配两个指定字符串中间的内容
 	 * @param str
 	 * @param rgex
 	 * @return
 	 * @author ZXY
 	 */
-    public static List<String> getSubUtil(String str,String rgex){  
-        List<String> list = new ArrayList<String>();  
-        Pattern pattern = Pattern.compile(rgex);// 匹配的模式  
-        Matcher m = pattern.matcher(str);  
-        while (m.find()) {  
-        	int i = 0;  
-            list.add(m.group(i));  
-            i++;  
-        }  
-        return list;  
-    }  
-	
+	public static List<String> getSubUtil(String str, String rgex) {
+		List<String> list = new ArrayList<String>();
+		Pattern pattern = Pattern.compile(rgex);// 匹配的模式
+		Matcher m = pattern.matcher(str);
+		while (m.find()) {
+			String group = m.group();
+			list.add(group);
+		}
+		return list;
+	}
+
 	/**
 	 * 
 	 * @Description 第一个英文字母的位置
@@ -91,8 +107,8 @@ public class CommUtils {
 		for (int i = 0; i < line.length(); i++) {
 			char charAt = line.charAt(i);
 			if (String.valueOf(charAt).matches("[a-zA-Z]")) {
-				return index+1;
-				
+				return index + 1;
+
 			}
 			index++;
 		}
@@ -106,16 +122,15 @@ public class CommUtils {
 		Matcher mat = pat.matcher(line);
 		return mat.replaceAll("");
 	}
-	
-	
-	public static String getKeyString(Map<String, String> map){
+
+	public static String getKeyString(Map<String, String> map) {
 		StringBuffer str = new StringBuffer();
 		for (Entry<String, String> entry : map.entrySet()) {
-			str.append(entry.getKey()+"&");
+			str.append(entry.getKey() + "&");
 		}
 		String result = str.toString();
-		if(result.endsWith("&")) {
-			result = result.substring(0,result.length()-1);
+		if (result.endsWith("&")) {
+			result = result.substring(0, result.length() - 1);
 		}
 		return result;
 	}
@@ -413,8 +428,8 @@ public class CommUtils {
 		str = str.replaceAll(reg, "");
 		return str;
 	}
-	
-	public static int getLastIndexOfChinese(String line){
+
+	public static int getLastIndexOfChinese(String line) {
 		int i = -1;
 		for (int index = 0; index <= line.length() - 1; index++) {
 			// 将字符串拆开成单个的字符
@@ -422,7 +437,7 @@ public class CommUtils {
 			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
 				i = index;
 				System.out.println("第一个中文的索引位置:" + index + ",值是：" + w);
-			}else {
+			} else {
 				break;
 			}
 		}

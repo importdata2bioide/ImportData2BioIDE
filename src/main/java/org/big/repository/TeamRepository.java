@@ -107,4 +107,7 @@ public interface TeamRepository extends BaseRepository<Team, String> {
      */
     @Query("select t from Team t where t.id = ?1")
 	Team findOneById(String teamId);
+    
+    @Query("select t from Team t order by t.adddate desc")
+   	List<Team> findAllOrderByAdddateDesc();
 }
