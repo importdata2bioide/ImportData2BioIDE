@@ -11,10 +11,10 @@ import org.hibernate.internal.util.StringHelper;
 public class C {
 	
 	public static void main(String[] args) {
-		ToolServiceImpl t = new ToolServiceImpl();
-		String line = "Ep(Tatretus burgeri (Girard, 1855)";
-		int caseIndex = t.getSecondUpperCaseIndex(line);
-		System.out.println(line.substring(caseIndex-1,caseIndex));
+		Object s = null;
+		s.toString();
+		int parseInt = Integer.parseInt(s.toString());
+		System.out.println(parseInt);
 		}
 	
 	public int getYearStart(String line) {

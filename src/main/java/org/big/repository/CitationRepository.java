@@ -114,4 +114,8 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	List<Citation> findByScinameEndingWith(String sciname);
 	
 	
+	@Query(value = "select a.id,a.scientificname,b.tsname,e.sl from taxon a left join taxaset b on a.taxaset_id = b.id  left join  (select count(*) as sl,taxon_id,scientificname,rank_id,nametype from ( select a.id as taxon_id ,a.scientificname,a.rank_id,c.id,c.sciname,c.nametype from taxon a left join taxaset b on a.taxaset_id = b.id  left join citation c on c.taxon_id = a.id   where b.dataset_id = :datasetId and a.rank_id in (:rankIds)  and nametype = :nameType  ) re group by taxon_id,scientificname,rank_id,nametype ) e on a.id = e.taxon_id where b.dataset_id = :datasetId and a.rank_id in (:rankIds) ",nativeQuery = true)
+	List<Object[]> countByTaxonAndNameType(String datasetId,List<String> rankIds,String nameType);
+	
+	
 }

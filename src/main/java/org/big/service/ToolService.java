@@ -1,33 +1,40 @@
 package org.big.service;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.util.List;
 
 import org.big.entityVO.SpeciesCatalogueEnum;
 import java.lang.annotation.Annotation;
+
 public interface ToolService {
-	 void asy(int i);
+	void asy(int i);
+
 	/**
 	 * 
 	 * title: ToolService.java
+	 * 
 	 * @param line
 	 * @param expression
 	 * @param newChar
 	 * @return
 	 * @author ZXY
 	 */
-	 String replaceAllChar(String line,String expression,String newChar) ;
+	String replaceAllChar(String line, String expression, String newChar);
+
 	/**
-	 * target在line中存在的个数
-	 * title: ToolService.java
+	 * target在line中存在的个数 title: ToolService.java
+	 * 
 	 * @param line
 	 * @param target
 	 * @return
 	 * @author ZXY
 	 */
-	 int countTargetStr(String line,String target);
+	int countTargetStr(String line, String target);
+
 	/**
-	 * 通过反射机制，更改属性值
-	 * title: PlantEncyclopediaServiceImpl.java
+	 * 通过反射机制，更改属性值 title: PlantEncyclopediaServiceImpl.java
+	 * 
 	 * @param model
 	 * @param oldChar
 	 * @param newChar
@@ -39,12 +46,14 @@ public interface ToolService {
 	 * @throws InstantiationException
 	 * @author ZXY
 	 */
-	 void reflectChangeValue(Object model, String oldChar, String newChar)
+	void reflectChangeValue(Object model, String oldChar, String newChar)
 			throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException, InstantiationException ;
+			InvocationTargetException, InstantiationException;
+
 	/**
 	 * 
 	 * title: ToolService.java
+	 * 
 	 * @param model
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
@@ -53,11 +62,13 @@ public interface ToolService {
 	 * @throws InvocationTargetException
 	 * @author ZXY
 	 */
-	 void printEntity(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+	void printEntity(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException;
+
 	/**
 	 * 
 	 * title: ToolService.java
+	 * 
 	 * @param model
 	 * @return
 	 * @throws NoSuchMethodException
@@ -67,18 +78,19 @@ public interface ToolService {
 	 * @throws InvocationTargetException
 	 * @author ZXY
 	 */
-	 boolean EntityAttrNull(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+	boolean EntityAttrNull(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException;
-	
+
 	/**
 	 * 
-	 * @Description 
+	 * @Description
 	 * @param line
 	 * @param rowNum
 	 * @return
 	 * @author ZXY
 	 */
-	 SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
+	SpeciesCatalogueEnum judgeIsWhat(String line, int rowNum);
+
 	/**
 	 * 
 	 * @Description 获取类注解
@@ -89,6 +101,7 @@ public interface ToolService {
 	 */
 	@SuppressWarnings("rawtypes")
 	Annotation getClassAnnotation(Class<?> cla, Class annotationClass);
+
 	/**
 	 * 
 	 * @Description 获取学名
@@ -98,7 +111,7 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	String getSciNameFromCitation(String line, int count);
-	
+
 	/**
 	 * 
 	 * @Description 返回年份
@@ -107,6 +120,7 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	String getYear(String line);
+
 	/**
 	 * 
 	 * @Description 统计字符串中大写字母的个数
@@ -114,14 +128,25 @@ public interface ToolService {
 	 * @return
 	 * @author ZXY
 	 */
-	 int getUpperCaseCount(String str);
-	 /**
-	  * 
-	  * @Description 获取第二个大写字母的位置
-	  * @param str
-	  * @return
-	  * @author ZXY
-	  */
-	 int getSecondUpperCaseIndex(String str);
+	int getUpperCaseCount(String str);
+
+	/**
+	 * 
+	 * @Description 获取第二个大写字母的位置
+	 * @param str
+	 * @return
+	 * @author ZXY
+	 */
+	int getSecondUpperCaseIndex(String str);
+
+	/**
+	 * 
+	 * @Description 读取doc文件内容
+	 * @param path
+	 * @return
+	 * @throws SQLException
+	 * @author ZXY
+	 */
+	List<String> readDoc(String path) throws SQLException;
 
 }

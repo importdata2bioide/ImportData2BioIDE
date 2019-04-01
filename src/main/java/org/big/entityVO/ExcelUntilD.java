@@ -2,7 +2,7 @@ package org.big.entityVO;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 
-public class ExcelWithColNumVO implements java.io.Serializable {
+public class ExcelUntilD implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 	// fixedIndex int -1 对应excel的列,忽略名字

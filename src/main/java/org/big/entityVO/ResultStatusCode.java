@@ -1,7 +1,7 @@
 package org.big.entityVO;
 
 public enum ResultStatusCode {
-	OK(0, "OK"),
+	OK(200, "OK"),
 	SYSTEM_ERR(30001, "System error");
 	
 	private int errcode;

@@ -29,6 +29,12 @@ public class BirdAddDataController {
 		birdAddData.importByExcel();
 		return "index";
 	}
+	
+	@RequestMapping(value = "/birdAddDataController_countCitationByTaxon",method = RequestMethod.GET)
+	public String countCitationByTaxon(HttpServletResponse response) throws Exception {
+		birdAddData.countCitationByTaxon(response);
+		return "index";
+	}
 
 
 }

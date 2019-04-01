@@ -18,13 +18,14 @@ import java.util.regex.Pattern;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.big.common.CommUtils;
 import org.big.common.LineAttreEnum;
+import org.big.config.HttpConfig;
+import org.big.constant.ConfigConsts;
 import org.big.constant.DescTypeConsts;
 import org.big.constant.MapConsts;
 import org.big.entity.Citation;
@@ -39,13 +40,19 @@ import org.big.entityVO.Other;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 @Service
 public class ParseWordServiceImpl implements ParseWordService {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParseWordServiceImpl.class);
-
+	
 	@Autowired
 	private BatchSubmitService batchSubmitService;
 	@Autowired
@@ -138,8 +145,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 		List<Commonname> commnamelist = new ArrayList<>();
 		List<Distributiondata> distributionlist = new ArrayList<>();
 		List<Ref> reflist = new ArrayList<>();
-		// 读取文件
-		List<String> readByLine = readByLine(path);
+		List<String> readByLine = toolService.readDoc(path);
 		LineAttreEnum preAttr = null;
 		Taxon preTaxon = null;
 		Other other = null;
@@ -153,7 +159,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 			// 替换特殊字符
 			line = replaceSpecialChar(line);
 			LineAttreEnum currentAttr = isWhat(line, preAttr, sourceLine);
-			changeDatasourceId(line,baseParamsForm);
+			changeDatasourceId(line, baseParamsForm);
 			switch (currentAttr) {
 			case Class:// 纲
 //				System.out.println(line);
@@ -416,7 +422,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	}
 
-
 	@SuppressWarnings("unused")
 	private Taxon getTaxon(LineAttreEnum preAttr, LineStatus thisLineStatus) {
 		Taxon taxon = null;
@@ -643,36 +648,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 		return result;
 	}
 
-	@SuppressWarnings("resource")
-	public List<String> readByLine(String path) throws IOException {
-		List<String> thisList = new ArrayList<>();
-		InputStream is = null;
-		WordExtractor ex = null;
-		try {
-			is = new FileInputStream(new File(path));
-			ex = new WordExtractor(is);
-
-			// Line
-			String paraTexts[] = ex.getParagraphText();
-			for (int i = 0; i < paraTexts.length; i++) {
-				String line = paraTexts[i];
-				if (org.apache.commons.lang.StringUtils.isNotEmpty(line)) {
-					thisList.add(i, line.trim());
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-			if (ex != null) {
-				ex.close();
-			}
-		}
-		return thisList;
-	}
-
 	public void writeTitle(XWPFDocument doc, String title, boolean withStyle) {
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.CENTER);// 居中对齐
@@ -889,24 +864,24 @@ public class ParseWordServiceImpl implements ParseWordService {
 		}
 
 	}
-	
+
 	private void changeDatasourceId(String line, BaseParamsForm baseParamsForm) {
 		String fileName = "";
-		if(line.contains("盲鳗纲")) {
+		if (line.contains("盲鳗纲")) {
 			fileName = "3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc";
-		}else if(line.contains("鲤形目")) {
+		} else if (line.contains("鲤形目")) {
 			fileName = "3-名录-2鲤形目-狗鱼目.doc";
-		}else if(line.contains("巨口鱼目")) {
+		} else if (line.contains("巨口鱼目")) {
 			fileName = "3-名录-3-巨口鱼-狮子鱼(伍审阅)_Shao Lab.doc";
-		}else if(line.contains("鲈形目")) {
+		} else if (line.contains("鲈形目")) {
 			fileName = "3-名录-4鲈形目-虾虎鱼前(伍审阅)-Shao Lab.doc";
-		}else if(line.contains("溪鳢科")) {
+		} else if (line.contains("溪鳢科")) {
 			fileName = "3-名录-5虾虎鱼-完(伍审阅)-Shao Lab.doc";
 		}
-		if(StringUtils.isNotEmpty(fileName)) {
+		if (StringUtils.isNotEmpty(fileName)) {
 			setDataSource(baseParamsForm, fileName);
 		}
-		
+
 	}
 
 }

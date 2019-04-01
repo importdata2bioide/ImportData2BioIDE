@@ -26,8 +26,8 @@ import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
-import org.big.entityVO.ExcelWithColNumHVO;
-import org.big.entityVO.ExcelWithColNumVO;
+import org.big.entityVO.ExcelUutilH;
+import org.big.entityVO.ExcelUntilD;
 import org.big.entityVO.FileTypeEnum;
 import org.big.entityVO.LanguageEnum;
 import org.big.entityVO.LineAttreEnum;
@@ -407,8 +407,8 @@ public class TestController {
 	}
 
 	private void guojia() {
-		List<ExcelWithColNumHVO> list = readExcel("E:\\003采集系统\\国家代码与名称.xlsx");
-		for (ExcelWithColNumHVO row : list) {
+		List<ExcelUutilH> list = readExcel("E:\\003采集系统\\国家代码与名称.xlsx");
+		for (ExcelUutilH row : list) {
 			JSONObject jsonObject = new JSONObject();
 			String colA = row.getColA();
 			String colB = row.getColB();
@@ -438,12 +438,12 @@ public class TestController {
 		}
 	}
 
-	private List<ExcelWithColNumHVO> readExcel(String path) {
+	private List<ExcelUutilH> readExcel(String path) {
 		ImportParams params = new ImportParams();
 		params.setTitleRows(0);
 		params.setHeadRows(1);
 		long start = new Date().getTime();
-		List<ExcelWithColNumHVO> list = ExcelImportUtil.importExcel(new File(path), ExcelWithColNumHVO.class, params);
+		List<ExcelUutilH> list = ExcelImportUtil.importExcel(new File(path), ExcelUutilH.class, params);
 		System.out.println("读取excel所消耗时间：" + (new Date().getTime() - start));
 		System.out.println("数量：" + list.size());
 		System.out.println(ReflectionToStringBuilder.toString(list.get(0)));
@@ -629,12 +629,12 @@ public class TestController {
 		params.setTitleRows(1);
 		params.setHeadRows(0);
 		long start = new Date().getTime();
-		List<ExcelWithColNumVO> list = ExcelImportUtil.importExcel(new File(filePath), ExcelWithColNumVO.class, params);
+		List<ExcelUntilD> list = ExcelImportUtil.importExcel(new File(filePath), ExcelUntilD.class, params);
 		logger.info("读取耗费时间：" + (new Date().getTime() - start));
 		logger.info(filePath + "，读取总行数：" + list.size());
 		logger.info(ReflectionToStringBuilder.toString(list.get(0)));
 
-		for (ExcelWithColNumVO row : list) {
+		for (ExcelUntilD row : list) {
 			String colB = row.getColB().trim();// code
 			String colC = row.getColC().trim();// name
 			List<Geoobject> list1 = geoobjectRepository.findByCngeonameAndAdcode(colC, colB);
@@ -666,7 +666,7 @@ public class TestController {
 		} // end for
 			// 导出excel
 		try {
-			FilesUtils.exportExcel(list, "行政分布", "行政分布", ExcelWithColNumVO.class, URLEncoder.encode("行政分布.xls", "GBK"),
+			FilesUtils.exportExcel(list, "行政分布", "行政分布", ExcelUntilD.class, URLEncoder.encode("行政分布.xls", "GBK"),
 					response);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
@@ -690,7 +690,7 @@ public class TestController {
 		params.setTitleRows(1);
 		params.setHeadRows(0);
 		long start = new Date().getTime();
-		List<ExcelWithColNumVO> list = ExcelImportUtil.importExcel(new File(filePath), ExcelWithColNumVO.class, params);
+		List<ExcelUntilD> list = ExcelImportUtil.importExcel(new File(filePath), ExcelUntilD.class, params);
 		logger.info("读取耗费时间：" + (new Date().getTime() - start));
 		logger.info(filePath + "，读取总行数：" + list.size());
 		logger.info(ReflectionToStringBuilder.toString(list.get(0)));
@@ -702,7 +702,7 @@ public class TestController {
 		String keCN = null;
 		String keEN = null;
 		List<NationalListOfProtectedAnimalsVO> exportlist = new ArrayList<>();
-		for (ExcelWithColNumVO row : list) {
+		for (ExcelUntilD row : list) {
 			String colA = row.getColA().trim();
 			String colB = row.getColB();
 			if (StringUtils.isNotEmpty(colB)) {

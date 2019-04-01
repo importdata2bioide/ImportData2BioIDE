@@ -1,28 +1,38 @@
 package org.big.service;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
+import org.big.constant.ConfigConsts;
 import org.big.entity.Citation;
 import org.big.entity.Rank;
 import org.big.entity.Ref;
 import org.big.entity.Taxon;
+import org.big.entityVO.BirdListComparisonExcelVO;
 import org.big.entityVO.ExcelUntilB;
+import org.big.entityVO.ExcelUntilD;
 import org.big.entityVO.ExcelUntilK;
 import org.big.entityVO.ExcelUntilP;
 import org.big.entityVO.NametypeEnum;
+import org.big.entityVO.RankEnum;
 import org.big.repository.CitationRepository;
 import org.big.repository.RefRepository;
 import org.big.repository.TaxonRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +44,9 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 
 @Service
 public class BirdAddDataImpl implements BirdAddData {
+	
+	final static Logger logger = LoggerFactory.getLogger(BirdAddDataImpl.class);
+
 	@Autowired
 	private RefRepository refRepository;
 	@Autowired
@@ -46,6 +59,8 @@ public class BirdAddDataImpl implements BirdAddData {
 	private CitationRepository citationRepository;
 	@Autowired
 	private ToolService toolService;
+	@Autowired
+	private TaxasetService taxasetService;
 
 	private String userId_wangtianshan = "95c24cdc24794909bd140664e2ee9c3b";
 	private String datasetId_2019bird = "7da1c0ac-18c6-4710-addd-c9d49e8a2532";
@@ -55,9 +70,10 @@ public class BirdAddDataImpl implements BirdAddData {
 	@Override
 	public void importByExcel() throws Exception {
 		String folderPath = "E:\\003采集系统\\0012鸟类名录\\";
-		String reffilePath = folderPath + "参考文献汇总_0308.xlsx";
-		String UnPasseriformesCitationPath = folderPath + "非雀形目.xlsx";
-		String passeriformesCitationPath = folderPath + "雀形目（整理顺序）.xlsx";
+		String reffilePath = folderPath + "最终-整合-参考文献.xlsx";
+//		String UnPasseriformesCitationPath = folderPath + "非雀形目.xlsx";
+//		String passeriformesCitationPath = folderPath + "雀形目（整理顺序）.xlsx";
+		String integrationPath = folderPath + "最终-整合-0.xlsx";
 		String otherCitationPath = folderPath + "其他-引证信息.xlsx";
 		boolean save = false;
 		// 1、读取参考文献，并保存到map中
@@ -66,6 +82,8 @@ public class BirdAddDataImpl implements BirdAddData {
 //		importCitation(refMap, UnPasseriformesCitationPath, save);
 		// 3、导入雀形目引证信息
 //		importCitation(refMap, passeriformesCitationPath, save);
+		//导入整合引证
+		importCitation(refMap, integrationPath, save);
 		// 4、导入接受名引证信息
 		otherCitationPath(refMap, otherCitationPath, save);
 	}
@@ -104,8 +122,15 @@ public class BirdAddDataImpl implements BirdAddData {
 			if (taxon != null) {
 				String author = row.getColK();
 				String year = row.getColL();
+				String authorAndYear = row.getColH();//excel文件里的命名信息
+				String authorship = "";//存储到数据库的命名信息
 				if(StringUtils.isEmpty(author) &&StringUtils.isEmpty(year)) {
 					continue;
+				}
+				//命名人和命名年代
+				authorship = row.getColK().trim() + "," + row.getColL().trim();
+				if(StringUtils.isNotEmpty(authorAndYear) &&(authorAndYear.contains("（")||authorAndYear.contains("("))) {
+					authorship = "("+authorship+")";
 				}
 				String taxonId = taxon.getId();
 				Citation citation = citationRepository.findByTaxonIdAndSciname(taxonId, acceptName);
@@ -115,14 +140,10 @@ public class BirdAddDataImpl implements BirdAddData {
 					remark = new JSONObject();
 					remark.put("page", page.trim());
 				}
-				String authorship = row.getColK().trim() + "," + row.getColL().trim();
 				if (citation != null) {
 					// 前两个excel已经保存接受名引证，更新命名信息
-//					System.out.println("前两个excel已经保存接受名引证了:" + acceptName);
+//					logger.info("前两个excel已经保存接受名引证了:" + acceptName);
 					// 更新（引证信息）操作,更新的字段有authorship、citationstr、remark
-					if (citation.getAuthorship().contains("(")) {
-						authorship = "(" + authorship + ")";
-					}
 					citation.setAuthorship(authorship);
 					citation.setCitationstr(row.getColN());
 					citation.setRemark(String.valueOf(remark));
@@ -149,15 +170,15 @@ public class BirdAddDataImpl implements BirdAddData {
 				}
 			}else {
 				i++;
-//				System.out.println(row.getColA()+"	"+row.getColB()+"	"+row.getColC()+"	"+row.getColD()+"	"+row.getColE()+"	"+row.getColF()+"	"+row.getColG()+"	"+row.getColH()+"	"+row.getColI()+"	"+row.getColJ()+"	"+row.getColK()+"	"+row.getColL()+"	"+row.getColM()+"	"+row.getColN()+"	"+row.getColO()+"	"+row.getColP());
+//				logger.info(row.getColA()+"	"+row.getColB()+"	"+row.getColC()+"	"+row.getColD()+"	"+row.getColE()+"	"+row.getColF()+"	"+row.getColG()+"	"+row.getColH()+"	"+row.getColI()+"	"+row.getColJ()+"	"+row.getColK()+"	"+row.getColL()+"	"+row.getColM()+"	"+row.getColN()+"	"+row.getColO()+"	"+row.getColP());
 			}
 		}
 //		for (Citation c : resultUpdatelist) {
 //			toolService.printEntity(c);
 //		}
-		System.out.println("更新："+resultUpdatelist.size());
-		System.out.println("新增："+resultAddlist.size());
-		System.out.println("没有找到的："+i);
+		logger.info("更新："+resultUpdatelist.size());
+		logger.info("新增："+resultAddlist.size());
+		logger.info("没有找到的："+i);
 		if (save) {
 			batchSubmitService.saveAll(resultAddlist);
 			batchInsertService.batchUpdateCitationById(resultUpdatelist);
@@ -193,7 +214,7 @@ public class BirdAddDataImpl implements BirdAddData {
 	 * 
 	 * @Description 3、 导入引证信息“非雀形目.xlsx”：
 	 * @Description 判断名称命名信息是否完整，进行补充
-	 * @Description 如果备注写“新组合”，给接受名的命名信息加上括号
+	 * @Description 如果备注写“属名不同，种加词相同  [新组合]”，给接受名的命名信息加上括号
 	 * @param refMap
 	 * @author ZXY
 	 * @throws Exception
@@ -233,12 +254,15 @@ public class BirdAddDataImpl implements BirdAddData {
 			JSONArray jsonArray = new JSONArray();
 			if (StringUtils.isNotEmpty(ref)) {
 				ref = ref.replace(",", ";");
+				ref = ref.replace("，", ";");
 				String[] refSeqs = ref.split(";");
 				for (String seq : refSeqs) {
 					seq = seq.trim();
 					String refId = refMap.get(seq);
 					if (StringUtils.isEmpty(refId)) {
-						throw new ValidationException("未找到的参考文献序号：" + seq);
+						logger.error(ConfigConsts.HANDLE_ERROR+"未找到的参考文献序号：" + seq);
+						continue;
+//						throw new ValidationException("未找到的参考文献序号：" + seq);
 					}
 					JSONObject jsonObject = new JSONObject();
 					jsonObject.put("refE", " 0");
@@ -250,8 +274,7 @@ public class BirdAddDataImpl implements BirdAddData {
 
 			}
 			String remark = row.getColK();
-			if (StringUtils.isNotEmpty(author) && remark.contains("新组合")
-					&& nametype == NametypeEnum.acceptedName.getIndex()) {
+			if (nametype == NametypeEnum.acceptedName.getIndex() && StringUtils.isNotEmpty(author) && remark.equals("属名不同，种加词相同  [新组合]")) {
 				author = "(" + author + ")";
 			}
 			// 新建一条引证信息
@@ -280,7 +303,7 @@ public class BirdAddDataImpl implements BirdAddData {
 		}
 		if (save) {
 			batchSubmitService.saveAll(resultlist);
-			batchInsertService.batchUpdateTaxonAuthorstrById(taxonlist);
+//			batchInsertService.batchUpdateTaxonAuthorstrById(taxonlist);
 		}
 
 	}
@@ -316,21 +339,21 @@ public class BirdAddDataImpl implements BirdAddData {
 	 */
 	private Map<String, String> readRefs(String filePath) {
 		List<ExcelUntilB> list = readExcel(filePath, ExcelUntilB.class);
-		System.out.println("从excel读取参考文献条数：" + list.size());
+		logger.info("从excel读取参考文献条数：" + list.size());
 		Map<String, String> refMaP = new HashMap<>(list.size() + 10);
 		for (ExcelUntilB excelUntilB : list) {
 			String refstr = excelUntilB.getColB().trim();
 			String seq = excelUntilB.getColA().trim();
-
-//			Ref ref = refRepository.findByRefstrAndInputer("戴波, 付义强, 王家才等. 灰腹地莺在四川的分布. 动物学杂志(已接收).", userId_wangtianshan);
 			Ref ref = refRepository.findByRefstrAndInputer(refstr, userId_wangtianshan);
 			if (ref == null) {
+				
+//				logger.info(seq + ",数据库中没有找到完整题录=" + refstr);
 				throw new ValidationException(seq + ",数据库中没有找到完整题录=" + refstr);
 			} else {
 				refMaP.put(seq, ref.getId());
 			}
 		}
-		System.out.println("excel文件行数：" + list.size() + ",map大小：" + refMaP.size());
+		logger.info("excel文件行数：" + list.size() + ",map大小：" + refMaP.size());
 		return refMaP;
 	}
 
@@ -340,11 +363,63 @@ public class BirdAddDataImpl implements BirdAddData {
 		params.setHeadRows(1);
 		long start = new Date().getTime();
 		List<T> list = ExcelImportUtil.importExcel(new File(path), t, params);
-		System.out.println("读取excel所消耗时间：" + (new Date().getTime() - start));
-		System.out.println(path + ",excel行数：" + list.size());
-		System.out.println("打印第一行表格内容：" + ReflectionToStringBuilder.toString(list.get(0)));
-		System.out.println("读取excel完成");
+		logger.info("读取excel所消耗时间：" + (new Date().getTime() - start));
+		logger.info(path + ",excel行数：" + list.size());
+		logger.info("打印第一行表格内容：" + ReflectionToStringBuilder.toString(list.get(0)));
+		logger.info("读取excel完成");
 		return list;
+	}
+
+	@Override
+	public void countCitationByTaxon(HttpServletResponse response) {
+		List<String> genusRankIds = new ArrayList<>();
+		genusRankIds.add(String.valueOf(RankEnum.genus.getIndex()));
+		//属接受名引证统计
+		List<Object[]> genusAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, genusRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
+		//属异名引证统计
+		List<Object[]> genusSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, genusRankIds, String.valueOf(NametypeEnum.synonym.getIndex()));
+		List<String> speciesRankIds = new ArrayList<>();
+		speciesRankIds.add(String.valueOf(RankEnum.species.getIndex()));
+		//species接受名引证统计
+		List<Object[]> speciesAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, speciesRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
+		//species异名引证统计
+		List<Object[]> speciesSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, speciesRankIds, String.valueOf(NametypeEnum.synonym.getIndex()));
+		List<ExcelUntilD> resultlist = new ArrayList<>(genusAcceptNamelist.size()+speciesAcceptNamelist.size()+10);
+//		mergeList(genusAcceptNamelist,genusSynamelist,resultlist);
+		mergeList(speciesAcceptNamelist,speciesSynamelist,resultlist);
+		//导出文件
+		try {
+			FilesUtils.exportExcel(resultlist, "引证统计", "引证统计", ExcelUntilD.class, URLEncoder.encode("CitationCount.xls", "UTF-8"),
+					response);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void mergeList(List<Object[]> genusAcceptNamelist, List<Object[]> genusSynamelist,
+			List<ExcelUntilD> resultlist) {
+		//转换成map
+		Map<String,Object[]> map = new HashMap<>(genusSynamelist.size()+10);
+		for (Object[] obj : genusSynamelist) {
+			map.put(obj[0].toString(), obj);
+		}
+		//a.id,a.scientificname,b.tsname,e.sl 
+		for (Object[] obj : genusAcceptNamelist) {
+			String taxonId = obj[0].toString();
+			String acceptName = obj[1].toString();
+			String orderCHName = obj[2].toString();
+			Object synameCountObj = map.get(taxonId)[3];
+			int synameCount = synameCountObj==null?0:Integer.parseInt(synameCountObj.toString());
+			int acceptNameCount = obj[3] == null?0:Integer.parseInt(obj[3].toString());
+			ExcelUntilD row = new ExcelUntilD();
+			row.setColA(orderCHName);
+			row.setColB(acceptName);
+			row.setColC(String.valueOf(acceptNameCount));
+			row.setColD(String.valueOf(synameCount));
+			resultlist.add(row);
+		}
+		
+		
 	}
 
 }
