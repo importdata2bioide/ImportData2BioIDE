@@ -12,5 +12,7 @@ public interface BirdAddData {
 	 * @author ZXY
 	 */
 	void countCitationByTaxon(HttpServletResponse response);
+	
+	void updateCitationStrBySciName(HttpServletResponse response);
 
 }

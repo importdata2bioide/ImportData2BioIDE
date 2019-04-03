@@ -4,12 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.common.EntityInit;
+import org.big.common.LineAttreEnum;
 import org.big.constant.ConfigConsts;
 import org.big.constant.MapConsts;
 import org.big.entity.Citation;
@@ -34,13 +38,14 @@ import com.alibaba.fastjson.JSONObject;
 @Service("parseLineFishWord")
 public class ParseLineFishWord implements ParseLine {
 	final static Logger logger = LoggerFactory.getLogger(ParseLineFishWord.class);
-
 	@Autowired
 	private ToolService toolService;
 	@Autowired
 	private DescriptiontypeService descriptiontypeService;
 	@Autowired
 	private DistributiondataService distributiondataService;
+
+	
 
 	@Override
 	public Taxon parseClass(String line, BaseParamsForm params, LineStatus thisLineStatus) {
@@ -213,59 +218,57 @@ public class ParseLineFishWord implements ParseLine {
 
 	@Override
 	public Citation parseCitation(String line, Taxon preTaxon, BaseParamsForm baseParamsForm) {
-		line = handCitationLine(line);
+		line = handCitationLine(line);// 最后加.
 		Citation citation = new Citation();
+		
+
 		// 学名
-		String sciName = "";
-		int rankid = preTaxon.getRankid();
-		if (sciName.contains("：")) {
-			sciName = sciName.substring(0, sciName.indexOf("："));
-		} else if (sciName.contains(":")) {
-			sciName = sciName.substring(0, sciName.indexOf(":"));
-		} else if (sciName.contains("：")) {
-			sciName = sciName.substring(0, sciName.indexOf(":"));
-		} else if (rankid == RankEnum.genus.getIndex()) {
-			sciName = toolService.getSciNameFromCitation(line, 1);
-		} else if (rankid == RankEnum.Subgenus.getIndex()) {
-			sciName = toolService.getSciNameFromCitation(line, 1);
-		} else if (rankid == RankEnum.species.getIndex()) {
-			sciName = toolService.getSciNameFromCitation(line, 2);
-		} else if (rankid == RankEnum.subsp.getIndex()) {
-			sciName = toolService.getSciNameFromCitation(line, 3);
-			if (sciName.contains("：")) {
-				sciName = sciName.substring(0, sciName.indexOf("："));
-			} else {
-				int lastindexOfSpace = sciName.lastIndexOf(" ") + 1;
-				String lastWord = sciName.substring(lastindexOfSpace);
-				char firstCharOfLastWord = lastWord.charAt(0);
-				if ('A' <= firstCharOfLastWord && firstCharOfLastWord <= 'Z') {
-					sciName = sciName.substring(0, lastindexOfSpace).trim();
-				}
-			}
-		} else {
-			throw new ValidationException("未定义的rankid = " + rankid);
-		}
-		citation.setSciname(sciName);
-		// nameType
-		if (preTaxon.getScientificname().equals(sciName)) {
-			citation.setNametype(NametypeEnum.acceptedName.getIndex());// 接受名引证
-		} else {
-			citation.setNametype(NametypeEnum.synonym.getIndex());// 异名引证
-		}
-		// 命名人和命名年代
-		String year = toolService.getYear(line);
-		if (StringUtils.isNotEmpty(year)) {
-			String author = line.substring(line.indexOf(sciName) + sciName.length(),
-					line.indexOf(year) + year.length());
-			if (author.startsWith(":") || author.startsWith("：")) {
-				author = author.substring(1);
-			}
-			citation.setAuthorship(author);
-		}
-		// taxon
-		citation.setTaxon(preTaxon);
-		// 引证原文
-		citation.setCitationstr(line);
+//		String sciName = "";
+//		int rankid = preTaxon.getRankid();
+//		if (rankid == RankEnum.genus.getIndex()) {
+//			sciName = toolService.getSciNameFromCitation(line, 1);
+//		} else if (rankid == RankEnum.Subgenus.getIndex()) {
+//			sciName = toolService.getSciNameFromCitation(line, 1);
+//		} else if (rankid == RankEnum.species.getIndex()) {
+//			//
+//			System.out.println(line);
+//			sciName = toolService.getSciNameFromCitation(line, 2);
+//		} else if (rankid == RankEnum.subsp.getIndex()) {
+//			sciName = toolService.getSciNameFromCitation(line, 3);
+//			if (sciName.contains("：")) {
+//				sciName = sciName.substring(0, sciName.indexOf("："));
+//			} else {
+//				int lastindexOfSpace = sciName.lastIndexOf(" ") + 1;
+//				String lastWord = sciName.substring(lastindexOfSpace);
+//				char firstCharOfLastWord = lastWord.charAt(0);
+//				if ('A' <= firstCharOfLastWord && firstCharOfLastWord <= 'Z') {
+//					sciName = sciName.substring(0, lastindexOfSpace).trim();
+//				}
+//			}
+//		} else {
+//			throw new ValidationException("未定义的rankid = " + rankid);
+//		}
+//		citation.setSciname(sciName);
+//		// nameType
+//		if (preTaxon.getScientificname().equals(sciName)) {
+//			citation.setNametype(NametypeEnum.acceptedName.getIndex());// 接受名引证
+//		} else {
+//			citation.setNametype(NametypeEnum.synonym.getIndex());// 异名引证
+//		}
+//		// 命名人和命名年代
+//		String year = toolService.getYear(line);
+//		if (StringUtils.isNotEmpty(year)) {
+//			String author = line.substring(line.indexOf(sciName) + sciName.length(),
+//					line.indexOf(year) + year.length());
+//			if (author.startsWith(":") || author.startsWith("：")) {
+//				author = author.substring(1);
+//			}
+//			citation.setAuthorship(author);
+//		}
+//		// taxon
+//		citation.setTaxon(preTaxon);
+//		// 引证原文
+//		citation.setCitationstr(line);
 		EntityInit.initCitation(citation, baseParamsForm);
 		return citation;
 	}
@@ -277,6 +280,9 @@ public class ParseLineFishWord implements ParseLine {
 			line = line.substring(0, line.length() - 1);// 删除最后一个句号
 		}
 		line = line.trim() + ".";
+		//替换中文括号为英文括号
+//		line = line.replace("（", "(");
+//		line = line.replace("）", ")");
 		return line;
 	}
 
@@ -284,6 +290,7 @@ public class ParseLineFishWord implements ParseLine {
 	public List<Commonname> parseCommonName(String line, Taxon preTaxon, BaseParamsForm baseParamsForm) {
 		List<Commonname> list = new ArrayList<>();
 		line = line.replace("别名（common name）：", "");
+		line = line.replace("曾用名或俗名：", "");
 		line = line.replace("。", "");
 		String[] names = line.split("、");
 		for (String name : names) {
@@ -339,5 +346,107 @@ public class ParseLineFishWord implements ParseLine {
 //		}
 		return null;
 	}
+
+	public LineAttreEnum isWhat(String line, LineAttreEnum preAttr, String sourceLine) {
+		if (line.startsWith("文献")) {
+			return LineAttreEnum.ref;
+		}
+		if (line.startsWith("别名")) {
+			return LineAttreEnum.commonName;
+		}
+		if (line.startsWith("曾用名或俗名：")) {
+			return LineAttreEnum.commonName;
+		}
+		if (line.startsWith("分布")) {
+			return LineAttreEnum.Distribute;
+		}
+		if (line.startsWith("保护等级") || line.startsWith("保护类型")) {
+			return LineAttreEnum.protectLevel;
+		}
+		if (line.equals("名   录")) {
+			return LineAttreEnum.minglu;
+		}
+		String chinese = CommUtils.cutChinese(line);
+		if (chinese.endsWith("纲")) {
+			return LineAttreEnum.Class;
+		}
+		if (chinese.endsWith("目")) {
+			return LineAttreEnum.order;
+		}
+		if (chinese.contains("亚属")) {
+			return LineAttreEnum.subgenus;
+		}
+		if (chinese.endsWith("属")) {
+			return LineAttreEnum.genus;
+		}
+		if (line.contains("亚科")) {
+			return LineAttreEnum.subfamily;
+		}
+		if (chinese.endsWith("科")) {
+			return LineAttreEnum.family;
+		}
+		// 头两个字母是英文：引证
+		if (isEnglish(getChartASC(line, 2))) {
+			return LineAttreEnum.ciation;
+		}
+		// 根据sourceLine区分种和亚种
+		if (isSubSpecies(sourceLine)) {
+			return LineAttreEnum.subsp;
+		}
+		return LineAttreEnum.species;
+
+	}
+
+	/**
+	 * 
+	 * @Description 判断是否为英文
+	 * @param text
+	 * @return
+	 * @author ZXY
+	 */
+	public boolean isEnglish(String text) {
+		return text.matches("^[a-zA-Z]*");
+	}
+
+	boolean isSubSpecies(String sourceLine) {
+		String rgex = "\"(.*?)\"";
+		String engWithSpaceRgex = "^[A-Za-z][A-Za-z\\s]*[A-Za-z]$";
+		List<String> subUtil = CommUtils.getSubUtil(sourceLine, rgex);
+		Pattern sciNamePattern = Pattern.compile(engWithSpaceRgex);// 匹配的模式
+		String sciName = "";
+		for (String str : subUtil) {
+			str = str.replace("\"", "").trim();
+			Matcher m = sciNamePattern.matcher(str);
+			if (m.find()) {
+				sciName = str;
+			}
+		}
+		if (StringUtils.isNotEmpty(sciName)) {
+			// 计算空格的个数
+			int occur = CommUtils.getOccur(sciName, " ");
+			if (occur == 2) {
+				// 亚种
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 * @Description 截取字符串的前几位
+	 * @param text
+	 * @param num
+	 * @return
+	 * @author ZXY
+	 */
+	public String getChartASC(String text, int num) {
+		String result = "";
+		if (StringUtils.isNotEmpty(text)) {
+			result = text.substring(0, num);
+		}
+		return result;
+	}
+
 
 }

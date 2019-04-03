@@ -3,6 +3,7 @@ package org.big.service;
 import java.util.List;
 import java.util.Map;
 
+import org.big.common.LineAttreEnum;
 import org.big.entity.Citation;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
@@ -43,4 +44,6 @@ public interface ParseLine {
 	Distributiondata parseDistribution(String line, Taxon preTaxon, BaseParamsForm baseParamsForm, Description desc);
 
 	List<Ref> parseRefs(String line, Taxon preTaxon, BaseParamsForm baseParamsForm);
+
+	LineAttreEnum isWhat(String line, LineAttreEnum preAttr, String sourceLine);
 }

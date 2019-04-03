@@ -1,11 +1,12 @@
 package org.big.service;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.big.entityVO.SpeciesCatalogueEnum;
-import java.lang.annotation.Annotation;
 
 public interface ToolService {
 	void asy(int i);
@@ -138,6 +139,15 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	int getSecondUpperCaseIndex(String str);
+	/**
+	 * 
+	 * @Description 获取第point个大写字母的位置
+	 * @param str
+	 * @param point
+	 * @return
+	 * @author ZXY
+	 */
+	int getPointUpperCaseIndex(String str,int point);
 
 	/**
 	 * 
@@ -148,5 +158,14 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	List<String> readDoc(String path) throws SQLException;
+	
+	/**
+	 * 
+	 * @Description 
+	 * @param line 格式：学名 命名信息 其他
+	 * @return
+	 * @author ZXY
+	 */
+	Map<String,String> parseSciName(String line);
 
 }

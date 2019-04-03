@@ -75,21 +75,22 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	@Override
 	public void readExcelAndOutputWord(BaseParamsForm baseParamsForm) throws Exception {
-		boolean writeExecute = false;// 重写到word
-		boolean insertExecute = true;// 存储到数据库
-		String outputfolder = "E:\\003采集系统\\0013鱼类\\输出文件\\";
-		String inputfolder = "E:\\003采集系统\\0013鱼类\\19-03-21-鱼类名录\\";
+		boolean writeExecute = true;// 重写到word
+		boolean insertExecute = false;// 转换成实体类
+		String outputfolder = "E:\\003采集系统\\0013鱼类\\20190402输出文件\\";
+		String inputfolder = "E:\\003采集系统\\0013鱼类\\20190402\\";
 		List<String> fileList = new ArrayList<>();
-		fileList.add("整合.doc");
 //		fileList.add("3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc");
-//		fileList.add("3-名录-2鲤形目-狗鱼目.doc");
+		fileList.add("3-名录-2鲤形目-狗鱼目.doc");
 //		fileList.add("3-名录-3-巨口鱼-狮子鱼(伍审阅)_Shao Lab.doc");
 //		fileList.add("3-名录-4鲈形目-虾虎鱼前(伍审阅)-Shao Lab.doc");
 //		fileList.add("3-名录-5虾虎鱼-完(伍审阅)-Shao Lab.doc");
 		for (String fileName : fileList) {
 			logger.info("操作的word是：" + fileName);
 			// 设置datasourceId
-			setDataSource(baseParamsForm, fileName);
+			if(insertExecute) {
+				setDataSource(baseParamsForm, fileName);
+			}
 			readAndWrite(writeExecute, insertExecute, outputfolder, inputfolder, fileName, baseParamsForm);
 		}
 		// 5本书全部操作完，初始化参数
@@ -97,8 +98,8 @@ public class ParseWordServiceImpl implements ParseWordService {
 		speciesbeginCount = 1;
 		orderNum = 1;
 		// 更新分类树
-		logger.info("开始更新分类树preTaxon");
-		taxtreeService.updatePreTaxonByOrderNum(baseParamsForm.getmTaxtreeId());
+//		logger.info("开始更新分类树preTaxon");
+//		taxtreeService.updatePreTaxonByOrderNum(baseParamsForm.getmTaxtreeId());
 	}
 
 	public void readAndWrite(boolean execute, boolean insertExecute, String outputfolder, String inputfolder,
@@ -155,11 +156,14 @@ public class ParseWordServiceImpl implements ParseWordService {
 			if (StringUtils.isEmpty(line)) {
 				continue;
 			}
+			logger.info("当前行："+line);
 			String sourceLine = line;// 未经任何处理的行
 			// 替换特殊字符
 			line = replaceSpecialChar(line);
-			LineAttreEnum currentAttr = isWhat(line, preAttr, sourceLine);
-			changeDatasourceId(line, baseParamsForm);
+			LineAttreEnum currentAttr = parseLineFishWord.isWhat(line, preAttr, sourceLine);
+			if(insertExecute) {
+				changeDatasourceId(line, baseParamsForm);
+			}
 			switch (currentAttr) {
 			case Class:// 纲
 //				System.out.println(line);
@@ -289,7 +293,14 @@ public class ParseWordServiceImpl implements ParseWordService {
 				speciesbeginCount++;
 				preAttr = LineAttreEnum.species;
 				break;
-			case subsp:
+			case subsp://亚种
+				Map<String, String> subspeciesMap = parseSubspeciesLine(line);
+				if (execute) {
+					logger.info("亚种："+line);
+					printNotRank(other, doc, preAttr);
+					writeSpeciesWithStyle(doc, subspeciesMap);
+//					writeDesc(true, doc, true, line, indentationHanging, indentationLeft);
+				}
 				if (insertExecute) {
 					Taxon taxon = parseLineFishWord.parseSubspecies(line, baseParamsForm, thisLineStatus);
 					taxon.setOrderNum(orderNum);
@@ -307,12 +318,12 @@ public class ParseWordServiceImpl implements ParseWordService {
 					}
 					other.setRef(line);
 				}
-				if (insertExecute) {
-					List<Ref> refs = parseLineFishWord.parseRefs(line, preTaxon, baseParamsForm);
-					if (refs != null) {
-						reflist.addAll(refs);
-					}
-				}
+//				if (insertExecute) {
+//					List<Ref> refs = parseLineFishWord.parseRefs(line, preTaxon, baseParamsForm);
+//					if (refs != null) {
+//						reflist.addAll(refs);
+//					}
+//				}
 				break;
 			case Distribute:// 分布
 				if (execute) {
@@ -321,16 +332,16 @@ public class ParseWordServiceImpl implements ParseWordService {
 					}
 					other.setDistribution(line);
 				}
-				if (insertExecute) {
-					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
-							DescTypeConsts.DISTRIBUTION);
-					desclist.add(desc);
-					Distributiondata distributiondata = parseLineFishWord.parseDistribution(line, preTaxon,
-							baseParamsForm, desc);
-					if (distributiondata != null) {
-						distributionlist.add(distributiondata);
-					}
-				}
+//				if (insertExecute) {
+//					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
+//							DescTypeConsts.DISTRIBUTION);
+//					desclist.add(desc);
+//					Distributiondata distributiondata = parseLineFishWord.parseDistribution(line, preTaxon,
+//							baseParamsForm, desc);
+//					if (distributiondata != null) {
+//						distributionlist.add(distributiondata);
+//					}
+//				}
 				break;
 			case protectLevel:// 保护等级
 				if (execute) {
@@ -339,11 +350,11 @@ public class ParseWordServiceImpl implements ParseWordService {
 					}
 					other.setProtectLevel(line);
 				}
-				if (insertExecute) {
-					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
-							DescTypeConsts.PORTECT);
-					desclist.add(desc);
-				}
+//				if (insertExecute) {
+//					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
+//							DescTypeConsts.PORTECT);
+//					desclist.add(desc);
+//				}
 				break;
 			case commonName:// 俗名
 				if (execute) {
@@ -407,20 +418,22 @@ public class ParseWordServiceImpl implements ParseWordService {
 			batchSubmitService.saveAll(citationlist);
 			logger.info("开始保存俗名：" + commnamelist.size());
 			// 俗名
-			batchSubmitService.saveAll(commnamelist);
+//			batchSubmitService.saveAll(commnamelist);
 			logger.info("开始保存描述：" + desclist.size());
 			// 描述
-			batchSubmitService.saveAll(desclist);
+//			batchSubmitService.saveAll(desclist);
 			logger.info("开始保存分布：" + distributionlist.size());
 			// 分布
-			batchSubmitService.saveAll(distributionlist);
+//			batchSubmitService.saveAll(distributionlist);
 			// 参考文献
 //			batchSubmitService.saveAll(reflist);
 			// 分类树
-			taxtreeService.saveTreeByJsonRemark(taxonlist, baseParamsForm.getmTaxtreeId());
+//			taxtreeService.saveTreeByJsonRemark(taxonlist, baseParamsForm.getmTaxtreeId());
 		}
 
 	}
+
+	
 
 	@SuppressWarnings("unused")
 	private Taxon getTaxon(LineAttreEnum preAttr, LineStatus thisLineStatus) {
@@ -533,76 +546,9 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	}
 
-	private LineAttreEnum isWhat(String line, LineAttreEnum preAttr, String sourceLine) {
-		if (line.startsWith("文献")) {
-			return LineAttreEnum.ref;
-		}
-		if (line.startsWith("别名")) {
-			return LineAttreEnum.commonName;
-		}
-		if (line.startsWith("分布")) {
-			return LineAttreEnum.Distribute;
-		}
-		if (line.startsWith("保护等级") || line.startsWith("保护类型")) {
-			return LineAttreEnum.protectLevel;
-		}
-		if (line.equals("名   录")) {
-			return LineAttreEnum.minglu;
-		}
-		String chinese = CommUtils.cutChinese(line);
-		if (chinese.endsWith("纲")) {
-			return LineAttreEnum.Class;
-		}
-		if (chinese.endsWith("目")) {
-			return LineAttreEnum.order;
-		}
-		if (chinese.contains("亚属")) {
-			return LineAttreEnum.subgenus;
-		}
-		if (chinese.endsWith("属")) {
-			return LineAttreEnum.genus;
-		}
-		if (line.contains("亚科")) {
-			return LineAttreEnum.subfamily;
-		}
-		if (chinese.endsWith("科")) {
-			return LineAttreEnum.family;
-		}
-		// 头两个字母是英文：引证
-		if (isEnglish(getChartASC(line, 2))) {
-			return LineAttreEnum.ciation;
-		}
-		// 根据sourceLine区分种和亚种
-		if (isSubSpecies(sourceLine)) {
-			return LineAttreEnum.subsp;
-		}
-		return LineAttreEnum.species;
+	
 
-	}
-
-	boolean isSubSpecies(String sourceLine) {
-		String rgex = "\"(.*?)\"";
-		String engWithSpaceRgex = "^[A-Za-z][A-Za-z\\s]*[A-Za-z]$";
-		List<String> subUtil = CommUtils.getSubUtil(sourceLine, rgex);
-		Pattern sciNamePattern = Pattern.compile(engWithSpaceRgex);// 匹配的模式
-		String sciName = "";
-		for (String str : subUtil) {
-			str = str.replace("\"", "").trim();
-			Matcher m = sciNamePattern.matcher(str);
-			if (m.find()) {
-				sciName = str;
-			}
-		}
-		if (StringUtils.isNotEmpty(sciName)) {
-			// 计算空格的个数
-			int occur = CommUtils.getOccur(sciName, " ");
-			if (occur == 2) {
-				// 亚种
-				return true;
-			}
-		}
-		return false;
-	}
+	
 
 	/**
 	 * 
@@ -621,32 +567,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 			return false;
 	}
 
-	/**
-	 * 
-	 * @Description 判断是否为英文
-	 * @param text
-	 * @return
-	 * @author ZXY
-	 */
-	public boolean isEnglish(String text) {
-		return text.matches("^[a-zA-Z]*");
-	}
-
-	/**
-	 * 
-	 * @Description 截取字符串的前几位
-	 * @param text
-	 * @param num
-	 * @return
-	 * @author ZXY
-	 */
-	public String getChartASC(String text, int num) {
-		String result = "";
-		if (StringUtils.isNotEmpty(text)) {
-			result = text.substring(0, num);
-		}
-		return result;
-	}
+	
 
 	public void writeTitle(XWPFDocument doc, String title, boolean withStyle) {
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
@@ -757,8 +678,9 @@ public class ParseWordServiceImpl implements ParseWordService {
 		int index = CommUtils.indexOfFirstLetter(line);// 第一个英文字母的位置
 		chname = line.substring(0, index);
 		String sciNameAndAuthor = line.substring(index);
-		sciName = toolService.getSciNameFromCitation(sciNameAndAuthor, 2).trim();
-		author = CommUtils.cutByStrAfter(sciNameAndAuthor, sciName);
+		Map<String, String> parseMap = toolService.parseSciName(sciNameAndAuthor);
+		sciName = parseMap.get(MapConsts.TAXON_SCI_NAME);
+		author = CommUtils.cutByStrAfter(line, sciName);
 		// 删除旧序号，添加新序号
 		String rgex = "\\([0-9]*\\)|\\（[0-9]*\\）";
 		List<String> subUtil = CommUtils.getSubUtil(chname, rgex);
@@ -767,9 +689,26 @@ public class ParseWordServiceImpl implements ParseWordService {
 		}
 		chname = "（" + speciesbeginCount + "）" + chname.trim();
 		speciesMap.put(MapConsts.TAXON_CHNAME, chname);
-		speciesMap.put(MapConsts.TAXON_SCI_NAME, sciName);
+		speciesMap.put(MapConsts.TAXON_SCI_NAME,sciName);
 		speciesMap.put(MapConsts.TAXON_AUTHOR, author);
 		return speciesMap;
+	}
+	
+	private Map<String, String> parseSubspeciesLine(String line) {
+		Map<String, String> subspMap = new HashMap<>();
+		int indexOfFirstLetter = CommUtils.indexOfFirstLetter(line);
+		String chname = line.substring(0, indexOfFirstLetter);
+		String sciNameAndAuthor = line.substring(indexOfFirstLetter);
+		// 去除中文名中的序号
+		if (chname.startsWith("(")) {
+			chname = chname.substring(chname.indexOf(")") + 1);
+		}
+		String sciName = toolService.parseSciName(sciNameAndAuthor).get(MapConsts.TAXON_SCI_NAME);
+		String author = CommUtils.cutByStrAfter(sciNameAndAuthor, sciName);
+		subspMap.put(MapConsts.TAXON_CHNAME, chname);
+		subspMap.put(MapConsts.TAXON_SCI_NAME, sciName);
+		subspMap.put(MapConsts.TAXON_AUTHOR, author);
+		return subspMap;
 	}
 
 	/**
@@ -784,8 +723,33 @@ public class ParseWordServiceImpl implements ParseWordService {
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.LEFT);// 左对齐
 		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_CHNAME), true, false);
-		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true, true);
+		writeWithStyleOfSciName(paragraph,speciesMap.get(MapConsts.TAXON_SCI_NAME));
+//		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true, true);
 		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_AUTHOR), true, false);
+	}
+	/**
+	 * 
+	 * @Description 斜体 加粗 英文
+	 * @param paragraph
+	 * @param sciname
+	 * @author ZXY
+	 */
+	private void writeWithStyleOfSciName(XWPFParagraph paragraph, String line) {
+		if(line.contains("（")) {
+			logger.info("学名有括号："+line);
+		}else if(line.contains("(")) {
+			logger.info("学名有括号："+line);
+		}
+		for (int i = 0; i < line.length(); i++) {
+			String charAt = String.valueOf(line.charAt(i));
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamily);// 字体
+			run.setBold(true);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(charAt);// 标题内容
+			run.setItalic(true);// 斜体（字体倾斜）
+		}
+		
 	}
 
 	/**
@@ -799,28 +763,44 @@ public class ParseWordServiceImpl implements ParseWordService {
 	private void writeCitationWithStyle(XWPFDocument doc, String line, LineAttreEnum preAttr) throws Exception {
 		String sciName = null;
 		String other = null;
-		switch (preAttr) {
-		case genus:
-			sciName = toolService.getSciNameFromCitation(line, 1).trim();
-			break;
-		case subgenus:
-			sciName = toolService.getSciNameFromCitation(line, 1).trim();
-			break;
-		case species:
-			sciName = toolService.getSciNameFromCitation(line, 2).trim();
-			break;
-		default:
-			System.out.println(line);
-			throw new Exception("未定义的preAttr:" + preAttr.getName());
-		}
-		other = CommUtils.cutByStrAfter(line, sciName).trim();
-//		System.out.println(sciName+"___"+other);
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.LEFT);// 左对齐
 		paragraph.setIndentationLeft(indentationLeft);
-		writeWithStyle(paragraph, sciName + " ", false, true);
+		
+		if(line.equals("syn. of C. fasciatum Chan, 1966.")) {//特殊的
+			writeSpecialSyn(paragraph);
+			return;
+		}
+		Map<String, String> parseMap = toolService.parseSciName(line);
+		sciName = parseMap.get(MapConsts.TAXON_SCI_NAME);
+		other = CommUtils.cutByStrAfter(line, sciName).trim();
+//		System.out.println(sciName+"___"+other);
+		writeWithStyleOfSciName(paragraph, sciName);
+//		writeWithStyle(paragraph, sciName + " ", false, true);
 		writeWithStyle(paragraph, other, false, false);
 
+	}
+
+	private void writeSpecialSyn(XWPFParagraph paragraph) {
+		XWPFRun run = paragraph.createRun();
+		run.setFontFamily(fontFamily);// 字体
+		run.setBold(true);// 加粗
+		run.setFontSize(fontSize);// 字号
+		run.setText("syn. of C. ");// 标题内容
+		run.setItalic(false);// 斜体（字体倾斜）
+		XWPFRun runs = paragraph.createRun();
+		runs.setFontFamily(fontFamily);// 字体
+		runs.setBold(true);// 加粗
+		runs.setFontSize(fontSize);// 字号
+		runs.setText("fasciatum");// 标题内容
+		runs.setItalic(true);// 斜体（字体倾斜）
+		XWPFRun runa = paragraph.createRun();
+		runa.setFontFamily(fontFamily);// 字体
+		runa.setBold(true);// 加粗
+		runa.setFontSize(fontSize);// 字号
+		runa.setText(" Chan, 1966.");// 标题内容
+		runa.setItalic(false);// 斜体（字体倾斜）
+		
 	}
 
 	@SuppressWarnings("unused")

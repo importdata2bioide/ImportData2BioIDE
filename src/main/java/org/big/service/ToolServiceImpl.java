@@ -5,14 +5,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
 
 import org.big.common.CommUtils;
 import org.big.config.HttpConfig;
 import org.big.constant.ConfigConsts;
+import org.big.constant.MapConsts;
 import org.big.entityVO.SpeciesCatalogueEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +36,9 @@ import com.alibaba.fastjson.JSONObject;
 @Service
 public class ToolServiceImpl implements ToolService {
 	private final static Logger logger = LoggerFactory.getLogger(ToolServiceImpl.class);
+	
+	private volatile List<String> regExlist = new ArrayList<>();
+	
 	@Autowired
 	private RestTemplate restTemplate;
 
@@ -439,5 +449,119 @@ public class ToolServiceImpl implements ToolService {
 		List<String> readByLine = JSONArray.parseArray(obj.get("p2pdata").toString(), String.class);
 		return readByLine;
 	}
+
+	@Override
+	public int getPointUpperCaseIndex(String line, int point) {
+		int index = -1;
+		int count = 0;
+		for (int i = 0; i < line.length(); i++) {
+			char charAt = line.charAt(i);
+			index++;
+			if (charAt >= 'A' && charAt <= 'Z') {
+				count++;
+				if (count == point) {
+					break;
+				}
+			}
+		}
+		return index;
+	}
+
+	@Override
+	public Map<String, String> parseSciName(String line) {
+		Map<String, String> map = new HashMap<>();
+		String sciname = "";
+		String author = "";//命名人和年代
+		boolean match = false;
+		int indexOfRegExlist = -1;
+		for (String regEx : regExlist) {
+			indexOfRegExlist++;
+			Pattern pattern = Pattern.compile(regEx);
+			// 忽略大小写的写法
+			// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(line);
+			// 字符串是否与正则表达式相匹配
+			boolean rs = matcher.matches();
+			if (rs) {
+				if (indexOfRegExlist == 0) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (indexOfRegExlist == 1) {
+					sciname = line.substring(0, line.indexOf("("));
+				} else if (indexOfRegExlist == 2) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (indexOfRegExlist == 3) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (indexOfRegExlist == 4) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (indexOfRegExlist == 5) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (indexOfRegExlist == 6) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (indexOfRegExlist == 7) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (indexOfRegExlist == 8) {
+					sciname = line.substring(0, line.indexOf("("));
+				} else if (indexOfRegExlist == 9) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 3));
+				}else if (indexOfRegExlist == 10) {
+					sciname = line.substring(0,line.indexOf("（"));
+				}else if (indexOfRegExlist == 11) {
+					sciname = line.substring(0,line.indexOf("("));
+				}else if (indexOfRegExlist == 12) {
+					sciname = line.substring(0,getPointUpperCaseIndex(line, 2));
+				}else if (indexOfRegExlist == 13) {
+					sciname = line.substring(0,getPointUpperCaseIndex(line, 2));
+				}
+				match = true;
+				break;
+			}
+		}
+		if (!match) {
+			logger.info("没有匹配：" + line);
+		}
+		map.put(MapConsts.TAXON_SCI_NAME, sciname);
+		map.put(MapConsts.TAXON_AUTHOR, author);
+		return map;
+	}
+	
+	//项目启动后执行
+	@PostConstruct
+	private void initregExlist() {
+		//小写字母或拉丁文
+		String EngMixLatin = "([a-z]|[\u00A0-\u00FF]|[\u0100-\u017F]|[\u0180-\u024F])+";
+		logger.info("初始化学名匹配表达式");
+		if (regExlist.size() == 0) {
+			// 0、species 属 空格 种加词 空格 命名首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
+			// 1、species 属 空格 种加词 空格可忽略 (命名信息首字母大写)
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\({1}(.*?)");
+			// 2、species 属 空格 种加词 空格可忽略：
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}：{1}(.*?)");
+			// 3、species 属 空格可忽略(亚属)空格可忽略 种加词 空格可忽略：
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{0,}：{1}(.*?)");
+			// 4、genus 属 空格 命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
+			// 5、subspecies 属 空格 种加词 空格 亚种加词 空格 命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
+			// 6、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略：
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}：(.*?)");
+			// 7、subspecies 属(亚属)种加词 亚种加词：
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"：(.*?)");
+			// 8、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略(命名信息首字母大写)
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}(.*?)");
+			// 9、species 属 空格可忽略(亚属)空格可忽略 种加词 空格 命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
+			//10、species 属 空格 种加词 空格可忽略 （命名信息首字母大写）
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\（(.*?)\\）(.*?)");
+			//11、var 属名 空格 种加词 空格可忽略 var. 空格 亚种加词 空格可忽略(命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}var.\\s{1,}"+EngMixLatin+"\\s{0,}\\((.*?)");
+			//12 var 属名 空格 种加词 空格可忽略 var. 空格 亚种加词 空格 命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}var.\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
+			//13.species 属名 空格 种加词拉丁文 空格 命名信息首字母大写
+			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
+			
+		}
+	}
+	
 
 }

@@ -51,7 +51,9 @@ public class CommUtils {
 	public static final String TAXON_REMARK_FROM_FILE = "originalText";
 	public static final String TAXON_REMARK_PARENT_ID = "parentId";
 	public static final String TAXON_REMARK_PARENT_NAME = "parentName";
+	
 
+	
 	public static String cutNumber(String line) {
 		String regEx = "[^0-9]";
 		Pattern p = Pattern.compile(regEx);
@@ -740,5 +742,7 @@ public class CommUtils {
 		}
 		return resultList;
 	}
+	
+	
 
 }

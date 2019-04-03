@@ -422,4 +422,11 @@ public class BirdAddDataImpl implements BirdAddData {
 		
 	}
 
+	@Override
+	public void updateCitationStrBySciName(HttpServletResponse response) {
+		//根据数据集查询引证
+//		List<Citation> list = citationRepository.findByTaxasetId(datasetId_2019bird);
+		
+	}
+
 }

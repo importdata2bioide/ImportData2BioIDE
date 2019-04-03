@@ -35,6 +35,20 @@ public class BirdAddDataController {
 		birdAddData.countCitationByTaxon(response);
 		return "index";
 	}
+	
+	/**
+	 * 
+	 * @Description 更新引证原文
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 * @author ZXY
+	 */
+	@RequestMapping(value = "/birdAddDataController_updateCitationStrBySciName",method = RequestMethod.GET)
+	public String updateCitationStrBySciName(HttpServletResponse response) throws Exception {
+		birdAddData.updateCitationStrBySciName(response);
+		return "index";
+	}
 
 
 }
