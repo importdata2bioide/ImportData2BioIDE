@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +46,16 @@ public class ParseLineFishWord implements ParseLine {
 	private DescriptiontypeService descriptiontypeService;
 	@Autowired
 	private DistributiondataService distributiondataService;
-
-	
+	//种阶元正则表达式
+	private volatile Map<String, String> speciesRegExlist = new HashMap<>();
+	//一个或多个中文
+	String multChinese = "[\\u4e00-\\u9fa5]+";
+	//小写英文和拉丁文混合
+	String EngMixLatin = "([a-z]|[\u00A0-\u00FF]|[\u0100-\u017F]|[\u0180-\u024F])+";
+	//属
+	String genusWord = "[A-Z]{1}"+EngMixLatin;
+	//序号
+	String numRgex = "(\\([0-9]*\\)|\\（[0-9]*\\）)";
 
 	@Override
 	public Taxon parseClass(String line, BaseParamsForm params, LineStatus thisLineStatus) {
@@ -351,10 +361,7 @@ public class ParseLineFishWord implements ParseLine {
 		if (line.startsWith("文献")) {
 			return LineAttreEnum.ref;
 		}
-		if (line.startsWith("别名")) {
-			return LineAttreEnum.commonName;
-		}
-		if (line.startsWith("曾用名或俗名：")) {
+		if (line.startsWith("别名")||line.startsWith("曾用名")) {
 			return LineAttreEnum.commonName;
 		}
 		if (line.startsWith("分布")) {
@@ -393,9 +400,20 @@ public class ParseLineFishWord implements ParseLine {
 		if (isSubSpecies(sourceLine)) {
 			return LineAttreEnum.subsp;
 		}
+		//截取学名
+		int index = CommUtils.indexOfFirstLetter(line);// 第一个英文字母的位置
+		String sciNameAndAuthor = line.substring(index);
+		//是否符合亚种的命名规则
+		boolean suspecies = isSubspeciesNameRule(sciNameAndAuthor);
+		if(suspecies) {
+			logger.info("isWhatp判定 可能是亚种："+line);
+			return LineAttreEnum.subsp;
+		}
+		//剩下的是种阶元
 		return LineAttreEnum.species;
 
 	}
+
 
 	/**
 	 * 
@@ -446,6 +464,69 @@ public class ParseLineFishWord implements ParseLine {
 			result = text.substring(0, num);
 		}
 		return result;
+	}
+	
+
+
+	@Override
+	public boolean validateSpecies(String line) {
+		Set<Entry<String, String>> entrySet = speciesRegExlist.entrySet();
+		boolean match = false;
+		for (Entry<String, String> entry : entrySet) {
+			String key = entry.getKey();
+			String regEx = entry.getValue();
+			Pattern pattern = Pattern.compile(regEx);
+			// 忽略大小写的写法
+			// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(line);
+			// 字符串是否与正则表达式相匹配
+			boolean rs = matcher.matches();
+			if (rs) {
+				
+				match = true;
+				break;
+			}
+		}
+		if (!match) {
+			logger.info("不符合设定的种阶元："+line);
+		}
+		return false;
+	}
+	
+	
+	@PostConstruct
+	public void initSpeciesRegExlist() {
+		speciesRegExlist.clear();
+		//下盔鲨(黑鳍翅鲨)Hypogaleus hyugaensis (Miyosi, 1939)
+		speciesRegExlist.put("species-0", "^\\s{0,}"+multChinese+"\\s{0,}\\(\\s{0,}"+multChinese+"\\s{0,}\\)\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{0,}\\((.*?)\\)\\s{0,}");
+		//灰星鲨Mustelus griseus Pietschmann, 1908
+		speciesRegExlist.put("species-1", "^\\s{0,}"+multChinese+"\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{0,}[A-Z]{1}(.*?)");
+//		//大口尖齿鲨Chaenogaleus macrostoma (Bleeker, 1852)
+		speciesRegExlist.put("species-2", "^\\s{0,}"+multChinese+"\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{0,}\\((.*?)\\)\\s{0,}");
+		//(1097)长须纹胸Glyptothorax longinema Li
+		speciesRegExlist.put("species-3", "^\\s{0,}"+numRgex+multChinese+"\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{0,}[A-Z]{1}(.*?)");
+		//（1）蒲氏黏盲鳗Eptatretus burgeri (Girard, 1855)
+		speciesRegExlist.put("species-4", "^\\s{0,}"+numRgex+multChinese+"\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}(.*?)\\)");
+	
+	}
+	
+	public boolean isSubspeciesNameRule(String sciNameAndAuthor) {
+		String regEx = "^\\s{0,}"+genusWord+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"(.*?)";
+		Pattern pattern = Pattern.compile(regEx );
+		// 忽略大小写的写法
+		// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(sciNameAndAuthor);
+		// 字符串是否与正则表达式相匹配
+		boolean rs = matcher.matches();
+		return rs;
+	}
+	
+	
+	public static void main(String[] args) {
+		String line = "小齿拟皱唇鲨Pseudotriakis microdon de Brito Capello, 1868";
+		ParseLineFishWord parseLineFishWord = new ParseLineFishWord();
+		boolean subspeciesNameRule = parseLineFishWord.isSubspeciesNameRule(line);
+		System.out.println(subspeciesNameRule);
 	}
 
 

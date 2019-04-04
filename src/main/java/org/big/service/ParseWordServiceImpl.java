@@ -52,7 +52,7 @@ import com.alibaba.fastjson.JSONObject;
 public class ParseWordServiceImpl implements ParseWordService {
 
 	private final static Logger logger = LoggerFactory.getLogger(ParseWordServiceImpl.class);
-	
+
 	@Autowired
 	private BatchSubmitService batchSubmitService;
 	@Autowired
@@ -66,7 +66,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 	Map<String, String> theLastCharacterMap = new HashMap<>();
 	private int indentationLeft = 200;
 	private int indentationHanging = 200;
-	private int fontSize = 10;
+	private int fontSize = 10;//磅
 	private String fontFamilyChinese = "宋体";
 	private String fontFamily = "Calibri";
 	int genusbeginCount = 1;
@@ -80,15 +80,15 @@ public class ParseWordServiceImpl implements ParseWordService {
 		String outputfolder = "E:\\003采集系统\\0013鱼类\\20190402输出文件\\";
 		String inputfolder = "E:\\003采集系统\\0013鱼类\\20190402\\";
 		List<String> fileList = new ArrayList<>();
-//		fileList.add("3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc");
+		fileList.add("3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc");
 		fileList.add("3-名录-2鲤形目-狗鱼目.doc");
-//		fileList.add("3-名录-3-巨口鱼-狮子鱼(伍审阅)_Shao Lab.doc");
-//		fileList.add("3-名录-4鲈形目-虾虎鱼前(伍审阅)-Shao Lab.doc");
-//		fileList.add("3-名录-5虾虎鱼-完(伍审阅)-Shao Lab.doc");
+		fileList.add("3-名录-3-巨口鱼-狮子鱼(伍审阅)_Shao Lab.doc");
+		fileList.add("3-名录-4鲈形目-虾虎鱼前(伍审阅)-Shao Lab.doc");
+		fileList.add("3-名录-5虾虎鱼-完(伍审阅)-Shao Lab.doc");
 		for (String fileName : fileList) {
 			logger.info("操作的word是：" + fileName);
 			// 设置datasourceId
-			if(insertExecute) {
+			if (insertExecute) {
 				setDataSource(baseParamsForm, fileName);
 			}
 			readAndWrite(writeExecute, insertExecute, outputfolder, inputfolder, fileName, baseParamsForm);
@@ -156,12 +156,12 @@ public class ParseWordServiceImpl implements ParseWordService {
 			if (StringUtils.isEmpty(line)) {
 				continue;
 			}
-			logger.info("当前行："+line);
+//			logger.info("当前行："+line);
 			String sourceLine = line;// 未经任何处理的行
 			// 替换特殊字符
 			line = replaceSpecialChar(line);
 			LineAttreEnum currentAttr = parseLineFishWord.isWhat(line, preAttr, sourceLine);
-			if(insertExecute) {
+			if (insertExecute) {
 				changeDatasourceId(line, baseParamsForm);
 			}
 			switch (currentAttr) {
@@ -274,6 +274,12 @@ public class ParseWordServiceImpl implements ParseWordService {
 				preAttr = LineAttreEnum.subgenus;
 				break;
 			case species:// 种
+//				boolean speciesRank = parseLineFishWord.validateSpecies(line);
+				if(line.startsWith("（")||line.startsWith("(")||CommUtils.isContainChinese(line.substring(0, 1))) {
+					
+				}else {
+					System.out.println("可能不是种阶元："+line);
+				}
 				Map<String, String> speciesMap = parseSpeciesLine(line);
 //				System.out.println(line);
 				if (execute) {
@@ -293,10 +299,10 @@ public class ParseWordServiceImpl implements ParseWordService {
 				speciesbeginCount++;
 				preAttr = LineAttreEnum.species;
 				break;
-			case subsp://亚种
+			case subsp:// 亚种
 				Map<String, String> subspeciesMap = parseSubspeciesLine(line);
 				if (execute) {
-					logger.info("亚种："+line);
+//					logger.info("亚种："+line);
 					printNotRank(other, doc, preAttr);
 					writeSpeciesWithStyle(doc, subspeciesMap);
 //					writeDesc(true, doc, true, line, indentationHanging, indentationLeft);
@@ -309,6 +315,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 					thisLineStatus.setSubspecies(taxon);
 					preTaxon = taxon;
 				}
+				speciesbeginCount++;
 				preAttr = LineAttreEnum.subsp;
 				break;
 			case ref:// 参考文献
@@ -433,8 +440,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	}
 
-	
-
 	@SuppressWarnings("unused")
 	private Taxon getTaxon(LineAttreEnum preAttr, LineStatus thisLineStatus) {
 		Taxon taxon = null;
@@ -513,7 +518,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 			String commname = other.getCommname();
 			String distribution = other.getDistribution();
 			String protectLevel = other.getProtectLevel();
-			// 引证
+			// 引证：悬挂缩进
 			if (citation != null && citation.size() > 0) {
 				for (String line : citation) {
 //					writeDesc(true, doc, false, line, 0, indentationLeft);
@@ -521,12 +526,12 @@ public class ParseWordServiceImpl implements ParseWordService {
 				}
 				other.setCitation(null);
 			}
-			// 文献
+			// 文献：悬挂缩进
 			if (StringUtils.isNotEmpty(ref)) {
 				writeDesc(true, doc, false, ref, indentationHanging, indentationHanging + indentationLeft);
 				other.setRef(null);
 			}
-			// 别名
+			// 别名：悬挂缩进
 			if (StringUtils.isNotEmpty(commname)) {
 				writeDesc(true, doc, false, commname, indentationHanging, indentationHanging + indentationLeft);
 				other.setCommname(null);
@@ -546,10 +551,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	}
 
-	
-
-	
-
 	/**
 	 * 
 	 * @Description 判断是否为中文
@@ -566,8 +567,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 		else
 			return false;
 	}
-
-	
 
 	public void writeTitle(XWPFDocument doc, String title, boolean withStyle) {
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
@@ -687,13 +686,13 @@ public class ParseWordServiceImpl implements ParseWordService {
 		for (String str : subUtil) {
 			chname = chname.replace(str, "");
 		}
-		chname = "（" + speciesbeginCount + "）" + chname.trim();
+		chname = "（" + speciesbeginCount + "）" + chname;
 		speciesMap.put(MapConsts.TAXON_CHNAME, chname);
-		speciesMap.put(MapConsts.TAXON_SCI_NAME,sciName);
+		speciesMap.put(MapConsts.TAXON_SCI_NAME, sciName);
 		speciesMap.put(MapConsts.TAXON_AUTHOR, author);
 		return speciesMap;
 	}
-	
+
 	private Map<String, String> parseSubspeciesLine(String line) {
 		Map<String, String> subspMap = new HashMap<>();
 		int indexOfFirstLetter = CommUtils.indexOfFirstLetter(line);
@@ -703,6 +702,14 @@ public class ParseWordServiceImpl implements ParseWordService {
 		if (chname.startsWith("(")) {
 			chname = chname.substring(chname.indexOf(")") + 1);
 		}
+		// 删除旧序号，添加新序号
+		String rgex = "\\([0-9]*\\)|\\（[0-9]*\\）";
+		List<String> subUtil = CommUtils.getSubUtil(chname, rgex);
+		for (String str : subUtil) {
+			chname = chname.replace(str, "");
+		}
+		chname = "（" + speciesbeginCount + "）" + chname.trim();
+		
 		String sciName = toolService.parseSciName(sciNameAndAuthor).get(MapConsts.TAXON_SCI_NAME);
 		String author = CommUtils.cutByStrAfter(sciNameAndAuthor, sciName);
 		subspMap.put(MapConsts.TAXON_CHNAME, chname);
@@ -723,10 +730,11 @@ public class ParseWordServiceImpl implements ParseWordService {
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.LEFT);// 左对齐
 		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_CHNAME), true, false);
-		writeWithStyleOfSciName(paragraph,speciesMap.get(MapConsts.TAXON_SCI_NAME));
+		writeWithStyleOfSciName(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true);
 //		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true, true);
 		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_AUTHOR), true, false);
 	}
+
 	/**
 	 * 
 	 * @Description 斜体 加粗 英文
@@ -734,22 +742,35 @@ public class ParseWordServiceImpl implements ParseWordService {
 	 * @param sciname
 	 * @author ZXY
 	 */
-	private void writeWithStyleOfSciName(XWPFParagraph paragraph, String line) {
-		if(line.contains("（")) {
-			logger.info("学名有括号："+line);
-		}else if(line.contains("(")) {
-			logger.info("学名有括号："+line);
-		}
+	private void writeWithStyleOfSciName(XWPFParagraph paragraph, String line, boolean bold) {
+//		if (line.contains("（")) {
+//			logger.info("学名有括号（01）：" + line);
+//		} else if (line.contains("(")) {
+//			logger.info("学名有括号（02）：" + line);
+//		}
+		line = line.replace(" (", "(");
+		line = line.replace(") ", ")");
+		boolean meetBrackets = false;
 		for (int i = 0; i < line.length(); i++) {
-			String charAt = String.valueOf(line.charAt(i));
+			char charAt = line.charAt(i);
+			if (charAt == '(') {
+				meetBrackets = true;
+			} else if (charAt == ')') {
+				meetBrackets = false;
+			}
+			String charAtStr = String.valueOf(charAt);
 			XWPFRun run = paragraph.createRun();
 			run.setFontFamily(fontFamily);// 字体
-			run.setBold(true);// 加粗
+			run.setBold(bold);// 加粗
 			run.setFontSize(fontSize);// 字号
-			run.setText(charAt);// 标题内容
-			run.setItalic(true);// 斜体（字体倾斜）
+			run.setText(charAtStr);// 标题内容
+			if (meetBrackets || charAt == ')' || charAt == '）') {
+				run.setItalic(false);// 非斜体
+			} else {
+				run.setItalic(true);// 斜体（字体倾斜）
+			}
 		}
-		
+
 	}
 
 	/**
@@ -761,24 +782,43 @@ public class ParseWordServiceImpl implements ParseWordService {
 	 * @throws Exception
 	 */
 	private void writeCitationWithStyle(XWPFDocument doc, String line, LineAttreEnum preAttr) throws Exception {
+		//设置悬挂缩进的段落，左缩进= indentationLeft+indentationHanging
 		String sciName = null;
 		String other = null;
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.LEFT);// 左对齐
-		paragraph.setIndentationLeft(indentationLeft);
-		
-		if(line.equals("syn. of C. fasciatum Chan, 1966.")) {//特殊的
+		paragraph.setIndentationLeft(indentationLeft+indentationHanging);
+		paragraph.setIndentationHanging(indentationHanging);
+		if (line.equals("syn. of C. fasciatum Chan, 1966.")) {// 特殊的
 			writeSpecialSyn(paragraph);
+			return;
+		}else if (line.equals("Rasbora sp. 匡溥人(见褚新洛和陈银瑞)，1989，27；.")) {// 特殊的
+			writeSpecialCitationItalic(paragraph,"Rasbora",true);
+			writeSpecialCitationItalic(paragraph," sp. 匡溥人(见褚新洛和陈银瑞)，1989，27；.",false);
 			return;
 		}
 		Map<String, String> parseMap = toolService.parseSciName(line);
 		sciName = parseMap.get(MapConsts.TAXON_SCI_NAME);
 		other = CommUtils.cutByStrAfter(line, sciName).trim();
 //		System.out.println(sciName+"___"+other);
-		writeWithStyleOfSciName(paragraph, sciName);
+		writeWithStyleOfSciName(paragraph, sciName, false);
 //		writeWithStyle(paragraph, sciName + " ", false, true);
 		writeWithStyle(paragraph, other, false, false);
 
+	}
+
+	private void writeSpecialCitationItalic(XWPFParagraph paragraph, String line, boolean Italic) {
+		for (int i = 0; i < line.length(); i++) {
+			char charAt = line.charAt(i);
+			String charAtStr = String.valueOf(charAt);
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamily);// 字体
+			run.setBold(false);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(charAtStr);// 标题内容
+			run.setItalic(Italic);
+		}
+		
 	}
 
 	private void writeSpecialSyn(XWPFParagraph paragraph) {
@@ -800,7 +840,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 		runa.setFontSize(fontSize);// 字号
 		runa.setText(" Chan, 1966.");// 标题内容
 		runa.setItalic(false);// 斜体（字体倾斜）
-		
+
 	}
 
 	@SuppressWarnings("unused")

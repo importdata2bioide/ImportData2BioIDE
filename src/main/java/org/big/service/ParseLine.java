@@ -46,4 +46,8 @@ public interface ParseLine {
 	List<Ref> parseRefs(String line, Taxon preTaxon, BaseParamsForm baseParamsForm);
 
 	LineAttreEnum isWhat(String line, LineAttreEnum preAttr, String sourceLine);
+
+	boolean validateSpecies(String line);
+	
+	public void initSpeciesRegExlist();
 }

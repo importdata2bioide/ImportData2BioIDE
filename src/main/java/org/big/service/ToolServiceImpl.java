@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,9 +38,9 @@ import com.alibaba.fastjson.JSONObject;
 @Service
 public class ToolServiceImpl implements ToolService {
 	private final static Logger logger = LoggerFactory.getLogger(ToolServiceImpl.class);
-	
-	private volatile List<String> regExlist = new ArrayList<>();
-	
+
+	private volatile Map<String, String> regExlist = new HashMap<>();
+
 	@Autowired
 	private RestTemplate restTemplate;
 
@@ -433,7 +435,7 @@ public class ToolServiceImpl implements ToolService {
 	}
 
 	public List<String> readDoc(String path) throws SQLException {
-		//替换特殊字符，斜杠不能出现在restful api路径中
+		// 替换特殊字符，斜杠不能出现在restful api路径中
 		path = path.replace("\\", "=");
 		// 读取文件
 		String colchinaUrl = HttpConfig.getInstance().get("COLCHINA");
@@ -443,8 +445,7 @@ public class ToolServiceImpl implements ToolService {
 		String jsonStr = results.getBody();
 		JSONObject obj = new JSONObject().parseObject(jsonStr);// 将json字符串转换为json对象
 		if (Integer.parseInt(obj.get("errcode").toString()) != 200) {
-			throw new ValidationException(
-					ConfigConsts.READ_FILE_ERROR + ",读取word文件出错：" + obj.get("errmsg").toString());
+			throw new ValidationException(ConfigConsts.READ_FILE_ERROR + ",读取word文件出错：" + obj.get("errmsg").toString());
 		}
 		List<String> readByLine = JSONArray.parseArray(obj.get("p2pdata").toString(), String.class);
 		return readByLine;
@@ -471,11 +472,12 @@ public class ToolServiceImpl implements ToolService {
 	public Map<String, String> parseSciName(String line) {
 		Map<String, String> map = new HashMap<>();
 		String sciname = "";
-		String author = "";//命名人和年代
+		String author = "";// 命名人和年代
 		boolean match = false;
-		int indexOfRegExlist = -1;
-		for (String regEx : regExlist) {
-			indexOfRegExlist++;
+		Set<Entry<String, String>> entrySet = regExlist.entrySet();
+		for (Entry<String, String> entry : entrySet) {
+			String key = entry.getKey();
+			String regEx = entry.getValue();
 			Pattern pattern = Pattern.compile(regEx);
 			// 忽略大小写的写法
 			// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
@@ -483,85 +485,191 @@ public class ToolServiceImpl implements ToolService {
 			// 字符串是否与正则表达式相匹配
 			boolean rs = matcher.matches();
 			if (rs) {
-				if (indexOfRegExlist == 0) {
+				if (key.equals("genus-0")) {
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
-				} else if (indexOfRegExlist == 1) {
+				} else if (key.equals("genus-1")) {
+					sciname = line.substring(0, IndexOfFirstChinese(line));
+				} else if (key.equals("species-0")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (key.equals("species-1")) {
 					sciname = line.substring(0, line.indexOf("("));
-				} else if (indexOfRegExlist == 2) {
+				} else if (key.equals("species-2")) {
 					sciname = line.substring(0, line.indexOf("："));
-				} else if (indexOfRegExlist == 3) {
+				} else if (key.equals("species-3")) {
 					sciname = line.substring(0, line.indexOf("："));
-				} else if (indexOfRegExlist == 4) {
-					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
-				} else if (indexOfRegExlist == 5) {
-					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
-				} else if (indexOfRegExlist == 6) {
-					sciname = line.substring(0, line.indexOf("："));
-				} else if (indexOfRegExlist == 7) {
-					sciname = line.substring(0, line.indexOf("："));
-				} else if (indexOfRegExlist == 8) {
-					sciname = line.substring(0, line.indexOf("("));
-				} else if (indexOfRegExlist == 9) {
+				} else if (key.equals("species-4")) {
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 3));
-				}else if (indexOfRegExlist == 10) {
-					sciname = line.substring(0,line.indexOf("（"));
-				}else if (indexOfRegExlist == 11) {
-					sciname = line.substring(0,line.indexOf("("));
-				}else if (indexOfRegExlist == 12) {
-					sciname = line.substring(0,getPointUpperCaseIndex(line, 2));
-				}else if (indexOfRegExlist == 13) {
-					sciname = line.substring(0,getPointUpperCaseIndex(line, 2));
+				} else if (key.equals("species-5")) {
+					sciname = line.substring(0, line.indexOf("（"));
+				} else if (key.equals("species-6")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (key.equals("species-7")) {
+					sciname = line.substring(0, IndexOfFirstChinese(line));
+				} else if (key.equals("species-8")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 3) - 1);
+				} else if (key.equals("species-9")) {
+					sciname = line.substring(0, IndexOfFirstChinese(line));
+				} else if (key.equals("species-10")) {
+					sciname = line.substring(0, line.indexOf(":"));
+				}else if (key.equals("species-11")) {
+					sciname = line.substring(0, line.indexOf("("));
+				} else if (key.equals("subspecies-0")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (key.equals("subspecies-1")) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (key.equals("subspecies-2")) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else if (key.equals("subspecies-3")) {
+					sciname = line.substring(0, line.indexOf("("));
+				} else if (key.equals("subspecies-4")) {
+					sciname = line.substring(0, IndexOfFirstChinese(line));
+				} else if (key.equals("subspecies-5")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 3));
+				} else if (key.equals("subspecies-6")) {
+					sciname = line.substring(0, IndexOfFirstChinese(line));
+				} else if (key.equals("var-0")) {
+					sciname = line.substring(0, line.indexOf("("));
+				} else if (key.equals("var-1")) {
+					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
+				} else if (key.equals("var-2")) {
+					sciname = line.substring(0, line.indexOf("："));
+				} else {
+					throw new ValidationException("未定义的key:" + key);
 				}
 				match = true;
 				break;
 			}
 		}
 		if (!match) {
-			logger.info("没有匹配：" + line);
+			int indexOfPointUpperCaseWithoutBrackets = indexOfPointUpperCaseWithoutBrackets(line, 2);
+			if(line.contains("：")) {
+				sciname = line.substring(0,line.indexOf("："));
+//				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用：分隔_____" + line);
+			}else if(indexOfPointUpperCaseWithoutBrackets != line.length()-1) {
+				sciname = line.substring(0,indexOfPointUpperCaseWithoutBrackets);
+				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用第二个大写字母（不包含括号内的）分隔_____" + line);
+			}else {
+				logger.info("没有匹配：" + line);
+			}
+			
 		}
+
 		map.put(MapConsts.TAXON_SCI_NAME, sciname);
 		map.put(MapConsts.TAXON_AUTHOR, author);
 		return map;
 	}
-	
-	//项目启动后执行
+
+	// 项目启动后执行
 	@PostConstruct
-	private void initregExlist() {
-		//小写字母或拉丁文
+	public void initregExlist() {
+//		regExlist.clear();
+		// 小写字母或拉丁文或-
+		String EngMixLatinMixShortLine = "(-|[a-z]|[\u00A0-\u00FF]|[\u0100-\u017F]|[\u0180-\u024F])+";
+		// 小写字母或拉丁文
 		String EngMixLatin = "([a-z]|[\u00A0-\u00FF]|[\u0100-\u017F]|[\u0180-\u024F])+";
-		logger.info("初始化学名匹配表达式");
+		String multChinese = "[\\u4e00-\\u9fa5]+";
 		if (regExlist.size() == 0) {
-			// 0、species 属 空格 种加词 空格 命名首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
-			// 1、species 属 空格 种加词 空格可忽略 (命名信息首字母大写)
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\({1}(.*?)");
-			// 2、species 属 空格 种加词 空格可忽略：
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}：{1}(.*?)");
-			// 3、species 属 空格可忽略(亚属)空格可忽略 种加词 空格可忽略：
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{0,}：{1}(.*?)");
 			// 4、genus 属 空格 命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
-			// 5、subspecies 属 空格 种加词 空格 亚种加词 空格 命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
-			// 6、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略：
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}：(.*?)");
-			// 7、subspecies 属(亚属)种加词 亚种加词：
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"：(.*?)");
-			// 8、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略(命名信息首字母大写)
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}(.*?)");
+			regExlist.put("genus-0", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}[A-Z]{1}(.*?)");
+			// genus 属 中文命名信息
+			regExlist.put("genus-1", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}" + multChinese + "(.*?)");
+			// 0、species 属 空格 种加词 空格 命名首字母大写
+			regExlist.put("species-0", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}[A-Z]{1,}(.*?)");
+			// 1、species 属 空格 种加词 空格可忽略 (命名信息首字母大写)
+			regExlist.put("species-1", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}\\({1}(.*?)");
+			// 2、species 属 空格 种加词 空格可忽略：
+			regExlist.put("species-2", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}：{1}(.*?)");
+			// 3、species 属 空格可忽略(亚属)空格可忽略 种加词 空格可忽略：
+			regExlist.put("species-3", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{0,}：{1}(.*?)");
 			// 9、species 属 空格可忽略(亚属)空格可忽略 种加词 空格 命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{0,}\\([A-Z]{1}"+EngMixLatin+"\\)\\s{0,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
-			//10、species 属 空格 种加词 空格可忽略 （命名信息首字母大写）
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}\\（(.*?)\\）(.*?)");
-			//11、var 属名 空格 种加词 空格可忽略 var. 空格 亚种加词 空格可忽略(命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}var.\\s{1,}"+EngMixLatin+"\\s{0,}\\((.*?)");
-			//12 var 属名 空格 种加词 空格可忽略 var. 空格 亚种加词 空格 命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{0,}var.\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1,}(.*?)");
-			//13.species 属名 空格 种加词拉丁文 空格 命名信息首字母大写
-			regExlist.add("^[A-Z]{1}"+EngMixLatin+"\\s{1,}"+EngMixLatin+"\\s{1,}[A-Z]{1}(.*?)");
-			
+			regExlist.put("species-4", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{1,}[A-Z]{1,}(.*?)");
+			// 10、species 属 空格 种加词 空格可忽略 （命名信息首字母大写）
+			regExlist.put("species-5", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}\\（(.*?)\\）(.*?)");
+			// 13 species 属 空格 种加词拉丁文 空格 命名信息首字母大写
+			regExlist.put("species-6", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}[A-Z]{1}(.*?)");
+			// 14 species 属 空格 种加词 空格可忽略 中文命名信息
+			regExlist.put("species-7",
+					"^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}" + multChinese + "(.*?)");
+			// speciese 属(亚属)种加词(命名信息首字母大写
+			regExlist.put("species-8", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{0,}\\([A-Z]{1}(.*?)");
+			// speciese 属(亚属)种加词 中文命名信息
+			regExlist.put("species-9", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{0,}" + multChinese + "(.*?)");
+			// speciese 属 空格 种加词:
+			regExlist.put("species-10", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}:(.*?)");
+			//speciese属 空格 种加词可能包含- (命名信息首字母大写
+			regExlist.put("species-11", "^[A-Z]{1}[a-z]{1,}\\s{1,}"+EngMixLatinMixShortLine+"\\s{0,}\\([A-Z]{1,}(.*?)");
+			// 5、subspecies 属 空格 种加词 空格 亚种加词 空格 命名信息首字母大写
+			regExlist.put("subspecies-0", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}" + EngMixLatin
+					+ "\\s{1,}[A-Z]{1}(.*?)");
+			// 6、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略：
+			regExlist.put("subspecies-1",
+					"^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}：(.*?)");
+			// 7、subspecies 属(亚属)种加词 亚种加词：
+			regExlist.put("subspecies-2", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{1,}" + EngMixLatin + "：(.*?)");
+			// 8、subspecies 属 空格 种加词 空格 亚种加词 空格可忽略(命名信息首字母大写)
+			regExlist.put("subspecies-3", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}" + EngMixLatin
+					+ "\\s{0,}\\([A-Z]{1}(.*?)");
+			// 15 subspecies 属 空格 种加词 空格 亚种加词 空格可忽略 中文命名信息
+			regExlist.put("subspecies-4", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}" + EngMixLatin
+					+ "\\s{0,}" + multChinese + "(.*?)");
+			// subspecies 属(亚属)种加词 空格 亚种加词 空格 命名信息首字母大写
+			regExlist.put("subspecies-5", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}[A-Z]{1,}(.*?)");
+			// subspecies 属(亚属)种加词 空格 亚种加词 中文命名信息
+			regExlist.put("subspecies-6", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin + "\\)\\s{0,}"
+					+ EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}" + multChinese + "(.*?)");
+			// 11、var 属 空格 种加词 空格可忽略 var. 空格 亚种加词 空格可忽略(命名信息首字母大写
+			regExlist.put("var-0", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}var.\\s{1,}"
+					+ EngMixLatin + "\\s{0,}\\((.*?)");
+			// 12 var 属 空格 种加词 空格可忽略 var. 空格 亚种加词 空格 命名信息首字母大写
+			regExlist.put("var-1", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}var.\\s{1,}"
+					+ EngMixLatin + "\\s{1,}[A-Z]{1,}(.*?)");
+			// var 属 空格 种加词 空格可忽略 var. 空格 亚种加词：
+			regExlist.put("var-2", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}var.\\s{1,}"
+					+ EngMixLatin + "\\s{0,}：(.*?)");
+
 		}
 	}
-	
+
+	@Override
+	public int IndexOfFirstChinese(String line) {
+		// 找第一个汉字
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int indexOfPointUpperCaseWithoutBrackets(String line, int point) {
+		int index = -1;
+		int count = 0;
+		boolean meetBrackets = false;
+		for (int i = 0; i < line.length(); i++) {
+			char charAt = line.charAt(i);
+			index++;
+			if (charAt == '(') {
+				meetBrackets = true;
+			}else if (charAt == ')') {
+				meetBrackets = false;
+			}
+			if (meetBrackets == false && charAt >= 'A' && charAt <= 'Z') {
+				count++;
+				if (count == point) {
+					break;
+				}
+			}
+		}
+		return index;
+	}
 
 }

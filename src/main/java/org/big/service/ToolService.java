@@ -167,5 +167,24 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	Map<String,String> parseSciName(String line);
+	
+	/**
+	 * 
+	 * @Description 第一个中文字符的位置
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	int IndexOfFirstChinese(String line);
+	
+	public void initregExlist();
+	/**
+	 * 
+	 * @Description 第point个大写字母的位置，括号内的大写字母不算
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	public int indexOfPointUpperCaseWithoutBrackets(String line,int point);
 
 }
