@@ -38,7 +38,7 @@ public class BirdAddDataController {
 	
 	/**
 	 * 
-	 * @Description 更新引证原文
+	 * @Description 更新2019鸟类名录引证：根据引证原文生成参考文献，没有引证的从旧采集系统导入
 	 * @param response
 	 * @return
 	 * @throws Exception

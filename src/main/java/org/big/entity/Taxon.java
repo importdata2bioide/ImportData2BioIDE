@@ -155,6 +155,18 @@ public class Taxon implements Serializable {
 	
 	
 	
+	/**
+	 * 
+	 * @param flag 无实际意义，用于和其他构造方法区分开来
+	 * @param id
+	 * @param scientificname
+	 */
+	public Taxon(int flag,String id, String scientificname) {
+		super();
+		this.id = id;
+		this.scientificname = scientificname;
+	}
+
 	public Taxon(String id) {
 		super();
 		this.id = id;

@@ -1,5 +1,8 @@
 package org.big.service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletResponse;
 
 public interface BirdAddData {
@@ -13,6 +16,16 @@ public interface BirdAddData {
 	 */
 	void countCitationByTaxon(HttpServletResponse response);
 	
-	void updateCitationStrBySciName(HttpServletResponse response);
+	void updateCitationStrBySciName(HttpServletResponse response) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+	/**
+	 * 
+	 * @Description 使用正则表达式解析引证原文中的页码
+	 * @param citationstr
+	 * @return
+	 * @author ZXY
+	 */
+	Map<String, String> getPageFromCitationStr(String citationstr);
+	
+	void initRegExPagelist();
 
 }

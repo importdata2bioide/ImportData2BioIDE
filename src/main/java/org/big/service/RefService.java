@@ -1,14 +1,24 @@
 package org.big.service;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
 import org.big.entity.Ref;
+import org.big.entityVO.RefTypeEnum;
 import org.big.sp2000.entity.Reference;
 
 
 public interface RefService {
+	/**
+	 * 
+	 * @Description 完整引证解析：作者、年代、标题、语言
+	 * @param ref
+	 * @param line
+	 * @author ZXY
+	 */
+	void parseLineChineseOrEng(Ref ref, String line);
 	
 	List<Reference> findRefByUserTurnToReference(String userId) throws Exception;
 	
@@ -65,4 +75,14 @@ public interface RefService {
 	 * @author ZXY
 	 */
 	Ref insertRefIfNotExist(String refstr,String inputerId,String remark);
+	/**
+	 * 
+	 * @Description 
+	 * @param oldRefstr 数据库中存储的字符串
+	 * @param newRefId 需要增加到数据库中的参考文献Id
+	 * @param refType 参考文献类型
+	 * @return
+	 * @author ZXY
+	 */
+	String addRefJson(String oldRefstr,String newRefId,RefTypeEnum refType,String refS,String refE);
 }

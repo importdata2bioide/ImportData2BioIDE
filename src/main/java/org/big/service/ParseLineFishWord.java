@@ -406,7 +406,7 @@ public class ParseLineFishWord implements ParseLine {
 		//是否符合亚种的命名规则
 		boolean suspecies = isSubspeciesNameRule(sciNameAndAuthor);
 		if(suspecies) {
-			logger.info("isWhatp判定 可能是亚种："+line);
+			logger.info("isWhat判定 可能是亚种："+line);
 			return LineAttreEnum.subsp;
 		}
 		//剩下的是种阶元

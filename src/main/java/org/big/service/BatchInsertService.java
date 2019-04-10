@@ -34,6 +34,14 @@ public interface BatchInsertService {
 	public void batchInsertCitation(List<Citation> records,String inputtimeStr) throws Exception ;
 	/**
 	 * 
+	 * @Description 更新引证表完整引证和参考文献字段
+	 * @param records
+	 * @author ZXY
+	 */
+	public void batchUpdateCitation(List<Citation> records);
+	
+	/**
+	 * 
 	 * @Description 描述
 	 * @param records
 	 * @param inputtimeStr

@@ -121,6 +121,7 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	String getYear(String line);
+	
 
 	/**
 	 * 
@@ -186,5 +187,13 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	public int indexOfPointUpperCaseWithoutBrackets(String line,int point);
+	/**
+	 * 
+	 * @Description 
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	int getYearStart(String line);
 
 }

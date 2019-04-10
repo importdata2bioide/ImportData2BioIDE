@@ -111,5 +111,9 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 	@Query(value = "Select r From Ref r Where r.refstr = ?1 and r.inputer = ?2")
 	Ref findByRefstrAndInputer(String refstr,String inputer);
 	
+	List<Ref> findByRefstr(String refstr);
+	
+	
+	
 
 }

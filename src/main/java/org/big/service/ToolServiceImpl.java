@@ -212,11 +212,23 @@ public class ToolServiceImpl implements ToolService {
 			// 关键.可访问私有变量
 			field[i].setAccessible(true);
 			// 将属性的首字母大写
+			String orignName = name;
 			name = name.replaceFirst(name.substring(0, 1), name.substring(0, 1).toUpperCase());
 			if (name.equals("SerialVersionUID")) {
 				continue;
 			}
-			Method m = model.getClass().getMethod("get" + name);
+			Method m = null;
+			try {
+				m = model.getClass().getMethod("get" + name);
+			} catch (NoSuchMethodException e) {
+				try {
+					m = model.getClass().getMethod("get" + orignName);
+				} catch (NoSuchMethodException e1) {
+					e1.printStackTrace();
+				} catch (SecurityException e1) {
+					e1.printStackTrace();
+				}
+			}
 			// 调用getter方法获取属性值
 			Object value = (Object) m.invoke(model);
 			if (CommUtils.isStrNotEmpty(String.valueOf(value))) {
@@ -547,7 +559,7 @@ public class ToolServiceImpl implements ToolService {
 //				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用：分隔_____" + line);
 			}else if(indexOfPointUpperCaseWithoutBrackets != line.length()-1) {
 				sciname = line.substring(0,indexOfPointUpperCaseWithoutBrackets);
-				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用第二个大写字母（不包含括号内的）分隔_____" + line);
+				logger.info(sciname+"_____使用第二个大写字母（不包含括号内的）分隔_____" + line);
 			}else {
 				logger.info("没有匹配：" + line);
 			}

@@ -119,7 +119,8 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 //	
 //	
 //	
-//	List<Citation> findByTaxasetId(String datasetId_2019bird);
+	@Query(value = "select a.scientificname,c.id,c.sciname,c.authorship,c.nametype,c.citationstr,c.refjson,a.id as taxon_id,c.remark from taxon a  left join citation c on c.taxon_id = a.id   left join taxaset b on a.taxaset_id = b.id   where b.dataset_id = :datasetId and a.rank_id in (:rankIds) order by a.scientificname",nativeQuery = true)
+	List<Object[]> findByTaxasetId(String datasetId,List<String> rankIds);
 	
 	
 }

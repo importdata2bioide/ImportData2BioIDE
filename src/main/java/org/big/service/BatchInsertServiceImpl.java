@@ -11,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.entity.Citation;
 import org.big.entity.Commonname;
@@ -361,6 +362,26 @@ public class BatchInsertServiceImpl implements BatchInsertService {
                 ps.setString(1, record.getPrevTaxon());
                 ps.setString(2, record.getTaxonId());
                 ps.setString(3, record.getTaxtreeId());
+            }
+        });
+		
+	}
+
+	@Override
+	public void batchUpdateCitation(List<Citation> records) {
+		String sql = "update citation set citationstr=?,refjson=? where id=? ";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Citation record = records.get(i);
+            	String id = record.getId();
+            	if(StringUtils.isNotEmpty(id)) {
+            		ps.setString(1, record.getCitationstr());
+            		ps.setString(2, record.getRefjson());
+            		ps.setString(3, record.getId());
+            	}
             }
         });
 		

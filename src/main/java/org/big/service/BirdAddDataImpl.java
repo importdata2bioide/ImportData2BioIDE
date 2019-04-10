@@ -2,18 +2,28 @@ package org.big.service;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.StyledEditorKit.ForegroundAction;
 import javax.validation.ValidationException;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.constant.ConfigConsts;
@@ -27,7 +37,9 @@ import org.big.entityVO.ExcelUntilD;
 import org.big.entityVO.ExcelUntilK;
 import org.big.entityVO.ExcelUntilP;
 import org.big.entityVO.NametypeEnum;
+import org.big.entityVO.PtypeEnum;
 import org.big.entityVO.RankEnum;
+import org.big.entityVO.RefTypeEnum;
 import org.big.repository.CitationRepository;
 import org.big.repository.RefRepository;
 import org.big.repository.TaxonRepository;
@@ -44,7 +56,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 
 @Service
 public class BirdAddDataImpl implements BirdAddData {
-	
+
 	final static Logger logger = LoggerFactory.getLogger(BirdAddDataImpl.class);
 
 	@Autowired
@@ -61,11 +73,18 @@ public class BirdAddDataImpl implements BirdAddData {
 	private ToolService toolService;
 	@Autowired
 	private TaxasetService taxasetService;
+	@Autowired
+	private RefService refService;
+	
 
 	private String userId_wangtianshan = "95c24cdc24794909bd140664e2ee9c3b";
 	private String datasetId_2019bird = "7da1c0ac-18c6-4710-addd-c9d49e8a2532";
 	private String sourcesId_2019bird = "428700b4-449e-4284-a082-b2fe347682ff";
+	private String sourcesId_citationRef_2019bird = "b8fcc018-8d0e-4e0a-9ac8-6ea7c1bf4632";// 2019鸟类名录-引证文献
+
 	Map<String, String> sciNameMap = new HashMap<>();
+
+	private volatile Map<String, String> regExPagelist = new LinkedHashMap<>();//有序
 
 	@Override
 	public void importByExcel() throws Exception {
@@ -82,7 +101,7 @@ public class BirdAddDataImpl implements BirdAddData {
 //		importCitation(refMap, UnPasseriformesCitationPath, save);
 		// 3、导入雀形目引证信息
 //		importCitation(refMap, passeriformesCitationPath, save);
-		//导入整合引证
+		// 导入整合引证
 		importCitation(refMap, integrationPath, save);
 		// 4、导入接受名引证信息
 		otherCitationPath(refMap, otherCitationPath, save);
@@ -122,15 +141,16 @@ public class BirdAddDataImpl implements BirdAddData {
 			if (taxon != null) {
 				String author = row.getColK();
 				String year = row.getColL();
-				String authorAndYear = row.getColH();//excel文件里的命名信息
-				String authorship = "";//存储到数据库的命名信息
-				if(StringUtils.isEmpty(author) &&StringUtils.isEmpty(year)) {
+				String authorAndYear = row.getColH();// excel文件里的命名信息
+				String authorship = "";// 存储到数据库的命名信息
+				if (StringUtils.isEmpty(author) && StringUtils.isEmpty(year)) {
 					continue;
 				}
-				//命名人和命名年代
+				// 命名人和命名年代
 				authorship = row.getColK().trim() + "," + row.getColL().trim();
-				if(StringUtils.isNotEmpty(authorAndYear) &&(authorAndYear.contains("（")||authorAndYear.contains("("))) {
-					authorship = "("+authorship+")";
+				if (StringUtils.isNotEmpty(authorAndYear)
+						&& (authorAndYear.contains("（") || authorAndYear.contains("("))) {
+					authorship = "(" + authorship + ")";
 				}
 				String taxonId = taxon.getId();
 				Citation citation = citationRepository.findByTaxonIdAndSciname(taxonId, acceptName);
@@ -164,11 +184,11 @@ public class BirdAddDataImpl implements BirdAddData {
 					record.setStatus(1);
 					resultAddlist.add(record);
 				}
-				if(StringUtils.isNotEmpty(authorship)) {
+				if (StringUtils.isNotEmpty(authorship)) {
 					taxon.setAuthorstr(authorship);
 					updateTaxonlist.add(taxon);
 				}
-			}else {
+			} else {
 				i++;
 //				logger.info(row.getColA()+"	"+row.getColB()+"	"+row.getColC()+"	"+row.getColD()+"	"+row.getColE()+"	"+row.getColF()+"	"+row.getColG()+"	"+row.getColH()+"	"+row.getColI()+"	"+row.getColJ()+"	"+row.getColK()+"	"+row.getColL()+"	"+row.getColM()+"	"+row.getColN()+"	"+row.getColO()+"	"+row.getColP());
 			}
@@ -176,9 +196,9 @@ public class BirdAddDataImpl implements BirdAddData {
 //		for (Citation c : resultUpdatelist) {
 //			toolService.printEntity(c);
 //		}
-		logger.info("更新："+resultUpdatelist.size());
-		logger.info("新增："+resultAddlist.size());
-		logger.info("没有找到的："+i);
+		logger.info("更新：" + resultUpdatelist.size());
+		logger.info("新增：" + resultAddlist.size());
+		logger.info("没有找到的：" + i);
 		if (save) {
 			batchSubmitService.saveAll(resultAddlist);
 			batchInsertService.batchUpdateCitationById(resultUpdatelist);
@@ -260,7 +280,7 @@ public class BirdAddDataImpl implements BirdAddData {
 					seq = seq.trim();
 					String refId = refMap.get(seq);
 					if (StringUtils.isEmpty(refId)) {
-						logger.error(ConfigConsts.HANDLE_ERROR+"未找到的参考文献序号：" + seq);
+						logger.error(ConfigConsts.HANDLE_ERROR + "未找到的参考文献序号：" + seq);
 						continue;
 //						throw new ValidationException("未找到的参考文献序号：" + seq);
 					}
@@ -274,7 +294,8 @@ public class BirdAddDataImpl implements BirdAddData {
 
 			}
 			String remark = row.getColK();
-			if (nametype == NametypeEnum.acceptedName.getIndex() && StringUtils.isNotEmpty(author) && remark.equals("属名不同，种加词相同  [新组合]")) {
+			if (nametype == NametypeEnum.acceptedName.getIndex() && StringUtils.isNotEmpty(author)
+					&& remark.equals("属名不同，种加词相同  [新组合]")) {
 				author = "(" + author + ")";
 			}
 			// 新建一条引证信息
@@ -346,7 +367,7 @@ public class BirdAddDataImpl implements BirdAddData {
 			String seq = excelUntilB.getColA().trim();
 			Ref ref = refRepository.findByRefstrAndInputer(refstr, userId_wangtianshan);
 			if (ref == null) {
-				
+
 //				logger.info(seq + ",数据库中没有找到完整题录=" + refstr);
 				throw new ValidationException(seq + ",数据库中没有找到完整题录=" + refstr);
 			} else {
@@ -374,23 +395,27 @@ public class BirdAddDataImpl implements BirdAddData {
 	public void countCitationByTaxon(HttpServletResponse response) {
 		List<String> genusRankIds = new ArrayList<>();
 		genusRankIds.add(String.valueOf(RankEnum.genus.getIndex()));
-		//属接受名引证统计
-		List<Object[]> genusAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, genusRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
-		//属异名引证统计
-		List<Object[]> genusSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, genusRankIds, String.valueOf(NametypeEnum.synonym.getIndex()));
+		// 属接受名引证统计
+		List<Object[]> genusAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird,
+				genusRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
+		// 属异名引证统计
+		List<Object[]> genusSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, genusRankIds,
+				String.valueOf(NametypeEnum.synonym.getIndex()));
 		List<String> speciesRankIds = new ArrayList<>();
 		speciesRankIds.add(String.valueOf(RankEnum.species.getIndex()));
-		//species接受名引证统计
-		List<Object[]> speciesAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, speciesRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
-		//species异名引证统计
-		List<Object[]> speciesSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird, speciesRankIds, String.valueOf(NametypeEnum.synonym.getIndex()));
-		List<ExcelUntilD> resultlist = new ArrayList<>(genusAcceptNamelist.size()+speciesAcceptNamelist.size()+10);
+		// species接受名引证统计
+		List<Object[]> speciesAcceptNamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird,
+				speciesRankIds, String.valueOf(NametypeEnum.acceptedName.getIndex()));
+		// species异名引证统计
+		List<Object[]> speciesSynamelist = citationRepository.countByTaxonAndNameType(datasetId_2019bird,
+				speciesRankIds, String.valueOf(NametypeEnum.synonym.getIndex()));
+		List<ExcelUntilD> resultlist = new ArrayList<>(genusAcceptNamelist.size() + speciesAcceptNamelist.size() + 10);
 //		mergeList(genusAcceptNamelist,genusSynamelist,resultlist);
-		mergeList(speciesAcceptNamelist,speciesSynamelist,resultlist);
-		//导出文件
+		mergeList(speciesAcceptNamelist, speciesSynamelist, resultlist);
+		// 导出文件
 		try {
-			FilesUtils.exportExcel(resultlist, "引证统计", "引证统计", ExcelUntilD.class, URLEncoder.encode("CitationCount.xls", "UTF-8"),
-					response);
+			FilesUtils.exportExcel(resultlist, "引证统计", "引证统计", ExcelUntilD.class,
+					URLEncoder.encode("CitationCount.xls", "UTF-8"), response);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -398,19 +423,19 @@ public class BirdAddDataImpl implements BirdAddData {
 
 	private void mergeList(List<Object[]> genusAcceptNamelist, List<Object[]> genusSynamelist,
 			List<ExcelUntilD> resultlist) {
-		//转换成map
-		Map<String,Object[]> map = new HashMap<>(genusSynamelist.size()+10);
+		// 转换成map
+		Map<String, Object[]> map = new HashMap<>(genusSynamelist.size() + 10);
 		for (Object[] obj : genusSynamelist) {
 			map.put(obj[0].toString(), obj);
 		}
-		//a.id,a.scientificname,b.tsname,e.sl 
+		// a.id,a.scientificname,b.tsname,e.sl
 		for (Object[] obj : genusAcceptNamelist) {
 			String taxonId = obj[0].toString();
 			String acceptName = obj[1].toString();
 			String orderCHName = obj[2].toString();
 			Object synameCountObj = map.get(taxonId)[3];
-			int synameCount = synameCountObj==null?0:Integer.parseInt(synameCountObj.toString());
-			int acceptNameCount = obj[3] == null?0:Integer.parseInt(obj[3].toString());
+			int synameCount = synameCountObj == null ? 0 : Integer.parseInt(synameCountObj.toString());
+			int acceptNameCount = obj[3] == null ? 0 : Integer.parseInt(obj[3].toString());
 			ExcelUntilD row = new ExcelUntilD();
 			row.setColA(orderCHName);
 			row.setColB(acceptName);
@@ -418,15 +443,279 @@ public class BirdAddDataImpl implements BirdAddData {
 			row.setColD(String.valueOf(synameCount));
 			resultlist.add(row);
 		}
-		
-		
+
 	}
 
 	@Override
-	public void updateCitationStrBySciName(HttpServletResponse response) {
-		//根据数据集查询引证
-//		List<Citation> list = citationRepository.findByTaxasetId(datasetId_2019bird);
-		
+	public void updateCitationStrBySciName(HttpServletResponse response) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		boolean insertOrUpdateDB = true;// 数据库变动
+		List<String> speciesRankIds = new ArrayList<>();
+		speciesRankIds.add(String.valueOf(RankEnum.species.getIndex()));
+		// 根据数据集查询引证
+		List<Object[]> objlist = citationRepository.findByTaxasetId(datasetId_2019bird, speciesRankIds);
+		List<Citation> list = turnObjToCitation(objlist);
+		for (Citation citation : list) {
+			String id = citation.getId();
+			String citationstr = citation.getCitationstr();
+			if (StringUtils.isEmpty(id)) {
+				Taxon taxon = citation.getTaxon();
+				// 从旧采集系统引入
+				// 新建一条引证
+				continue;
+			} else if (StringUtils.isEmpty(citationstr)) {
+				// do nothing
+				System.out.println(ConfigConsts.HANDLE_ERROR + "引证原文为空,id=" + id);
+				continue;
+			} else {
+//				System.out.println("----");
+				//在控制台打印实体数据
+//				toolService.printEntity(citation);
+				String sciname = citation.getSciname();
+				citationstr = citation.getCitationstr().trim();
+				String refjson = citation.getRefjson();
+				String remark = citation.getRemark();
+				// 第一步：根据引证原文或备注解析参考文献页码
+				String refS = "";
+				String refE = "";
+				try {
+					Object pageObj = CommUtils.strToJSONObject(remark).get("page");
+					String rangPage = pageObj == null ? null : pageObj.toString();
+					String splitflag = "";
+					if(rangPage.contains("-")) {
+						splitflag = "-";
+					}else if(rangPage.contains("‐")) {
+						splitflag = "‐";
+					}else if(rangPage.contains("–")) {
+						splitflag = "–";
+					}
+					if(StringUtils.isNotEmpty(splitflag)) {
+						String[] split = rangPage.split(splitflag);
+						refS = split[0];
+						refE = split[1];
+					}else {
+						refS = rangPage;
+						refE = rangPage;
+					}
+				} catch (Exception e) {
+					Map<String, String> pageMap = getPageFromCitationStr(citationstr);
+					refS = pageMap.get("refS");
+					refE = pageMap.get("refE");
+				}
+				// 第二步：引证原文（citationstr）需要学名（sciname）开头
+				if (!citationstr.startsWith(sciname)) {
+					citationstr = sciname + " " + citationstr;
+					citation.setCitationstr(citationstr);
+				}
+				// 第三步：根据引证原文解析参考文献
+				Ref ref = null;
+				String refstr = citationstr.substring(sciname.length()).trim();
+				List<Ref> reflist = refRepository.findByRefstr(refstr);
+				if(reflist==null || reflist.size()==0) {
+					//新建一条参考文献
+					ref = new Ref();
+					ref.setId(UUIDUtils.getUUID32());
+					refService.parseLineChineseOrEng(ref, refstr);
+					ref.setStatus(1);
+					ref.setPtype(String.valueOf(PtypeEnum.other.getIndex()));
+					ref.setInputer(userId_wangtianshan);
+//					toolService.printEntity(ref);
+					if(insertOrUpdateDB) {
+						refService.saveOne(ref);
+					}
+				}else {
+					ref = reflist.get(0);
+				}
+				RefTypeEnum refTypeEnum = null;
+				int nametype = citation.getNametype();
+				if(nametype == NametypeEnum.synonym.getIndex()) {
+					refTypeEnum = RefTypeEnum.synonym;
+				}else {
+					refTypeEnum = RefTypeEnum.other;
+				}
+				String addRefJson = refService.addRefJson(refjson, ref.getId(), refTypeEnum, refS, refE);
+				citation.setRefjson(addRefJson);
+				//在控制台打印实体数据
+//				toolService.printEntity(citation);
+			
+			}
+		}
+		//更新到数据库
+		if(insertOrUpdateDB) {
+			batchInsertService.batchUpdateCitation(list);
+		}
+	}
+
+	private List<Citation> turnObjToCitation(List<Object[]> objlist) {
+		List<Citation> list = new ArrayList<>(objlist.size() + 10);
+		for (Object[] objs : objlist) {
+			Citation c = new Citation();
+			// a.scientificname,c.id,c.sciname,c.authorship,
+			// c.nametype,c.citationstr,c.refjson,a.id as taxon_id,c.remark
+			String scientificname = objs[0].toString();// 肯定不为空
+			String taxonId = objs[7].toString();// 肯定不为空
+			c.setTaxon(new Taxon(0, taxonId, scientificname));
+			String id = objs[1] == null ? null : objs[1].toString();// 主键
+			if (StringUtils.isNotEmpty(id)) {
+				c.setId(id);
+				c.setSciname(objs[2] == null ? null : objs[2].toString());
+				c.setAuthorship(objs[3] == null ? null : objs[3].toString());
+				c.setNametype(Integer.parseInt(objs[4].toString()));
+				c.setCitationstr(objs[5] == null ? null : objs[5].toString());
+				c.setRefjson(objs[6] == null ? null : objs[6].toString());
+				c.setRemark(objs[8] == null ? null : objs[8].toString());
+			}
+			list.add(c);
+		}
+		return list;
+	}
+
+	public Map<String, String> getPageFromCitationStr(String citationstr) {
+		String PatternProducingAreaReg = "(.*?)(\\(|\\（)(.*?)(\\)|\\）)";
+		Pattern patternOfPPA = Pattern.compile(PatternProducingAreaReg);
+		if(patternOfPPA.matcher(citationstr).matches()) {
+			char[] flagsPPA = {'(','（'};
+			citationstr = citationstr.substring(0,getNotYearflagIndex(flagsPPA, citationstr));
+		}
+		if(citationstr.endsWith(".")) {
+			citationstr = citationstr.substring(0,citationstr.length()-1);
+		}
+		Map<String, String> resultMap = new HashMap<>();
+		Set<Entry<String, String>> entrySet = regExPagelist.entrySet();
+		String refS = "0";
+		String refE = "0";
+		boolean rs = false;
+		for (Entry<String, String> entry : entrySet) {
+			String key = entry.getKey();
+			String regEx = entry.getValue();
+			Pattern pattern = Pattern.compile(regEx);
+			// 忽略大小写的写法
+			// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(citationstr);
+			// 字符串是否与正则表达式相匹配
+			rs = matcher.matches();
+			if (rs) {
+				switch (key) {
+				case "page1":
+					refS = citationstr.substring(citationstr.lastIndexOf("p."));
+					refE = refS;
+					break;
+				case "page1-1":
+					refS = citationstr.substring(citationstr.lastIndexOf("pl."));
+					refE = refS;
+					break;
+				case "page2":
+					refS = citationstr.substring(citationstr.lastIndexOf("p."));
+					refE = refS;
+					break;
+				case "page3":
+					char[] flags3 = {',','，'};
+					refS = citationstr.substring(1+getNotYearflagIndex(flags3, citationstr));
+					refE = refS;
+					break;
+				case "page4":
+
+					break;
+				case "page5":
+					int lastIndexOfpl = citationstr.lastIndexOf("pl.");
+					refS = citationstr.substring(lastIndexOfpl);
+					refE = citationstr.substring(lastIndexOfpl);
+					break;
+				case "page6":
+					int lastIndexOf6 = citationstr.lastIndexOf(".");
+					refS = citationstr.substring(lastIndexOf6);
+					refE = refS;
+					break;
+				case "page7":
+					int lastIndexOf = citationstr.lastIndexOf("note");
+					refS = citationstr.substring(lastIndexOf);
+					refE = citationstr.substring(lastIndexOf);
+					break;
+				case "page8"://纯数字
+					char[] cutflags = {',','，','：',':',':'};
+					refS = citationstr.substring(1+getNotYearflagIndex(cutflags, citationstr));
+					refE = refS;
+					break;
+				case "page9"://
+					char[] flags = {',','，',':','：','.'};
+					String rangPage = "";
+					rangPage = citationstr.substring(1+getNotYearflagIndex(flags, citationstr));
+					String splitflag = "";
+					if(rangPage.contains("-")) {
+						splitflag = "-";
+					}else if(rangPage.contains("‐")) {
+						splitflag = "‐";
+					}else if(rangPage.contains("–")) {
+						splitflag = "–";
+					}
+					String[] split = rangPage.split(splitflag);
+					refS = split[0];
+					refE = split[1];
+					break;
+				case "centerPL"://
+//					System.out.println("centerPL="+citationstr);
+					String containPage = citationstr.substring(citationstr.indexOf("pl."));
+					char[] jumpChars = {'p','l','.',' ','f','i','g'};
+					for(int index = 0;index<containPage.length();index++) {
+						char charAt = containPage.charAt(index);
+						
+						if(!ArrayUtils.contains(jumpChars, charAt) && !CommUtils.isNumeric(String.valueOf(charAt))) {
+							refS = containPage.substring(0, index);
+							refE = refS;
+							break;
+						}
+					}
+					break;
+				default:
+					throw new ValidationException("未定义的key="+key);
+				}
+			break;
+			}
+		}
+		if(!rs) {
+			logger.info("正则表达式没有解析出页码citationstr="+citationstr);
+		}
+		resultMap.put("refS", refS);
+		resultMap.put("refE", refE);
+		return resultMap;
+	}
+
+	
+
+	// 项目启动后执行
+	@PostConstruct
+	public void initRegExPagelist() {
+		logger.info("初始化引证解析页码正则表达式，注意前后顺序");
+		// p.480 pl.23 fig.3
+		regExPagelist.put("page1", "(.*?)p\\.{1}[0-9]+\\s{0,}pl\\.{1}[0-9]+\\s{0,}fig\\.[0-9]+\\s{0,}");
+		//pl.448 fig.1
+		regExPagelist.put("page1-1", "(.*?)pl\\.[0-9]+\\s{0,}fig\\.[0-9]+\\s{0,}");
+		// p.91 pl.52.
+		regExPagelist.put("page2", "(.*?)p\\.{1}[0-9]+\\s{0,}pl\\.{1}[0-9]+\\s{0,}$");
+		// 数字 pl.数字
+		regExPagelist.put("page3", "(.*?)(,|，)\\s{0,}[0-9]+\\s{0,}pl\\.\\s{0,}[0-9]+$");
+		// pl.数字
+		regExPagelist.put("page5", "(.*?)pl\\.\\s{0,}[0-9]+$");
+		//note数字
+		regExPagelist.put("page7", "(.*?)note[0-9]+$");
+		//逗号 数字-数字
+		regExPagelist.put("page9", "(.*?)(,|，|:|：|\\.)\\s{0,}[0-9]+(-|‐|–)[0-9]+$");
+		//逗号 数字
+		regExPagelist.put("page8", "(.*?)(，|:|：|,)\\s{0,}[0-9]+\\s{0,}$");
+		// p.数字
+		regExPagelist.put("page6", "(.*?)p.\\s{0,}[0-9]+(.*?)");
+		//pl.数字（包含在字符串中间）
+		regExPagelist.put("centerPL", "(.*?)pl\\.\\s{0,}[0-9]+(.*?)");
+	}
+	
+	public int getNotYearflagIndex(char[] flags, String citationstr) {
+		int length = citationstr.length()-1;
+		for(int index = length;index>=0;index--) {
+			char charAt = citationstr.charAt(index);
+			if(ArrayUtils.contains(flags, charAt)) {
+				return index;
+			}
+		}
+		return -1;
 	}
 
 }

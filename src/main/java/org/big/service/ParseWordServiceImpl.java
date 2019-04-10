@@ -77,7 +77,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 	public void readExcelAndOutputWord(BaseParamsForm baseParamsForm) throws Exception {
 		boolean writeExecute = true;// 重写到word
 		boolean insertExecute = false;// 转换成实体类
-		String outputfolder = "E:\\003采集系统\\0013鱼类\\20190402输出文件\\";
+		String outputfolder = "E:\\003采集系统\\0013鱼类\\20180408输出文件\\";
 		String inputfolder = "E:\\003采集系统\\0013鱼类\\20190402\\";
 		List<String> fileList = new ArrayList<>();
 		fileList.add("3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc");
@@ -255,7 +255,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 				preAttr = LineAttreEnum.genus;
 				break;
 			case subgenus:// 亚属
-//				System.out.println(line);
+//				System.out.println("亚属："+line);
 				Map<String, String> subgenusMap = parseGenusLine(line);
 				if (execute) {
 					printNotRank(other, doc, preAttr);
@@ -284,7 +284,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 //				System.out.println(line);
 				if (execute) {
 					printNotRank(other, doc, preAttr);
-					writeSpeciesWithStyle(doc, speciesMap);
+					writeSpeciesOrSubspeciesWithStyle(doc, speciesMap);
 //					writeDesc(true, doc, true, line, indentationHanging, indentationLeft);
 				}
 				if (insertExecute) {
@@ -304,7 +304,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 				if (execute) {
 //					logger.info("亚种："+line);
 					printNotRank(other, doc, preAttr);
-					writeSpeciesWithStyle(doc, subspeciesMap);
+					writeSpeciesOrSubspeciesWithStyle(doc, subspeciesMap);
 //					writeDesc(true, doc, true, line, indentationHanging, indentationLeft);
 				}
 				if (insertExecute) {
@@ -536,9 +536,9 @@ public class ParseWordServiceImpl implements ParseWordService {
 				writeDesc(true, doc, false, commname, indentationHanging, indentationHanging + indentationLeft);
 				other.setCommname(null);
 			}
-			// 分布
+			// 分布：悬挂缩进
 			if (StringUtils.isNotEmpty(distribution)) {
-				writeDesc(true, doc, false, distribution, 0, indentationLeft);
+				writeDesc(true, doc, false, distribution, indentationHanging, indentationHanging + indentationLeft);
 				other.setDistribution(null);
 			}
 			// 保护等级
@@ -591,6 +591,7 @@ public class ParseWordServiceImpl implements ParseWordService {
 	 * @author ZXY
 	 */
 	private void writeWithStyle(XWPFParagraph paragraph, String line, boolean bold, boolean italic) {
+		
 		for (int i = 0; i < line.length(); i++) {
 			String charAt = String.valueOf(line.charAt(i));
 			if (isChinese(charAt)) {// 中文：宋体
@@ -725,14 +726,21 @@ public class ParseWordServiceImpl implements ParseWordService {
 	 * @param line
 	 * @author ZXY
 	 */
-	private void writeSpeciesWithStyle(XWPFDocument doc, Map<String, String> speciesMap) {
+	private void writeSpeciesOrSubspeciesWithStyle(XWPFDocument doc, Map<String, String> speciesMap) {
 //		System.out.println(line);
 		XWPFParagraph paragraph = doc.createParagraph();// 创建段落
 		paragraph.setAlignment(ParagraphAlignment.LEFT);// 左对齐
 		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_CHNAME), true, false);
-		writeWithStyleOfSciName(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true);
+		String sciname = speciesMap.get(MapConsts.TAXON_SCI_NAME);
+		writeWithStyleOfSciName(paragraph,sciname, true);
 //		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_SCI_NAME), true, true);
-		writeWithStyle(paragraph, speciesMap.get(MapConsts.TAXON_AUTHOR), true, false);
+		String author = speciesMap.get(MapConsts.TAXON_AUTHOR);
+		if((author.startsWith("(")||author.startsWith("（"))&&!sciname.endsWith(" ")) {
+			//拉丁名中作者带括号的，括号前面应该有一个空格。
+			author = " "+author;
+//			System.out.println("作者带括号="+author);
+		}
+		writeWithStyle(paragraph, author, true, false);
 	}
 
 	/**
@@ -743,28 +751,36 @@ public class ParseWordServiceImpl implements ParseWordService {
 	 * @author ZXY
 	 */
 	private void writeWithStyleOfSciName(XWPFParagraph paragraph, String line, boolean bold) {
-//		if (line.contains("（")) {
+		if (line.contains("（")) {
+			if(!line.contains(" （")) {
+				line = line.replace("（", " （");
+			}
+			if(!line.contains("） ")) {
+				line = line.replace("）", " ） ");
+			}
 //			logger.info("学名有括号（01）：" + line);
-//		} else if (line.contains("(")) {
+		} else if (line.contains("(")) {
+			if(!line.contains(" (")) {
+				line = line.replace("(", " (");
+			}
+			if(!line.contains(") ")) {
+				line = line.replace(")", ") ");
+			}
 //			logger.info("学名有括号（02）：" + line);
-//		}
-		line = line.replace(" (", "(");
-		line = line.replace(") ", ")");
-		boolean meetBrackets = false;
+		}
+//		line = line.replace(" (", "(");
+//		line = line.replace(") ", ")");
+//		1、括号前后有空格
+		
 		for (int i = 0; i < line.length(); i++) {
 			char charAt = line.charAt(i);
-			if (charAt == '(') {
-				meetBrackets = true;
-			} else if (charAt == ')') {
-				meetBrackets = false;
-			}
 			String charAtStr = String.valueOf(charAt);
 			XWPFRun run = paragraph.createRun();
 			run.setFontFamily(fontFamily);// 字体
 			run.setBold(bold);// 加粗
 			run.setFontSize(fontSize);// 字号
 			run.setText(charAtStr);// 标题内容
-			if (meetBrackets || charAt == ')' || charAt == '）') {
+			if (charAt == ')' || charAt == '）' ||charAt == '(' || charAt == '（') {
 				run.setItalic(false);// 非斜体
 			} else {
 				run.setItalic(true);// 斜体（字体倾斜）

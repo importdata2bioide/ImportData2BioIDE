@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class FishController {
 	@Autowired
 	private ParseWordService parseWordService;
+	
+//	>1）亚属拉丁名应该是斜体，外面的括号是正体。（目前亚属的拉丁名和括号都是正体）
+//	>2）拉丁名中作者带括号的，括号前面应该有一个空格。（例如，
+//		>Gnathopogon taeniellus(Nichols，1925)，应该为
+//		>Gnathopogon taeniellus (Nichols，1925)）
+//	3）分布的内容如果长于一行，第二行应该缩进。
+
 	/**
 	 * 
 	 * @Description 2019鱼类名录5个word
