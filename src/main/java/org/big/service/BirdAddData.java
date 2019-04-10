@@ -16,7 +16,7 @@ public interface BirdAddData {
 	 */
 	void countCitationByTaxon(HttpServletResponse response);
 	
-	void updateCitationStrBySciName(HttpServletResponse response) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+	void updateCitationStrBySciName(HttpServletResponse response) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, Exception;
 	/**
 	 * 
 	 * @Description 使用正则表达式解析引证原文中的页码

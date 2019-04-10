@@ -1,7 +1,12 @@
 package org.big.test;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import org.big.entity.Citation;
+import org.big.entity.User;
 import org.big.service.BirdAddDataImpl;
 
 import com.alibaba.fastjson.JSONArray;
@@ -10,9 +15,43 @@ import com.alibaba.fastjson.JSONObject;
 public class Test3 {
 
 	public static void main(String[] args) {
-		completePPA();
+//		completePPA();
+//		testLinklist();
+		testclone();
 		
 
+	}
+	private static void testclone() {
+		Citation c = new Citation();
+		c.setId("100");
+		Citation copy = (Citation)c.clone();
+		System.out.println(c.getId());
+		System.out.println(copy.getId());
+		c.setId("500");
+		System.out.println(copy.getId());
+		System.out.println(c.getId());
+	}
+	private static void testLinklist() {
+		List<User> list = new LinkedList<>();
+		for(int i = 0;i<20;i++) {
+			User u = new User();
+			u.setId(i+"");
+			list.add(u);
+		}
+		Iterator<User> iter = list.iterator();  
+		while(iter.hasNext()){  
+		   User user = iter.next();  
+		   int id = Integer.parseInt(user.getId());
+			if(id%3==0) {
+				iter.remove();
+			} 
+		}  
+		
+		
+		for (User user : list) {
+			System.out.println(user.getId());
+		}
+		
 	}
 	private static void completePPA() {
 		BirdAddDataImpl b = new BirdAddDataImpl();

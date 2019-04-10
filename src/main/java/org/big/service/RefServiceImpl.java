@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mysql.cj.xdevapi.JsonArray;
 
 @Service
 public class RefServiceImpl implements RefService {
@@ -200,6 +201,25 @@ public class RefServiceImpl implements RefService {
 			temp = true;
 		}
 		return temp;
+	}
+
+	@Override
+	public JSONArray strToJsonArray(String refjson) {
+		JSONArray jsonArray = null;
+		if (StringUtils.isNotEmpty(refjson)) {
+			jsonArray = JSONArray.parseArray(refjson);
+		} else {
+			jsonArray = new JSONArray();
+		}
+		return jsonArray;
+	}
+
+	@Override
+	public List<Ref> findByIds(List<String> refIds) {
+		if(refIds== null ||refIds.size()==0) {
+			return  null;
+		}
+		return refRepository.findByIdIn(refIds);
 	}
 
 }

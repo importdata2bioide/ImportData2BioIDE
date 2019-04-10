@@ -1,13 +1,14 @@
 package org.big.service;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 
 import org.big.entity.Ref;
 import org.big.entityVO.RefTypeEnum;
 import org.big.sp2000.entity.Reference;
+
+import com.alibaba.fastjson.JSONArray;
 
 
 public interface RefService {
@@ -85,4 +86,14 @@ public interface RefService {
 	 * @author ZXY
 	 */
 	String addRefJson(String oldRefstr,String newRefId,RefTypeEnum refType,String refS,String refE);
+	/**
+	 * 
+	 * @Description String 字符串转换成json数组
+	 * @param refjson
+	 * @return
+	 * @author ZXY
+	 */
+	JSONArray strToJsonArray(String refjson);
+
+	List<Ref> findByIds(List<String> refIds);
 }

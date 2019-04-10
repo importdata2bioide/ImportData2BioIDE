@@ -112,6 +112,8 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 	Ref findByRefstrAndInputer(String refstr,String inputer);
 	
 	List<Ref> findByRefstr(String refstr);
+
+	List<Ref> findByIdIn(List<String> ids);
 	
 	
 	

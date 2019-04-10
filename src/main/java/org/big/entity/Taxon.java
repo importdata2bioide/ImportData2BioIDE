@@ -29,7 +29,7 @@ import java.util.List;
 @Entity
 @Table(name = "taxon", schema = "biodata")
 @TypeDef(name= "StringJsonUserType", typeClass = StringJsonUserType.class)
-public class Taxon implements Serializable {
+public class Taxon implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 
@@ -628,11 +628,17 @@ public class Taxon implements Serializable {
 		this.taxonCondition = taxonCondition;
 	}
 
-	
-	@Override
-	public String toString() {
-		return "Taxon [authorstr=" + authorstr + ", epithet=" + epithet + ", nomencode=" + nomencode + ", remark="
-				+ remark + ", scientificname=" + scientificname + ", chname=" + chname + "]";
-	}
+//	//实现Cloneable接口，重写clone方法
+//	@Override 
+//    public Object clone() { 
+//		 Taxon copyRecord = null; 
+//        try{ 
+//        	copyRecord = (Taxon)super.clone(); 
+//        }catch(CloneNotSupportedException e) { 
+//            e.printStackTrace(); 
+//        } 
+//        return copyRecord; 
+//    } 
+//		
 
 }

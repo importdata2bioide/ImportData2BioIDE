@@ -33,7 +33,7 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 @Entity
 @Table(name = "citation", schema = "biodata")
 @TypeDef( name= "StringJsonUserType", typeClass = StringJsonUserType.class)
-public class Citation implements Serializable {
+public class Citation implements Serializable, Cloneable {
 
 	/**
 	 * @Description 
@@ -317,6 +317,17 @@ public class Citation implements Serializable {
 		this.remark = remark;
 	}
 	
+	//实现Cloneable接口，重写clone方法
+	@Override 
+    public Object clone() { 
+		 Citation copyRecord = null; 
+        try{ 
+        	copyRecord = (Citation)super.clone(); 
+        }catch(CloneNotSupportedException e) { 
+            e.printStackTrace(); 
+        } 
+        return copyRecord; 
+    } 
 	
 	
 
