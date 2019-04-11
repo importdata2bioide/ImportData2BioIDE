@@ -179,5 +179,8 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	
 	@Query(value = "select id from taxon where id in  ?1 order by order_num,scientificname asc ",nativeQuery = true)
 	List<String> findIdByOrderNum(List<String> ids);
+
+	@Query(value = "select a.id,a.scientificname,b.tsname from taxon a left join taxaset b on a.taxaset_id = b.id where b.dataset_id = :datasetId and a.rank_id = :rankId ",nativeQuery = true)
+	List<Object[]> findTaxonBydsAndRank(String datasetId,String rankId);
 	
 }

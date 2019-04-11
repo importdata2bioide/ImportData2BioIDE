@@ -217,7 +217,7 @@ public class RefServiceImpl implements RefService {
 	@Override
 	public List<Ref> findByIds(List<String> refIds) {
 		if(refIds== null ||refIds.size()==0) {
-			return  null;
+			return  new ArrayList<>();
 		}
 		return refRepository.findByIdIn(refIds);
 	}

@@ -108,9 +108,24 @@ public class TestController {
 	
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) throws Exception {
-		updateCitationSciName();
+		updateBlank();
 	}
 	
+	private void updateBlank() {
+		List<Object[]> list = citationRepository.findAllIdAndSciname();
+		List<Object[]> updatelist = new ArrayList<>();
+		int i = 0;
+		for (Object[] objs : list) {
+			String id = objs[0].toString();
+			String sciname = objs[1].toString();
+			if(sciname.startsWith(" ")||sciname.endsWith(" ")) {
+				i++;
+				objs[1] = sciname.trim();
+				updatelist.add(objs);
+			}
+		}
+	}
+
 	private void updateCitationSciName() {
 		List<Citation> list = citationRepository.findByScinameEndingWith(",");
 		for (Citation citation : list) {

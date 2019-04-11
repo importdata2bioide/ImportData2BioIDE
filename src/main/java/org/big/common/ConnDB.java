@@ -21,19 +21,7 @@ public class ConnDB {
 
 	}
 
-	private static Connection getConnDB() throws SQLException, IOException {
-		connDB = threadLocal.get();
-		if (connDB == null || connDB.isClosed()) {
-			Configuration configuration = new Configuration();
-			configuration.setDriver("com.mysql.jdbc.Driver");
-			configuration.setUrl("");
-			configuration.setUsername("");
-			configuration.setPassword("");
-			connDB = ConnDataBase(configuration);
-			threadLocal.set(connDB);
-		}
-		return connDB;
-	}
+
 
 	public static Connection getConnDB(Configuration configuration) throws SQLException, IOException {
 		connDB = threadLocal.get();

@@ -31,9 +31,9 @@ public class Test2 {
 //		list.add("Brachypteryx leucophrys,Temminck, 1828.Pl.Col. livr.74 [=livr.75] pl.448 fig.1");
 //		list.add("Anas clypeata Linnaeus,1758, Syst. Nat. ed. 10, 1:124");
 //		list.add("Parus dichrous,Blyth, 1845,J.Asiat.Soc.Bengal 13 ,943");
-		list.add("Anas clypeata Linnaeus,1758, Syst. Nat. ed. 10, 1:124");
-//		list.add("");
-//		list.add("");
+//		list.add("Anas clypeata Linnaeus,1758, Syst. Nat. ed. 10, 1:124");
+		list.add("Linnaeus.1758.，1：150 (Egypt)");
+		list.add(",Przevalski.1876.Unknown.Mong. And St. Tangut., 2:127 (in Russian)");
 //		list.add("");
 //		list.add("");
 		
