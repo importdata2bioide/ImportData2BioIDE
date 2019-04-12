@@ -89,6 +89,15 @@ public interface BatchInsertService {
 	 * @author ZXY
 	 */
 	public void batchUpdateCitationById(List<Citation> records);
+	
+	/**
+	 * 
+	 * @Description 根据主键更新authorship，citationstr，refjson，remark字段
+	 * @param records
+	 * @author ZXY
+	 */
+	public void batchUpdateCitationFourById(List<Citation> records);
+	
 	/**
 	 * 
 	 * @Description 根据主键更新authorship、sciname字段

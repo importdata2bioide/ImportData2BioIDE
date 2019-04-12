@@ -51,6 +51,7 @@ public class BatchSubmitServiceImpl implements BatchSubmitService {
 			connection = ConnDB.getConnDB(null);// 打开数据库连接
 			connection.setAutoCommit(false);// 关闭自动提交
 			pstmt = connection.prepareStatement(insertSQL);// 预编译SQL
+			System.out.println(insertSQL);
 			for (T t : entities) {
 				int parameterIndex = 0;
 				for (Entry<String, String> entry : fmEntrySet) {

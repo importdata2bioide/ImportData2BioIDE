@@ -157,7 +157,11 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	@Query("delete from Citation c where c.id in (:ids) ")
 	int deleteByIds(List<String> ids);
 
-	@Query(value = "select ts.tsname,t.scientificname,c.id,c.sciname,c.authorship,c.nametype,c.citationstr,t.chname from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and c.nametype = :nameType  and (c.citationstr is null or c.citationstr = '')",nativeQuery = true)
+	@Query(value = "select ts.tsname,t.scientificname,c.id,c.sciname,c.authorship,c.nametype,c.citationstr,t.chname,c.refjson from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and c.nametype = :nameType  and (c.citationstr is null or c.citationstr = '')",nativeQuery = true)
 	List<Object[]> findByDsAndNameTypeAndCitationstrNull(String datasetId, int nameType);
+
+	
+	@Query(value = "select c.* from citation  c left join taxon t on c.taxon_id = t.id left join taxaset b on t.taxaset_id = b.id where b.dataset_id = :datasetId and c.nametype = :nameType  and c.sciname = :sciname  and t.scientificname = :scientificname ",nativeQuery = true)
+	Citation findByTaxonAndScinameAndNameType(String scientificname, int nameType,String sciname,String datasetId);
 	
 }

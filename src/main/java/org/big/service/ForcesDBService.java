@@ -6,6 +6,8 @@ import java.text.ParseException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.big.entity.Citation;
+
 public interface ForcesDBService {
 	
 	public String selectAll(HttpServletRequest request, HttpServletResponse response) throws Exception;
@@ -103,5 +105,7 @@ public interface ForcesDBService {
 	 * @throws Exception
 	 */
 	public String insertSpecimen(HttpServletRequest request) throws Exception;
+
+	public Citation getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ);
 
 }

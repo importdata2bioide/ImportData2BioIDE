@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.common.Configuration;
 import org.big.common.ConnDB;
+import org.big.common.OtherConnDB;
 import org.big.common.ReadxmlByDom;
 import org.big.common.ReturnCode;
 import org.big.common.UUIDUtils;
@@ -193,7 +194,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		Connection connDB = null;
 		ResultSet rs = null;
 		List<ForcesTreeVO> treelist = new ArrayList<>(100);
-		connDB = ConnDB.getConnDB(configuration);
+		connDB = OtherConnDB.getConnDB(configuration);
 		String sql = "select * from tree where TreeName not in  ('test1')";
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql);
 		rs = prepareStatement.executeQuery();
@@ -299,7 +300,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		Connection connDB = null;
 		ResultSet rs = null;
 		List<ForcesTreeVO> treelist = new ArrayList<>(100);
-		connDB = ConnDB.getConnDB(configuration);
+		connDB = OtherConnDB.getConnDB(configuration);
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql);
 		rs = prepareStatement.executeQuery();
 		while (rs.next()) {
@@ -491,7 +492,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		try {
 			logger.info("开始录入Citation(ID随机生成)");
 			// 在旧系统查询引证数据
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String sql = "select st.name as StatusName,sy.id as sy_id,sy.Inputer as sy_Inputer,sy.Latin_Name as sy_Latin_Name,sy.Chinese_Name as sy_Chinese_Name,sy.fullname as sy_fullname,sc.* from taxa sc left join taxa sy on sy.SynonymOf = sc.id  left join Status st on st.id = sy.StatusID where sc.StatusID = (select id from Status where name = 'accepted name') and sc.treeid = ?";
 			prepareStatement = connDB.prepareStatement(sql);
 			prepareStatement.setString(1, TreeID);
@@ -500,7 +501,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			int i =0;
 			while (rs.next()) {
 				i++;
-//				logger.info("进度报告："+i);
+				logger.info("进度报告Begin："+i);
 				Citation c = new Citation();
 				// ID
 				c.setId(UUIDUtils.getUUID32());
@@ -562,6 +563,9 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				// Shortrefs 引证原文
 				c.setCitationstr(getCitationstr(rs.getString("sy_id"), taxon, nameType));
 				records.add(c);
+				//测试
+//				batchSubmitService.saveAll(records);
+				
 				int size = records.size();
 				if(size%100==0) {
 					logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"进度报告："+size);
@@ -671,7 +675,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		}
 		return citationstr;
 	}
-
+	
+	@Cacheable(value="getCitationRefjson")
 	private String getCitationRefjson(String taxonId, int nameType) throws Exception {
 		JSONArray jsonArray = new JSONArray();
 		Connection connDB = null;
@@ -680,7 +685,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		PreparedStatement prepareStatement = null;
 		PreparedStatement pst2 = null;
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String Namesql = "select PaperID from Species_Paper where TaxaID = ?";
 			prepareStatement = connDB.prepareStatement(Namesql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
@@ -713,7 +718,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 
 			if (nameType == NametypeEnum.synonym.getIndex()) {// 异名引证
 				// 在旧系统Synonym_Paper中查询数据
-				connDB = ConnDB.getConnDB(configuration);
+				connDB = OtherConnDB.getConnDB(configuration);
 				String synonymsql = "select PaperID from Synonym_Paper where SynID = ?";
 				pst2 = connDB.prepareStatement(synonymsql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 						ResultSet.CONCUR_READ_ONLY);
@@ -762,7 +767,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		ResultSet rs = null;
 		PreparedStatement prepareStatement = null;
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String Namesql = "select PaperID from Species_Paper where TaxaID = ?";
 			prepareStatement = connDB.prepareStatement(Namesql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
@@ -811,13 +816,14 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	 * @return
 	 * @throws Exception
 	 */
+	
 	private String getAuthorship(String taxonId) throws Exception {
 		Connection connDB = null;
 		ResultSet rs = null;
 		String authorstr = "";
 		PreparedStatement prepareStatement = null;
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String Namesql = "select Named_Person as person ,Named_Date as date from species where TaxaID = ?";
 			prepareStatement = connDB.prepareStatement(Namesql);
 			prepareStatement.setString(1, taxonId);
@@ -868,7 +874,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		PreparedStatement prepareStatement = null;
 		List<String> taxkeyIds = new ArrayList<>();
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			// 查询检索表名称
 			String Namesql = "select * from taxonKeyInfo where id in (select taxonKeyID from taxonKey where treeID = ? group by taxonKeyID )";
 			prepareStatement = connDB.prepareStatement(Namesql);
@@ -941,7 +947,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		ResultSet rs = null;
 		PreparedStatement prepareStatement = null;
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String itemsql = "select f.* from taxonKey t   inner join featureImage f on t.id = f.keyItemID where t.taxonKeyID = ?";
 			prepareStatement = connDB.prepareStatement(itemsql);
 			prepareStatement.setString(1, taxkey.getId());
@@ -971,7 +977,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		ResultSet rs = null;
 		PreparedStatement prepareStatement = null;
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String itemsql = "select * from taxonKey where taxonKeyID = ? order by parentid ASC";
 			prepareStatement = connDB.prepareStatement(itemsql);
 			prepareStatement.setString(1, taxkey.getId());
@@ -1060,7 +1066,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			ResultSet rs2 = null;
 			ResultSet rs = null;
 			try {
-				connDB = ConnDB.getConnDB(configuration);
+				connDB = OtherConnDB.getConnDB(configuration);
 
 				String sql = "select t.id as id,t.Inputer as Inputer,t.id as TaxaID,t.ParentID as ParentID, t.fullname as scientificname1,t.Latin_Name as scientificname2,r.RankEN as RankEN,t.remark as remark,t.Chinese_Name as  chname,p.fullname as parent1,p.Latin_Name as parent2"
 						+ " from taxa t left join Rank_List r on  r.id = t.RankID  left join taxa p on t.ParentID = p.id left join Status st on st.id = t.StatusID"
@@ -1210,7 +1216,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		int i = 0;
 		try {
 			// 在旧采集系统查询数据
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String sql = "select ty.Type as MediaType,t.id as taxaid,t.Latin_Name,t.fullname,m.* from MultiMedia m left join taxa t on t.id = m.Belong_ID left join MultiMedia_Type ty on  ty.id = m.DescType where t.TreeID = ?";
 			PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
@@ -1299,7 +1305,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		List<TaxonHasTaxtree> entities = null;
 		// 从旧采集系统查询数据
 		try {
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			String sql = "select id,Latin_Name,Chinese_Name,fullname,ParentID from taxa where TreeID = ?";
 			PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
@@ -1459,7 +1465,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			Connection connDB = null;
 			try {
 				String sql = "select t.*,CN.Inputer AS Inputer,CN.ID AS commid,cn.ComName as commonname,cn.Lang as language from (select id as TaxaID from taxa where TreeID = ? ) t left join CommonName cn on  cn.TaxaID = t.TaxaID where cn.ComName is not null order by cn.ComName";
-				connDB = ConnDB.getConnDB(configuration);
+				connDB = OtherConnDB.getConnDB(configuration);
 
 				PreparedStatement prepareStatement = connDB.prepareStatement(sql);
 				prepareStatement.setString(1, TreeID);
@@ -1520,7 +1526,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					+ "Place as place ,Editor  as editor ,ISBN as isbn,Tpage as Tpage,Tchar  as tchar ,"
 					+ "Version  as version ,Translator as translator ,Languages as languages ,"
 					+ "Inputer as inputer,Keywords,old_languages as olang,Type as ptype,Source,Numbers from papers";
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			PreparedStatement prepareStatement = connDB.prepareStatement(sql);
 			ResultSet rs = prepareStatement.executeQuery();
 			List<Ref> entities = new ArrayList<>(1050);
@@ -1902,7 +1908,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		logger.info("开始录入描述信息（id和旧系统保持一致）（");
 		initData(request);
 		Connection connDB = null;
-		connDB = ConnDB.getConnDB(configuration);
+		connDB = OtherConnDB.getConnDB(configuration);
 		try {
 			StringBuffer querySql = new StringBuffer();
 			querySql.append("select des.Inputer as desInputer,");
@@ -2097,7 +2103,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					+ " from Location_Species_Detail lsd left join Taxa taxa on taxa.id = lsd.TaxaID left join Location_province lp on  lp.id = lsd.ProvinceID "
 					+ " left join Description_Species ds on ds.id = lsd.DescriptionID"
 					+ " where TreeID = ? and  lsd.TaxaID = ?";
-			connDB = ConnDB.getConnDB(configuration);
+			connDB = OtherConnDB.getConnDB(configuration);
 			PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
 			prepareStatement.setString(1, TreeID);
@@ -2154,7 +2160,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		refjson.append("[");
 		Connection connDB = null;
 		// 从旧采集系统查询关联关系
-		connDB = ConnDB.getConnDB(configuration);
+		connDB = OtherConnDB.getConnDB(configuration);
 		String sql = "select PaperID from CommonName_Paper where ComID = ?";
 		// ResultSet.TYPE_SCROLL_INSENSITIVE 结果集的游标可以上下移动，当数据库变化时，当前结果集不变。
 //		ResultSet.CONCUR_READ_ONLY 不能用结果集更新数据库中的表。
@@ -2201,7 +2207,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		refjson.append("[");
 		Connection connDB = null;
 		// 从旧采集系统查询关联关系
-		connDB = ConnDB.getConnDB(configuration);
+		connDB = OtherConnDB.getConnDB(configuration);
 		String sql = "select PaperID from Description_Paper where DescriptionID = ?";
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 				ResultSet.CONCUR_READ_ONLY);
@@ -2367,7 +2373,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 
 	public String insertSpecimen(HttpServletRequest request) throws Exception {
 		logger.info("录入标本，（id和旧系统一致）");
-		Connection connDB = ConnDB.getConnDB(configuration);
+		Connection connDB = OtherConnDB.getConnDB(configuration);
 		StringBuffer sql = new StringBuffer();
 		sql.append("select *  from Typespecimen s left join taxa t on t.id = s.TaxaID where t.TreeID = ?");
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql.toString());
@@ -2433,7 +2439,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	 */
 	private String getSpecimenRef(String SpecimenID) throws Exception {
 		JSONArray jsonArray = new JSONArray();
-		Connection connDB = ConnDB.getConnDB(configuration);
+		Connection connDB = OtherConnDB.getConnDB(configuration);
 		StringBuffer sql = new StringBuffer();
 		sql.append("select * from Specimen_Paper where SpecimenID = ?");
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql.toString());
@@ -2467,11 +2473,17 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	}
 
 	public ResultSet query(String sql) throws Exception {
-		Connection connDB = ConnDB.getConnDB(configuration);
+		Connection connDB = OtherConnDB.getConnDB(configuration);
 		PreparedStatement prepareStatement = connDB.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE,
 				ResultSet.CONCUR_READ_ONLY);
 		ResultSet rs = prepareStatement.executeQuery();
 		return rs;
+	}
+
+	@Override
+	public Citation getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

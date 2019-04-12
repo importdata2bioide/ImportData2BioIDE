@@ -386,5 +386,32 @@ public class BatchInsertServiceImpl implements BatchInsertService {
         });
 		
 	}
+	/**
+	 * 
+	 * @Description 根据主键更新authorship，citationstr，refjson，remark字段
+	 * @param records
+	 * @author ZXY
+	 */
+	@Override
+	public void batchUpdateCitationFourById(List<Citation> records) {
+		String sql = "update citation set citationstr=?,refjson=?,authorship=?,remark = ? where id=? ";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Citation record = records.get(i);
+            	String id = record.getId();
+            	if(StringUtils.isNotEmpty(id)) {
+            		ps.setString(1, record.getCitationstr());
+            		ps.setString(2, record.getRefjson());
+            		ps.setString(3, record.getAuthorship());
+            		ps.setString(4, record.getRemark());
+            		ps.setString(5, record.getId());
+            	}
+            }
+        });
+		
+	}
 
 }
