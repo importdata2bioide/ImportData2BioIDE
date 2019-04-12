@@ -59,5 +59,12 @@ public interface BirdAddData {
 	 * @author ZXY
 	 */
 	void deleteCitationOfSameSciname(String datasetId);
+	/**
+	 * 
+	 * @Description 根据旧采集系统（动物志）补充异名引证的完整引证（citationstr）字段
+	 * @param dataset_Id_Bird2019
+	 * @author ZXY
+	 */
+	void perfectCitationStr(String dataset_Id_Bird2019);
 
 }

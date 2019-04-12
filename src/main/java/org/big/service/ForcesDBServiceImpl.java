@@ -87,6 +87,7 @@ import org.big.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -133,6 +134,11 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	private AQueryForcesDB aQueryForcesDB;
 	@Autowired
 	private BatchInsertService batchInsertService;
+	
+	@Autowired
+	private BatchSubmitService batchSubmitService;
+	
+	
 	@Autowired
 	private TaxonRepository taxonRepository;
 	@Autowired
@@ -199,7 +205,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		}
 		rs.close();
 //		prepareStatement.close();
-		logger.info("查询数据集完毕，数量：" + treelist.size());
+		logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"查询数据集完毕，数量：" + treelist.size());
 		int i = 0;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = factory.newDocumentBuilder();
@@ -285,7 +291,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		if (CommUtils.isStrEmpty(id)) {
 			throw new ValidationException("Team 数据不规范，id值为空！无法继续...");
 		} else {
-			logger.info("所选团队是：" + team.getName());
+			logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"所选团队是：" + team.getName());
 		}
 		// 用户
 		User currentUser = userRepository.findOneById(currentUserId);
@@ -324,7 +330,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				ds.setCreatedDate(CommUtils.getTimestamp(inputtimeStr));
 				ds.setCreator(currentUser);
 				Dataset dsSave = datasetRepository.save(ds);
-				logger.info("创建一个分类单元集");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"创建一个分类单元集");
 				// 创建一个分类单元集
 				Taxaset taxaset = new Taxaset();
 				taxaset.setId(UUIDUtils.getUUID32());
@@ -338,7 +344,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				taxaset.setDataset(dsSave);
 				taxasetRepository.save(taxaset);
 				// 分类树
-				logger.info("创建一个分类树");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"创建一个分类树");
 				Taxtree taxtree = new Taxtree();
 				taxtree.setId(UUIDUtils.getUUID32());
 				taxtree.setTreename(treeName);
@@ -350,7 +356,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				taxtree.setInputtime(CommUtils.getTimestamp(inputtimeStr));
 				taxtreeRepository.save(taxtree);
 			} else {
-				logger.info("数据集(" + treeName + ") 已存在,跳过");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"数据集(" + treeName + ") 已存在,跳过");
 			}
 			Datasource datasource = datasourceRepository.findOneByTitle(treeName);
 			if (datasource == null || CommUtils.isStrEmpty(datasource.getId())) {
@@ -366,7 +372,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				entity.setStatus(0);
 				datasourceRepository.save(entity);
 			} else {
-				logger.info("数据源(" + treeName + ") 已存在,跳过");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"数据源(" + treeName + ") 已存在,跳过");
 			}
 		}
 
@@ -377,65 +383,65 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	@Override
 	public String insertDSAll(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		initData(request);
-		logger.info("1、基础信息");
+		logger.info("1、基础信息"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 		this.insertTaxon(request);// taxon
 		try {
-			logger.info("2、引证");
+			logger.info("2、引证"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertCitation(request);// 引证
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐导入引证出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("3、描述");
+			logger.info("3、描述"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertDesc(request);// 描述
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐⭐导入描述出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("4、分布");
+			logger.info("4、分布"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertDistribution(request);// 分布
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入分布出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("5、检索表");
+			logger.info("5、检索表"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertKeyitem(request);// 检索表
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入检索表出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("6、俗名");
+			logger.info("6、俗名"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertCommName(request);// 俗名
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入俗名出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("7、多媒体");
+			logger.info("7、多媒体"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertMultimedia(request, response);// 多媒体
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入多媒体出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("8、标本");
+			logger.info("8、标本"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertSpecimen(request);
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入标本出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("9、分类树");
+			logger.info("9、分类树"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertTree(request);
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入分类树出错，错误信息：" + e.getMessage());
 		}
-		logger.info("~~~~~~~~~~~~~~~~~~~~~FINISH（完成一个数据集）~~~~~~~~~~~~~~~~~");
+		logger.info("~~~~~~~~~~~~~~~~~~~~~FINISH（完成一个数据集）~~~~~~~~~~~~~~~~~"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 
 		return "finish";
 	}
@@ -444,7 +450,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	@Override
 	public String insertDSAllByXml(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		List<XmlParamsVO> list = ReadxmlByDom.Readxml("book1.xml");
-		logger.info("从xml中一共读取了: " + list.size());
+		logger.info("从xml中一共读取了: " + list.size()+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 		for (XmlParamsVO paramsVO : list) {
 			// 54-60（包含）（完成）
 			// 62-65（包含）（61是动物志，以前导过了）（完成）
@@ -491,7 +497,10 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			prepareStatement.setString(1, TreeID);
 			rs = prepareStatement.executeQuery();
 			long startTime = System.currentTimeMillis(); // 获取开始时间
+			int i =0;
 			while (rs.next()) {
+				i++;
+//				logger.info("进度报告："+i);
 				Citation c = new Citation();
 				// ID
 				c.setId(UUIDUtils.getUUID32());
@@ -553,12 +562,16 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				// Shortrefs 引证原文
 				c.setCitationstr(getCitationstr(rs.getString("sy_id"), taxon, nameType));
 				records.add(c);
-
+				int size = records.size();
+				if(size%100==0) {
+					logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"进度报告："+size);
+				}
 				if (records.size() == 3000) {
 					logger.info("程序运行时间开始保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min");
 					logger.info(CommUtils.getCurrentDate() + "向数据库中保存:" + records.size());
 //					batchInsertService.batchInsertCitation(records, inputtimeStr);
-					citationRepository.saveAll(records);
+//					citationRepository.saveAll(records);
+					batchSubmitService.saveAll(records);
 					logger.info(CommUtils.getCurrentDate() + "保存:" + records.size());
 					records.clear();
 					logger.info(CommUtils.getCurrentDate() + "清空数组:" + records.size());
@@ -567,7 +580,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 
 			}
 
-			batchInsertService.batchInsertCitation(records, inputtimeStr);
+//			batchInsertService.batchInsertCitation(records, inputtimeStr);
+			batchSubmitService.saveAll(records);
 			logger.info("执行时间： " + (System.currentTimeMillis() - startTime) / 60000 + "min");
 
 			logger.info("保存完成");
@@ -582,6 +596,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		return "引证信息录入完成";
 	}
 
+	@Cacheable(value= "getCitationstr")
 	private String getCitationstr(String taxaId, Taxon taxon, int nametype) throws Exception {
 		String sciName = taxon.getScientificname();
 		String citationstr = "";
@@ -1066,7 +1081,12 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					rankMap.put(enname, id);
 				}
 				logger.info("insertTaxon：查询完毕，开始整合数据");
+				int i = 0;
 				while (rs.next()) {
+					i++;
+					if(i%1000==0) {
+						System.out.println("打印（无意义）：taxon 已经执行了："+i);
+					}
 					Taxon t = new Taxon();
 					t.setId(rs.getString("id"));
 
@@ -1373,7 +1393,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					logger.info("（部分）分布——开始保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min");
 					logger.info(CommUtils.getCurrentDate() + "分布——向数据库中保存:" + entities.size());
 //					batchInsertService.batchInsertDistributiondata(entities, inputtimeStr);
-					distributiondataRepository.saveAll(entities);
+//					distributiondataRepository.saveAll(entities);
+					batchSubmitService.saveAll(entities);
 					entities.clear();
 					logger.info(CommUtils.getCurrentDate() + "分布——清空数组:" + entities.size());
 					logger.info("（部分）分布——结束保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min, 已经存入数据库记录数："
@@ -1411,7 +1432,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		for (XmlParamsVO paramsVO : list) {
 			if (Integer.parseInt(paramsVO.getSeq()) == parseIntSeq) {
 				find = true;
-				logger.info("录入一条数据：" + paramsVO.toString());
+				logger.info("向分类单元集中录入数据，：" + paramsVO.toString());
 				logger.info("seq：" + paramsVO.getSeq());
 				this.TreeID = paramsVO.getTreeID();
 				this.loginUser = paramsVO.getLoginUser();
@@ -1983,7 +2004,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					logger.info("(部分)描述——开始保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min");
 					logger.info(CommUtils.getCurrentDate() + "描述——向数据库中保存:" + entities.size());
 //					batchInsertService.batchInsertDescription(entities, inputtimeStr);
-					descriptionRepository.saveAll(entities);
+//					descriptionRepository.saveAll(entities);
+					batchSubmitService.saveAll(entities);
 					entities.clear();
 					logger.info(CommUtils.getCurrentDate() + "(部分)描述——清空数组:" + entities.size());
 					logger.info("(部分)描述——结束保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min, 已经存入数据库记录数："

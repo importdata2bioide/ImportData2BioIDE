@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.druid.stat.TableStat.Name;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -949,8 +950,71 @@ public class BirdAddDataImpl implements BirdAddData {
 
 	@Override
 	public void deleteCitationOfSameSciname(String datasetId) {
-		// TODO Auto-generated method stub
+		List<String> deleteCitationIdlist = new LinkedList<>();
+		//查询数据集下的所有种阶元taxon
+		List<Object[]> list = taxonRepository.findTaxonBydsAndRank(datasetId_2019bird,
+				String.valueOf(RankEnum.species.getIndex()));
+		for (Object[] objects : list) {
+			String taxonid = objects[0].toString();
+			String scientificname = objects[1].toString();
+			Taxon taxon = new Taxon();
+			taxon.setId(taxonid);
+			taxon.setScientificname(scientificname);
+			//查询某个taxon的接受名引证
+			List<Object[]> acceptCitationlist = citationRepository.findByTaxonIdAndNametype(taxonid,
+					NametypeEnum.acceptedName.getIndex());
+			//查询某个taxon的异名引证
+			List<Object[]> synonymCitationlist = citationRepository.findByTaxonIdAndNametype(taxonid,
+					NametypeEnum.synonym.getIndex());
+			//判断异名引证中是否有和接受名引证 名称和命名人一致的record
+			//id,sciname,authorship,nametype,citationstr,refjson
+			for (Object[] acceptCitation : acceptCitationlist) {
+				String acceptSciname = acceptCitation[1].toString();
+				String acceptAuthorship = acceptCitation[2] == null?null:acceptCitation[2].toString();
+				for (Object[] synonymCitation : synonymCitationlist) {
+					String synonymSciname = synonymCitation[1].toString();
+					if(!acceptSciname.trim().equals(synonymSciname.trim())) {
+						continue;
+					}
+					String synonymAuthorship = synonymCitation[2] == null?null:acceptCitation[2].toString();
+					if(!acceptAuthorship.contains(synonymAuthorship)) {
+						continue;
+					}
+					//需要删除的异名引证
+					String synonymId = acceptCitation[0].toString();
+					deleteCitationIdlist.add(synonymId);
+					logger.info("打印："+acceptSciname);
+				}
+			}
+			
+		}
 		
+		if(insertOrUpdateDB && deleteCitationIdlist.size()>0) {
+			logger.info("开始执行删除Citation操作，需要删除的异名引证个数："+deleteCitationIdlist.size());
+			int deleteByIdsResult = citationRepository.deleteByIds(deleteCitationIdlist);
+			logger.info("删除异名引证个数为："+deleteByIdsResult);
+		}
+		
+	}
+
+	@Override
+	public void perfectCitationStr(String datasetId) {
+		//查询异名引证 的 完整引证字段 为空的数据
+		List<Object[]> list = citationRepository.findByDsAndNameTypeAndCitationstrNull(datasetId,NametypeEnum.synonym.getIndex());
+		for (Object[] objs : list) {
+			String sciname = objs[3].toString();//引证名称
+			String scientificname = objs[1].toString();//taxon学名
+			//从旧采集系统（动物志获取）
+//			getFromOldDWZ(scientificname,sciname,);
+			
+			String tsname = objs[0].toString();//分类单元集名称
+			String chname = objs[7] == null?null:objs[7].toString();//taxon中文名
+			String id = objs[2].toString();//引证主键
+			String authorship = objs[4] == null?null:objs[4].toString();//作者
+			int nametype = Integer.parseInt(objs[5].toString());//作者
+			String citationstr = objs[6] == null?null:objs[6].toString();//完整引证
+			
+		}
 	}
 
 }

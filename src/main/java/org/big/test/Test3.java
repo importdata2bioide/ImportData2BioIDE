@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.big.common.CommUtils;
 import org.big.entity.Citation;
 import org.big.entity.User;
 import org.big.service.BirdAddDataImpl;
@@ -17,7 +18,8 @@ public class Test3 {
 	public static void main(String[] args) {
 //		completePPA();
 //		testLinklist();
-		testclone();
+//		testclone();
+		System.out.println(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 		
 
 	}

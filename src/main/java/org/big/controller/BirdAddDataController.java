@@ -55,11 +55,14 @@ public class BirdAddDataController {
 	 */
 	@RequestMapping(value = "/birdAddDataController_updateCitationStrBySciName", method = RequestMethod.GET)
 	public String updateCitationStrBySciName(HttpServletResponse response) throws Exception {
-//		birdAddData.updateCitationStrBySciName(response);
-		// 验证并补充
-//		birdAddData.validateCitation();
-		//接受名和异名 名称相同，命名信息相同，删除异名
-		birdAddData.deleteCitationOfSameSciname(DataConsts.Dataset_Id_Bird2019);
+		//第一步：根据旧采集系统（鸟纲 郑雷）补充引证，根据引证原文补充参考文献
+		birdAddData.updateCitationStrBySciName(response);
+		//第二步：验证并补充接受名引证或异名引证
+		birdAddData.validateCitation();
+		//第三步：接受名和异名 名称相同，命名信息相同，删除异名
+//		birdAddData.deleteCitationOfSameSciname(DataConsts.Dataset_Id_Bird2019);
+		//第四步：根据旧采集系统（动物志）补充异名引证的完整引证字段
+		birdAddData.perfectCitationStr(DataConsts.Dataset_Id_Bird2019);
 		return "index";
 	}
 
