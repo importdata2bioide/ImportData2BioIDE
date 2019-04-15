@@ -177,6 +177,23 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	int IndexOfFirstChinese(String line);
+	/**
+	 * 
+	 * @Description 第一个英文字符的位置
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	int IndexOfFirstEng(String line);
+	
+	/**
+	 * 
+	 * @Description 第一个数字字符的位置
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	int IndexOfFirstNum(String line);
 	
 	public void initregExlist();
 	/**

@@ -68,6 +68,7 @@ public class C {
 		list.add("Euchiloglanis feae feae(non Vinciguerra)：Chu，1979.");
 		list.add("Vanmanenia polylepis:Pan，Liu et Zheng(潘炯华、刘成汉和郑文彪)1983，107.");
 		list.add("Pseudogastromyzon(Pseudogastromyzon)lianjiangen-sis：Tang et Chen，2000，6；乐佩琦等，2000，486.");
+		
 		toolService.initregExlist();
 		for (String line : list) {
 			toolService.parseSciName(line);

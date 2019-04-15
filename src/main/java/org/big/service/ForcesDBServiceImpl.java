@@ -2480,10 +2480,60 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		return rs;
 	}
 
+	
 	@Override
-	public Citation getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ) {
-		// TODO Auto-generated method stub
-		return null;
+	public boolean getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id,
+			Citation citation) throws Exception {
+		boolean update = false;
+		//已知数据源、异名引证名称，查询引证命名信息和引证原文
+		String sql = "select s.* from Species s left join taxa t on t.id  = s.TaxaID where  t.treeId = '"+forcesDB_Tree_Id+"' and t.latin_name = '"+sciname+"' and t.StatusID = 'BEDBB69A-139D-45A3-8CD9-CC7D55BF6E7E'";
+//		logger.info(sql);
+		ResultSet rs = this.query(sql);
+		while (rs.next()) {
+			String  authorstr = "";
+			String Named_Person = rs.getString("Named_Person");
+			String Named_Date = rs.getString("Named_Date");
+			// 命名人和年代
+			if (!isStrNotEmpty(Named_Date)) {// Named_Date为空
+				authorstr = Named_Person;
+			} else if (isStrNotEmpty(Named_Date) && Named_Person.contains(Named_Person)) {// Named_Date非空且Named_Person包含Named_Date
+				authorstr = Named_Person;
+			} else {
+				authorstr = Named_Person + "," + Named_Date;
+			}
+			if (isStrNotEmpty(authorstr)) {
+				authorstr = authorstr.replace("(", "");
+				authorstr = authorstr.replace(")", "");
+				authorstr = authorstr.replace("（", "");
+				authorstr = authorstr.replace("）", "");
+				authorstr = authorstr.trim();
+			}
+			if(StringUtils.isNotEmpty(authorstr)) {
+				citation.setAuthorship(authorstr);
+			}
+			//引证原文
+			String citationstr = "";
+			String remark = rs.getString("Remark");
+			String description  = rs.getString("Description");
+			String  typeLocation = rs.getString("Type_Location");
+			if(StringUtils.isNotEmpty(remark)) {
+				citationstr =remark; 
+			}else if(StringUtils.isNotEmpty(description)) {
+				citationstr = description; 
+			}
+			if(StringUtils.isNotEmpty(typeLocation)) {
+				citationstr = citationstr+" "+typeLocation;
+			}
+			if(StringUtils.isNotEmpty(citationstr)) {
+				if(!citationstr.contains(sciname)) {
+					citationstr = sciname+" "+citationstr;
+				}
+				update = true;
+				citation.setCitationstr(citationstr);
+			}
+			break;
+		}
+		return update;
 	}
 
 }

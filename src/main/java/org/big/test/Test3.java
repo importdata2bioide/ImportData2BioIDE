@@ -19,9 +19,15 @@ public class Test3 {
 //		completePPA();
 //		testLinklist();
 //		testclone();
-		System.out.println(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
-		
+//		System.out.println(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+		replaceAllTest();
 
+	}
+	private static void replaceAllTest() {
+		String s = "石家庄。bb<br>的伤口缝合；舒服的和，";
+		s = s.replaceAll("[。，<br>]", "");
+		System.out.println(s);
+		
 	}
 	private static void testclone() {
 		Citation c = new Citation();

@@ -105,7 +105,17 @@ public interface ForcesDBService {
 	 * @throws Exception
 	 */
 	public String insertSpecimen(HttpServletRequest request) throws Exception;
-
-	public Citation getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ);
+	/**
+	 * 
+	 * @Description 获取指定的异名引证
+	 * @param scientificname 接受名
+	 * @param sciname 异名引证名称
+	 * @param forcesDB_Tree_Id_DWZ 数据源Id
+	 * @param citation 实体类，直接修改此实体类中的数据
+	 * @return 引证是否需要更新
+	 * @author ZXY
+	 * @throws Exception 
+	 */
+	public boolean getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ, Citation citation) throws Exception;
 
 }

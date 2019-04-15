@@ -482,76 +482,10 @@ public class BirdAddDataImpl implements BirdAddData {
 				// do nothing
 				continue;
 			} else {
+				resetCitationFromCitationstr(citation);
 //				System.out.println("----");
 				// 在控制台打印实体数据
 //				toolService.printEntity(citation);
-				String sciname = citation.getSciname();
-				citationstr = citation.getCitationstr().trim();
-				String refjson = citation.getRefjson();
-				String remark = citation.getRemark();
-				// 第一步：根据引证原文或备注解析参考文献页码
-				String refS = "";
-				String refE = "";
-				try {
-					Object pageObj = CommUtils.strToJSONObject(remark).get("page");
-					String rangPage = pageObj == null ? null : pageObj.toString();
-					String splitflag = "";
-					if (rangPage.contains("-")) {
-						splitflag = "-";
-					} else if (rangPage.contains("‐")) {
-						splitflag = "‐";
-					} else if (rangPage.contains("–")) {
-						splitflag = "–";
-					}
-					if (StringUtils.isNotEmpty(splitflag)) {
-						String[] split = rangPage.split(splitflag);
-						refS = split[0];
-						refE = split[1];
-					} else {
-						refS = rangPage;
-						refE = rangPage;
-					}
-				} catch (Exception e) {
-					Map<String, String> pageMap = getPageFromCitationStr(citationstr);
-					refS = pageMap.get("refS");
-					refE = pageMap.get("refE");
-				}
-				// 第二步：引证原文（citationstr）需要学名（sciname）开头
-				if (!citationstr.startsWith(sciname)) {
-					citationstr = sciname + " " + citationstr;
-					citation.setCitationstr(citationstr);
-				}
-				// 第三步：根据引证原文解析参考文献
-				Ref ref = null;
-				String refstr = citationstr.substring(sciname.length()).trim();
-				List<Ref> reflist = refRepository.findByRefstr(refstr);
-				if (reflist == null || reflist.size() == 0) {
-					// 新建一条参考文献
-					ref = new Ref();
-					ref.setId(UUIDUtils.getUUID32());
-					refService.parseLineChineseOrEng(ref, refstr);
-					ref.setStatus(1);
-					ref.setPtype(String.valueOf(PtypeEnum.other.getIndex()));
-					ref.setInputer(userId_wangtianshan);
-//					toolService.printEntity(ref);
-					if (insertOrUpdateDB) {
-						refService.saveOne(ref);
-					}
-				} else {
-					ref = reflist.get(0);
-				}
-				RefTypeEnum refTypeEnum = null;
-				int nametype = citation.getNametype();
-				if (nametype == NametypeEnum.synonym.getIndex()) {
-					refTypeEnum = RefTypeEnum.synonym;
-				} else {
-					refTypeEnum = RefTypeEnum.other;
-				}
-				String addRefJson = refService.addRefJson(refjson, ref.getId(), refTypeEnum, refS, refE);
-				citation.setRefjson(addRefJson);
-				// 在控制台打印实体数据
-//				toolService.printEntity(citation);
-
 			}
 			if (i % 100 == 0) {
 				logger.info("进度打印：" + i * 100 / size + "%");
@@ -565,6 +499,83 @@ public class BirdAddDataImpl implements BirdAddData {
 			batchSubmitService.saveAll(insertCitationlist);
 		}
 
+	}
+
+	/**
+	 * 
+	 * @Description 根据引证原文解析参考文献
+	 * @param citation
+	 * @author ZXY
+	 */
+	private void resetCitationFromCitationstr(Citation citation) {
+		String citationstr = citation.getCitationstr();
+		String sciname = citation.getSciname();
+		citationstr = citation.getCitationstr().trim();
+		String refjson = citation.getRefjson();
+		String remark = citation.getRemark();
+		// 第一步：根据引证原文或备注解析参考文献页码
+		String refS = "";
+		String refE = "";
+		try {
+			Object pageObj = CommUtils.strToJSONObject(remark).get("page");
+			String rangPage = pageObj == null ? null : pageObj.toString();
+			String splitflag = "";
+			if (rangPage.contains("-")) {
+				splitflag = "-";
+			} else if (rangPage.contains("‐")) {
+				splitflag = "‐";
+			} else if (rangPage.contains("–")) {
+				splitflag = "–";
+			}
+			if (StringUtils.isNotEmpty(splitflag)) {
+				String[] split = rangPage.split(splitflag);
+				refS = split[0];
+				refE = split[1];
+			} else {
+				refS = rangPage;
+				refE = rangPage;
+			}
+		} catch (Exception e) {
+			Map<String, String> pageMap = getPageFromCitationStr(citationstr);
+			refS = pageMap.get("refS");
+			refE = pageMap.get("refE");
+		}
+		// 第二步：引证原文（citationstr）需要学名（sciname）开头
+		if (!citationstr.startsWith(sciname)) {
+			citationstr = sciname + " " + citationstr;
+			citation.setCitationstr(citationstr);
+		}
+		// 第三步：根据引证原文解析参考文献
+		Ref ref = null;
+		String refstr = citationstr.substring(sciname.length()).trim();
+		List<Ref> reflist = refRepository.findByRefstr(refstr);
+		if (reflist == null || reflist.size() == 0) {
+			// 新建一条参考文献
+			ref = new Ref();
+			ref.setId(UUIDUtils.getUUID32());
+			refService.parseLineChineseOrEng(ref, refstr);
+			ref.setStatus(1);
+			ref.setPtype(String.valueOf(PtypeEnum.other.getIndex()));
+			ref.setInputer(userId_wangtianshan);
+//			toolService.printEntity(ref);
+			if (insertOrUpdateDB) {
+				refService.saveOne(ref);
+			}
+		} else {
+			ref = reflist.get(0);
+		}
+		RefTypeEnum refTypeEnum = null;
+		int nametype = citation.getNametype();
+		if (nametype == NametypeEnum.synonym.getIndex()) {
+			refTypeEnum = RefTypeEnum.synonym;
+		} else {
+			refTypeEnum = RefTypeEnum.other;
+		}
+		String addRefJson = refService.addRefJson(refjson, ref.getId(), refTypeEnum, refS, refE);
+		citation.setRefjson(addRefJson);
+		// 在控制台打印实体数据
+//		toolService.printEntity(citation);
+		
 	}
 
 	/**
@@ -732,16 +743,23 @@ public class BirdAddDataImpl implements BirdAddData {
 	}
 
 	public Map<String, String> getPageFromCitationStr(String citationstr) {
+//		logger.info("------原始："+citationstr);
 		citationstr = citationstr.replace("．", ".");// 替换特殊字符
+		citationstr = citationstr.replaceAll("[。]", "");// 替换特殊字符
+		citationstr = citationstr.replace("<br>", "");// 替换特殊字符
+		citationstr = citationstr.replaceAll("[—]", "-");
+		citationstr = citationstr.replaceAll("[：：]", ":");
+		if (citationstr.endsWith(".")) {
+			citationstr = citationstr.substring(0, citationstr.length() - 1).trim();
+		}
 		String PatternProducingAreaReg = "(.*?)(\\(|\\（)(.*?)(\\)|\\）)\\s{0,}";
 		Pattern patternOfPPA = Pattern.compile(PatternProducingAreaReg);
+//		logger.info("匹配结果："+patternOfPPA.matcher(citationstr).matches());
 		if (patternOfPPA.matcher(citationstr).matches()) {
 			char[] flagsPPA = { '(', '（' };
 			citationstr = citationstr.substring(0, getNotYearflagIndex(flagsPPA, citationstr)).trim();
 		}
-		if (citationstr.endsWith(".")) {
-			citationstr = citationstr.substring(0, citationstr.length() - 1).trim();
-		}
+//		logger.info("替换特殊字符后："+cita tionstr);
 		Map<String, String> resultMap = new HashMap<>();
 		Set<Entry<String, String>> entrySet = regExPagelist.entrySet();
 		String refS = "0";
@@ -828,6 +846,10 @@ public class BirdAddDataImpl implements BirdAddData {
 						}
 					}
 					break;
+				case "plate":
+					refS  = citationstr.substring(citationstr.lastIndexOf("图版"));
+					refE = refS;
+					break;
 				default:
 					throw new ValidationException("未定义的key=" + key);
 				}
@@ -835,7 +857,7 @@ public class BirdAddDataImpl implements BirdAddData {
 			}
 		}
 		if (!rs) {
-			logger.info("正则表达式没有解析出页码citationstr=" + citationstr);
+			logger.info("getPageFromCitationStr 正则表达式没有解析出页码citationstr=" + citationstr);
 		}
 		resultMap.put("refS", refS);
 		resultMap.put("refE", refE);
@@ -866,6 +888,8 @@ public class BirdAddDataImpl implements BirdAddData {
 		regExPagelist.put("page6", "(.*?)p.\\s{0,}[0-9]+(.*?)");
 		// pl.数字（包含在字符串中间）
 		regExPagelist.put("centerPL", "(.*?)pl\\.\\s{0,}[0-9]+(.*?)");
+		//图版 数字
+		regExPagelist.put("plate", "(.*?)图版\\s{0,}[0-9]+(.*?)");
 	}
 
 	public int getNotYearflagIndex(char[] flags, String citationstr) {
@@ -931,6 +955,7 @@ public class BirdAddDataImpl implements BirdAddData {
 	@Override
 	public List<ExcelUntilF> exportCitationExcelOfDataSet(NametypeEnum nametype, String datasetId) {
 		List<Object[]> objlist = citationRepository.findByDsAndNameType(datasetId,nametype.getIndex());
+//		List<Object[]> objlist = citationRepository.findByDsAndCitationIsNull(datasetId);
 		List<ExcelUntilF>  excellist = turnToExcelUntilF(objlist);
 		return excellist;
 	}
@@ -1002,8 +1027,8 @@ public class BirdAddDataImpl implements BirdAddData {
 			
 		}
 		
+		logger.info("需要删除的异名引证个数："+deleteCitationIdlist.size());
 		if(insertOrUpdateDB && deleteCitationIdlist.size()>0) {
-			logger.info("开始执行删除Citation操作，需要删除的异名引证个数："+deleteCitationIdlist.size());
 			int deleteByIdsResult = citationRepository.deleteByIds(deleteCitationIdlist);
 			logger.info("删除异名引证个数为："+deleteByIdsResult);
 		}
@@ -1011,25 +1036,38 @@ public class BirdAddDataImpl implements BirdAddData {
 	}
 
 	@Override
-	public void perfectCitationStr(String datasetId) {
+	public void perfectCitationStr(String datasetId) throws Exception {
 		List<Citation> updateCitationlist = new LinkedList<>();
 		//查询异名引证 的 完整引证字段 为空的数据
 		List<Object[]> list = citationRepository.findByDsAndNameTypeAndCitationstrNull(datasetId,NametypeEnum.synonym.getIndex());
+		logger.info("查询异名引证 的 完整引证字段 为空的数据 条数："+list.size());
+		int i = 0;
+		int size = list.size();
 		for (Object[] objs : list) {
+			i++;
+			if(i%100==0) {
+				logger.info("进度报告："+i*100/size+"%（i="+i+",size="+size+"）");
+			}
 			String sciname = objs[3].toString();//引证名称
 			String scientificname = objs[1].toString();//taxon学名
-			//从旧采集系统（动物志获取）
-			//.....
 			Citation citation = new Citation();
 			String id = objs[2].toString();//引证主键
 			String refjson = objs[8] == null?null:objs[8].toString();//citation参考文献
 			citation.setId(id);
 			citation.setRefjson(refjson);
 			citation.setRemark("信息来源于旧采集系统 动物志");
-			boolean update = getCitationFromDataSet(scientificname,sciname,DataConsts.Dataset_Id_DWZ,citation);
+			citation.setSciname(sciname);
+			Taxon taxon = new Taxon();
+			taxon.setScientificname(scientificname);
+			citation.setTaxon(taxon );
+			//从旧采集系统（动物志获取）
+//			boolean update = getCitationFromDataSet(scientificname,sciname,DataConsts.Dataset_Id_DWZ,citation);
+//			logger.info("__"+scientificname+"__"+sciname);
+			boolean update = forcesDBService.getCitationFromForcesDB(scientificname, sciname, DataConsts.forcesDB_Tree_Id_DWZ,citation);
 			if(!update) {
 				continue;
 			}
+			resetCitationFromCitationstr(citation);
 			updateCitationlist.add(citation);
 //			String tsname = objs[0].toString();//分类单元集名称
 //			String chname = objs[7] == null?null:objs[7].toString();//taxon中文名
@@ -1040,10 +1078,9 @@ public class BirdAddDataImpl implements BirdAddData {
 		}
 		//更新数据库
 		logger.info("需要根据动物志更新的引证数量："+updateCitationlist.size());
-		if(insertOrUpdateDB ) {
+		if(insertOrUpdateDB) {
 			//更新引证：authorship，citationstr，refjson,remark
 			batchInsertService.batchUpdateCitationFourById(updateCitationlist);
-			
 		}
 	}
 

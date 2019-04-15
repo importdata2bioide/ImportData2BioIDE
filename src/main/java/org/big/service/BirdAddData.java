@@ -62,9 +62,10 @@ public interface BirdAddData {
 	/**
 	 * 
 	 * @Description 根据旧采集系统（动物志）补充异名引证的完整引证（citationstr）字段
-	 * @param dataset_Id_Bird2019
+	 * @param datasetId
 	 * @author ZXY
+	 * @throws Exception 
 	 */
-	void perfectCitationStr(String dataset_Id_Bird2019);
+	void perfectCitationStr(String datasetId) throws Exception;
 
 }

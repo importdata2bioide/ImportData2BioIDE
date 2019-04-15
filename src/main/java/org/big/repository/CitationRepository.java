@@ -149,7 +149,15 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	 */
 	@Query(value = "select ts.tsname,t.scientificname,c.id,c.sciname,c.authorship,c.nametype,c.citationstr,t.chname from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and c.nametype = :nameType  order by ts.tsname,t.scientificname",nativeQuery = true)
 	List<Object[]> findByDsAndNameType(String datasetId, int nameType);
-	
+	/**
+	 * 
+	 * @Description 数据集下引证原文为空的所有引证
+	 * @param datasetId
+	 * @return
+	 * @author ZXY
+	 */
+	@Query(value = "select ts.tsname,t.scientificname,c.id,c.sciname,c.authorship,c.nametype,c.citationstr,t.chname  from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and (c.citationstr is null or c.citationstr ='')     order by ts.tsname,t.scientificname,c.nametype",nativeQuery = true)
+	List<Object[]> findByDsAndCitationIsNull(String datasetId);
 	
 	
 	@Modifying

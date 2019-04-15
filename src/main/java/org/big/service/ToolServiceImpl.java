@@ -523,7 +523,7 @@ public class ToolServiceImpl implements ToolService {
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("species-10")) {
 					sciname = line.substring(0, line.indexOf(":"));
-				}else if (key.equals("species-11")) {
+				} else if (key.equals("species-11")) {
 					sciname = line.substring(0, line.indexOf("("));
 				} else if (key.equals("subspecies-0")) {
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
@@ -554,16 +554,16 @@ public class ToolServiceImpl implements ToolService {
 		}
 		if (!match) {
 			int indexOfPointUpperCaseWithoutBrackets = indexOfPointUpperCaseWithoutBrackets(line, 2);
-			if(line.contains("：")) {
-				sciname = line.substring(0,line.indexOf("："));
+			if (line.contains("：")) {
+				sciname = line.substring(0, line.indexOf("："));
 //				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用：分隔_____" + line);
-			}else if(indexOfPointUpperCaseWithoutBrackets != line.length()-1) {
-				sciname = line.substring(0,indexOfPointUpperCaseWithoutBrackets);
-				logger.info(sciname+"_____使用第二个大写字母（不包含括号内的）分隔_____" + line);
-			}else {
+			} else if (indexOfPointUpperCaseWithoutBrackets != line.length() - 1) {
+				sciname = line.substring(0, indexOfPointUpperCaseWithoutBrackets);
+				logger.info(sciname + "_____使用第二个大写字母（不包含括号内的）分隔_____" + line);
+			} else {
 				logger.info("没有匹配：" + line);
 			}
-			
+
 		}
 
 		map.put(MapConsts.TAXON_SCI_NAME, sciname);
@@ -612,8 +612,9 @@ public class ToolServiceImpl implements ToolService {
 					+ EngMixLatin + "\\s{0,}" + multChinese + "(.*?)");
 			// speciese 属 空格 种加词:
 			regExlist.put("species-10", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}:(.*?)");
-			//speciese属 空格 种加词可能包含- (命名信息首字母大写
-			regExlist.put("species-11", "^[A-Z]{1}[a-z]{1,}\\s{1,}"+EngMixLatinMixShortLine+"\\s{0,}\\([A-Z]{1,}(.*?)");
+			// speciese属 空格 种加词可能包含- (命名信息首字母大写
+			regExlist.put("species-11",
+					"^[A-Z]{1}[a-z]{1,}\\s{1,}" + EngMixLatinMixShortLine + "\\s{0,}\\([A-Z]{1,}(.*?)");
 			// 5、subspecies 属 空格 种加词 空格 亚种加词 空格 命名信息首字母大写
 			regExlist.put("subspecies-0", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{1,}" + EngMixLatin
 					+ "\\s{1,}[A-Z]{1}(.*?)");
@@ -671,7 +672,7 @@ public class ToolServiceImpl implements ToolService {
 			index++;
 			if (charAt == '(') {
 				meetBrackets = true;
-			}else if (charAt == ')') {
+			} else if (charAt == ')') {
 				meetBrackets = false;
 			}
 			if (meetBrackets == false && charAt >= 'A' && charAt <= 'Z') {
@@ -682,6 +683,32 @@ public class ToolServiceImpl implements ToolService {
 			}
 		}
 		return index;
+	}
+
+	@Override
+	public int IndexOfFirstEng(String line) {
+		// 找第一个英文
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (CommUtils.isEnglish(w)) {// \u4e00-\u9fa5 中文汉字的范围
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int IndexOfFirstNum(String line) {
+		// 找第一个数字
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (CommUtils.isNumeric(w)) {// \u4e00-\u9fa5 中文汉字的范围
+				return index;
+			}
+		}
+		return -1;
 	}
 
 }

@@ -32,10 +32,10 @@ public class Test2 {
 //		list.add("Anas clypeata Linnaeus,1758, Syst. Nat. ed. 10, 1:124");
 //		list.add("Parus dichrous,Blyth, 1845,J.Asiat.Soc.Bengal 13 ,943");
 //		list.add("Anas clypeata Linnaeus,1758, Syst. Nat. ed. 10, 1:124");
-		list.add("Linnaeus.1758.，1：150 (Egypt)");
-		list.add(",Przevalski.1876.Unknown.Mong. And St. Tangut., 2:127 (in Russian)");
-//		list.add("");
-//		list.add("");
+//		list.add("Linnaeus.1758.，1：150 (Egypt)");
+//		list.add(",Przevalski.1876.Unknown.Mong. And St. Tangut., 2:127 (in Russian)");
+//		list.add("Alcurus striatus paulus  Alcsrus striatus paulus Bangs et Philips, 1914, Bull. Mus. Comp. Zool. Harvard Coll. 58:284（模式产地：云南屏边）。");
+		list.add("Alcedo lugubris Tesmminck，1834，in Temminck et Laugier，Pl.col.Ois.，92：图版548 图1");
 		
 		for (String line : list) {
 			System.out.println("--------------------------");

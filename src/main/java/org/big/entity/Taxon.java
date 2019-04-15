@@ -279,7 +279,10 @@ public class Taxon implements Serializable{
 		return rankid;
 	}
 
-	public void setRankid(int rankid) {
+	public void setRankid(Integer rankid) {
+		if(rankid == null) {
+			rankid = 0;
+		}
 		scinameAndRankToEpithet(rankid,this.scientificname);
 		this.rankid = rankid;
 	}
