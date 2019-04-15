@@ -26,14 +26,7 @@ public class C {
 
 	public static void main(String[] args) {
 		ToolService toolService = new ToolServiceImpl();
-		boolean goon = true;
-		if (goon) {
-			String line = "Pseudogastromyzon(Subgenus of Hemimyzon)Nichols，1925，1.";
-			int pointUpperCaseIndex = toolService.indexOfPointUpperCaseWithoutBrackets(line, 3);
-			String substring = line.substring(0, pointUpperCaseIndex);
-			System.out.println(substring);
-			return;
-		}
+		
 		initregExlist();
 		// 要验证的字符串
 		List<String> list = new ArrayList<>();
@@ -71,7 +64,12 @@ public class C {
 		
 		toolService.initregExlist();
 		for (String line : list) {
-			toolService.parseSciName(line);
+			System.out.println("-----");
+			Map<String, String> map = toolService.parseSciName(line);
+			System.out.println(line);
+			System.out.println("阶元："+map.get(MapConsts.TAXON_RANK_NAME));
+			System.out.println("学名："+map.get(MapConsts.TAXON_SCI_NAME));
+			System.out.println("命名信息："+map.get(MapConsts.TAXON_AUTHOR));
 		}
 
 	}

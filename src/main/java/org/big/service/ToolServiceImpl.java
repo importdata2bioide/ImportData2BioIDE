@@ -18,10 +18,12 @@ import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
 
+import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.config.HttpConfig;
 import org.big.constant.ConfigConsts;
 import org.big.constant.MapConsts;
+import org.big.entityVO.RankEnum;
 import org.big.entityVO.SpeciesCatalogueEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -484,8 +486,8 @@ public class ToolServiceImpl implements ToolService {
 	public Map<String, String> parseSciName(String line) {
 		Map<String, String> map = new HashMap<>();
 		String sciname = "";
-		String author = "";// 命名人和年代
 		boolean match = false;
+		RankEnum rank = RankEnum.unknown;
 		Set<Entry<String, String>> entrySet = regExlist.entrySet();
 		for (Entry<String, String> entry : entrySet) {
 			String key = entry.getKey();
@@ -498,52 +500,74 @@ public class ToolServiceImpl implements ToolService {
 			boolean rs = matcher.matches();
 			if (rs) {
 				if (key.equals("genus-0")) {
+					rank = RankEnum.genus;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
 				} else if (key.equals("genus-1")) {
+					rank = RankEnum.genus;
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("species-0")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
 				} else if (key.equals("species-1")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf("("));
 				} else if (key.equals("species-2")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf("："));
 				} else if (key.equals("species-3")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf("："));
 				} else if (key.equals("species-4")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 3));
 				} else if (key.equals("species-5")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf("（"));
 				} else if (key.equals("species-6")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
 				} else if (key.equals("species-7")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("species-8")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 3) - 1);
 				} else if (key.equals("species-9")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("species-10")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf(":"));
 				} else if (key.equals("species-11")) {
+					rank = RankEnum.species;
 					sciname = line.substring(0, line.indexOf("("));
 				} else if (key.equals("subspecies-0")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
 				} else if (key.equals("subspecies-1")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, line.indexOf("："));
 				} else if (key.equals("subspecies-2")) {
 					sciname = line.substring(0, line.indexOf("："));
 				} else if (key.equals("subspecies-3")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, line.indexOf("("));
 				} else if (key.equals("subspecies-4")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("subspecies-5")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 3));
 				} else if (key.equals("subspecies-6")) {
+					rank = RankEnum.subsp;
 					sciname = line.substring(0, IndexOfFirstChinese(line));
 				} else if (key.equals("var-0")) {
 					sciname = line.substring(0, line.indexOf("("));
 				} else if (key.equals("var-1")) {
+					rank = RankEnum.var;
 					sciname = line.substring(0, getPointUpperCaseIndex(line, 2));
 				} else if (key.equals("var-2")) {
+					rank = RankEnum.var;
 					sciname = line.substring(0, line.indexOf("："));
 				} else {
 					throw new ValidationException("未定义的key:" + key);
@@ -554,6 +578,7 @@ public class ToolServiceImpl implements ToolService {
 		}
 		if (!match) {
 			int indexOfPointUpperCaseWithoutBrackets = indexOfPointUpperCaseWithoutBrackets(line, 2);
+			
 			if (line.contains("：")) {
 				sciname = line.substring(0, line.indexOf("："));
 //				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用：分隔_____" + line);
@@ -565,9 +590,18 @@ public class ToolServiceImpl implements ToolService {
 			}
 
 		}
+		String author = "";// 命名人和年代
+		if(StringUtils.isNotEmpty(sciname)) {
+			String year = getYear(line);
+			if(StringUtils.isNotEmpty(year)) {
+				String exceptSciname = line.substring(sciname.length());
+				author = exceptSciname.substring(0,exceptSciname.indexOf(year)+year.length());
+			}
+		}
 
 		map.put(MapConsts.TAXON_SCI_NAME, sciname);
 		map.put(MapConsts.TAXON_AUTHOR, author);
+		map.put(MapConsts.TAXON_RANK_NAME, rank.getName());
 		return map;
 	}
 
