@@ -212,5 +212,14 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	int getYearStart(String line);
+	/**
+	 * 
+	 * @Description 默认第一行为标题
+	 * @param path 文件路径
+	 * @param t 实体类
+	 * @return
+	 * @author ZXY
+	 */
+	<T> List<T> readExcel(String path, Class<T> t);
 
 }

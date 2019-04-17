@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.StyledEditorKit.ForegroundAction;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -29,6 +30,7 @@ import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
 import org.big.constant.ConfigConsts;
 import org.big.constant.DataConsts;
+import org.big.constant.MapConsts;
 import org.big.entity.Citation;
 import org.big.entity.Rank;
 import org.big.entity.Ref;
@@ -86,7 +88,7 @@ public class BirdAddDataImpl implements BirdAddData {
 	private String sourcesId_2019bird = "428700b4-449e-4284-a082-b2fe347682ff";
 	// 分类单元集：鸟纲-郑-雷-sp2000
 	private String taxasetIdBirdZL = "5962f6d5caf8430aba8d85520a0ad1d1";
-	boolean insertOrUpdateDB = false;// 数据库变动
+	boolean insertOrUpdateDB = true;// 数据库变动
 
 	Map<String, String> sciNameMap = new HashMap<>();
 
@@ -473,12 +475,12 @@ public class BirdAddDataImpl implements BirdAddData {
 				iter.remove();
 				Taxon taxon = citation.getTaxon();
 				// 从旧采集系统引入
-				List<Citation> addlist = getFromOldBioIDE(taxon,null,taxasetIdBirdZL);
+				List<Citation> addlist = getFromOldBioIDE(taxon, null, taxasetIdBirdZL);
 				insertCitationlist.addAll(addlist);
 				continue;
 			} else if (StringUtils.isEmpty(citationstr)) {
 				iter.remove();
-				System.out.println(ConfigConsts.HANDLE_ERROR + "2019鸟类名录引证原文为空,id=" + id);
+//				System.out.println(ConfigConsts.HANDLE_ERROR + "2019鸟类名录引证原文为空,id=" + id);
 				// do nothing
 				continue;
 			} else {
@@ -575,7 +577,7 @@ public class BirdAddDataImpl implements BirdAddData {
 		citation.setRefjson(addRefJson);
 		// 在控制台打印实体数据
 //		toolService.printEntity(citation);
-		
+
 	}
 
 	/**
@@ -590,17 +592,17 @@ public class BirdAddDataImpl implements BirdAddData {
 	 * @throws SecurityException
 	 * @throws NoSuchMethodException
 	 */
-	private List<Citation> getFromOldBioIDE(Taxon taxon,NametypeEnum pointNameType,String taxasetIdBirdZL) throws NoSuchMethodException, SecurityException,
-			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private List<Citation> getFromOldBioIDE(Taxon taxon, NametypeEnum pointNameType, String taxasetIdBirdZL)
+			throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException {
 		List<Citation> insertCitationlist = new LinkedList<>();
 		List<Citation> findlist = null;
-		if(pointNameType == null) {
-			findlist = citationRepository.findByScientificnameAndtsId(taxon.getScientificname(),
-					taxasetIdBirdZL);
-		}else if(pointNameType == NametypeEnum.acceptedName) {
+		if (pointNameType == null) {
+			findlist = citationRepository.findByScientificnameAndtsId(taxon.getScientificname(), taxasetIdBirdZL);
+		} else if (pointNameType == NametypeEnum.acceptedName) {
 			findlist = citationRepository.findByScientificnameAndtsIdAndNameType(taxon.getScientificname(),
 					taxasetIdBirdZL, NametypeEnum.acceptedName.getIndex());
-		}else if(pointNameType == NametypeEnum.synonym) {
+		} else if (pointNameType == NametypeEnum.synonym) {
 			findlist = citationRepository.findByScientificnameAndtsIdAndNameType(taxon.getScientificname(),
 					taxasetIdBirdZL, NametypeEnum.synonym.getIndex());
 		}
@@ -615,7 +617,7 @@ public class BirdAddDataImpl implements BirdAddData {
 			String citationstr = clone.getCitationstr();// 引证原文
 			String sciname = clone.getSciname();// 学名
 			int nametype = clone.getNametype();
-			resetCitation(citationstr,clone,array,sciname,nametype);
+			resetCitation(citationstr, clone, array, sciname, nametype);
 //			logger.info("DYYZ 0002 打印引证" + taxon.getScientificname());
 //			toolService.printEntity(clone);
 			insertCitationlist.add(clone);
@@ -623,7 +625,7 @@ public class BirdAddDataImpl implements BirdAddData {
 		return insertCitationlist;
 	}
 
-	private void resetCitation(String citationstr, Citation clone, JSONArray array,String sciname,int nametype) {
+	private void resetCitation(String citationstr, Citation clone, JSONArray array, String sciname, int nametype) {
 		String refFromCitationstr = "";// 理论上从引证原文中解析出来的参考文献
 		// 设置引证原文 citationstr 和 refFromCitationstr
 		if (StringUtils.isEmpty(citationstr)) {
@@ -686,12 +688,12 @@ public class BirdAddDataImpl implements BirdAddData {
 			String addRefJson = refService.addRefJson(null, newRefId, refTypeEnum, refS, refE);
 			clone.setRefjson(addRefJson);
 		}
-		
+
 	}
 
 	private void turnOldToBirdCitation(Citation citation) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -743,12 +745,14 @@ public class BirdAddDataImpl implements BirdAddData {
 	}
 
 	public Map<String, String> getPageFromCitationStr(String citationstr) {
-//		logger.info("------原始："+citationstr);
-		citationstr = citationstr.replace("．", ".");// 替换特殊字符
+		String origncitationstr = citationstr;
+		citationstr = citationstr.replaceAll("[..．..]", ".");// 替换特殊字符
+		citationstr = citationstr.replace("..", ".");
 		citationstr = citationstr.replaceAll("[。]", "");// 替换特殊字符
 		citationstr = citationstr.replace("<br>", "");// 替换特殊字符
-		citationstr = citationstr.replaceAll("[—]", "-");
+		citationstr = citationstr.replaceAll("[—-]", "-");
 		citationstr = citationstr.replaceAll("[：：]", ":");
+		citationstr = citationstr.trim();
 		if (citationstr.endsWith(".")) {
 			citationstr = citationstr.substring(0, citationstr.length() - 1).trim();
 		}
@@ -758,6 +762,12 @@ public class BirdAddDataImpl implements BirdAddData {
 		if (patternOfPPA.matcher(citationstr).matches()) {
 			char[] flagsPPA = { '(', '（' };
 			citationstr = citationstr.substring(0, getNotYearflagIndex(flagsPPA, citationstr)).trim();
+		}
+		if (citationstr.endsWith(".")) {
+			citationstr = citationstr.substring(0, citationstr.length() - 1).trim();
+		}
+		if (citationstr.startsWith(",") ) {
+			citationstr = citationstr.substring(1).trim();
 		}
 //		logger.info("替换特殊字符后："+cita tionstr);
 		Map<String, String> resultMap = new HashMap<>();
@@ -847,7 +857,7 @@ public class BirdAddDataImpl implements BirdAddData {
 					}
 					break;
 				case "plate":
-					refS  = citationstr.substring(citationstr.lastIndexOf("图版"));
+					refS = citationstr.substring(citationstr.lastIndexOf("图版"));
 					refE = refS;
 					break;
 				default:
@@ -857,6 +867,7 @@ public class BirdAddDataImpl implements BirdAddData {
 			}
 		}
 		if (!rs) {
+//			logger.info("------原始："+origncitationstr);
 			logger.info("getPageFromCitationStr 正则表达式没有解析出页码citationstr=" + citationstr);
 		}
 		resultMap.put("refS", refS);
@@ -888,7 +899,7 @@ public class BirdAddDataImpl implements BirdAddData {
 		regExPagelist.put("page6", "(.*?)p.\\s{0,}[0-9]+(.*?)");
 		// pl.数字（包含在字符串中间）
 		regExPagelist.put("centerPL", "(.*?)pl\\.\\s{0,}[0-9]+(.*?)");
-		//图版 数字
+		// 图版 数字
 		regExPagelist.put("plate", "(.*?)图版\\s{0,}[0-9]+(.*?)");
 	}
 
@@ -915,38 +926,54 @@ public class BirdAddDataImpl implements BirdAddData {
 			Taxon taxon = new Taxon();
 			taxon.setId(taxonid);
 			taxon.setScientificname(scientificname);
-			//查询某个taxon的接受名引证
+			// 查询某个taxon的接受名引证
 			List<String> acceptCitationlist = citationRepository.findIdByTaxonIdAndNametype(taxonid,
 					NametypeEnum.acceptedName.getIndex());
-			////查询某个taxon的异名引证
+			//// 查询某个taxon的异名引证
 			List<String> synonymCitationlist = citationRepository.findIdByTaxonIdAndNametype(taxonid,
 					NametypeEnum.synonym.getIndex());
+			//第1步：补充接受名引证
 			if (acceptCitationlist.size() == 0) {
 				i++;
 				List<Citation> findlist = citationRepository.findByScientificnameAndtsIdAndNameType(scientificname,
 						taxasetIdBirdZL, NametypeEnum.acceptedName.getIndex());
-				//补充引证
+				// 补充引证
 				if (findlist.size() > 0) {
-					System.out.println("需要补充异名引证：" + scientificname + "	" + objects[2].toString());
-					List<Citation> fromOldBioIDE = getFromOldBioIDE(taxon, NametypeEnum.acceptedName,taxasetIdBirdZL);
+					//1、数据来源于采集系统 数据集=鸟纲-郑-雷-sp2000
+					System.out.println("需要补充接受名引证：" + scientificname + "	" + objects[2].toString());
+					List<Citation> fromOldBioIDE = getFromOldBioIDE(taxon, NametypeEnum.acceptedName, taxasetIdBirdZL);
 					insertlist.addAll(fromOldBioIDE);
+				}else if(findlist.size() == 0) {
+					//2、旧系统数据库 鸟纲-郑-雷-sp2000
+					List<Citation> acceptCitationlistFromOldDB = forcesDBService.getAcceptCitationByParams(taxon,DataConsts.forcesDB_Tree_Id_Bird,DataConsts.Datasource_Id_Old_bird,userId_wangtianshan);
+					if(acceptCitationlistFromOldDB!=null && acceptCitationlistFromOldDB.size()>0) {
+						insertlist.addAll(acceptCitationlistFromOldDB);
+					}else {
+						//3、旧系统数据库 动物志
+						List<Citation> acceptlistFromOldDBDWZ = forcesDBService.getAcceptCitationByParams(taxon,DataConsts.forcesDB_Tree_Id_DWZ,DataConsts.Datasource_Id_Old_DWZ,userId_wangtianshan);
+						if(acceptlistFromOldDBDWZ != null && acceptlistFromOldDBDWZ.size()>0) {
+							insertlist.addAll(acceptlistFromOldDBDWZ);
+						}
+					}
 				}
+				
 			}
+			//第2步：补充异名引证
 			if (synonymCitationlist.size() == 0) {
 				i++;
 				// 是否能从旧采集系统查询到
 				List<Citation> findlist = citationRepository.findByScientificnameAndtsIdAndNameType(scientificname,
 						taxasetIdBirdZL, NametypeEnum.synonym.getIndex());
-				//补充引证
+				// 补充引证
 				if (findlist.size() > 0) {
-					System.out.println("需要补充异名引证：" + scientificname + "	" + objects[2].toString());
-					List<Citation> fromOldBioIDE = getFromOldBioIDE(taxon, NametypeEnum.synonym,taxasetIdBirdZL);
+//					System.out.println("需要补充异名引证：" + scientificname + "	" + objects[2].toString());
+					List<Citation> fromOldBioIDE = getFromOldBioIDE(taxon, NametypeEnum.synonym, taxasetIdBirdZL);
 					insertlist.addAll(fromOldBioIDE);
 				}
 			}
 		}
-		
-		if(insertOrUpdateDB) {
+
+		if (insertOrUpdateDB) {
 			batchSubmitService.saveAll(insertlist);
 		}
 		logger.info("缺失引证个数：" + i);
@@ -954,9 +981,9 @@ public class BirdAddDataImpl implements BirdAddData {
 
 	@Override
 	public List<ExcelUntilF> exportCitationExcelOfDataSet(NametypeEnum nametype, String datasetId) {
-		List<Object[]> objlist = citationRepository.findByDsAndNameType(datasetId,nametype.getIndex());
+		List<Object[]> objlist = citationRepository.findByDsAndNameType(datasetId, nametype.getIndex());
 //		List<Object[]> objlist = citationRepository.findByDsAndCitationIsNull(datasetId);
-		List<ExcelUntilF>  excellist = turnToExcelUntilF(objlist);
+		List<ExcelUntilF> excellist = turnToExcelUntilF(objlist);
 		return excellist;
 	}
 
@@ -964,15 +991,15 @@ public class BirdAddDataImpl implements BirdAddData {
 		List<ExcelUntilF> list = new LinkedList<>();
 		for (Object[] objs : objlist) {
 			ExcelUntilF row = new ExcelUntilF();
-			String tsname = objs[0].toString();//分类单元集名称
-			String scientificname = objs[1].toString();//taxon学名
-			String chname = objs[7] == null?null:objs[7].toString();//taxon中文名
-			String id = objs[2].toString();//引证主键
-			String sciname = objs[3].toString();//引证名称
-			String authorship = objs[4] == null?null:objs[4].toString();//作者
-			int nametype = Integer.parseInt(objs[5].toString());//作者
-			String citationstr = objs[6] == null?null:objs[6].toString();//完整引证
-			
+			String tsname = objs[0].toString();// 分类单元集名称
+			String scientificname = objs[1].toString();// taxon学名
+			String chname = objs[7] == null ? null : objs[7].toString();// taxon中文名
+			String id = objs[2].toString();// 引证主键
+			String sciname = objs[3].toString();// 引证名称
+			String authorship = objs[4] == null ? null : objs[4].toString();// 作者
+			int nametype = Integer.parseInt(objs[5].toString());// 作者
+			String citationstr = objs[6] == null ? null : objs[6].toString();// 完整引证
+
 			row.setColA(tsname);
 			row.setColB(scientificname);
 			row.setColC(chname);
@@ -987,7 +1014,7 @@ public class BirdAddDataImpl implements BirdAddData {
 	@Override
 	public void deleteCitationOfSameSciname(String datasetId) {
 		List<String> deleteCitationIdlist = new LinkedList<>();
-		//查询数据集下的所有种阶元taxon
+		// 查询数据集下的所有种阶元taxon
 		List<Object[]> list = taxonRepository.findTaxonBydsAndRank(datasetId_2019bird,
 				String.valueOf(RankEnum.species.getIndex()));
 		for (Object[] objects : list) {
@@ -996,75 +1023,82 @@ public class BirdAddDataImpl implements BirdAddData {
 			Taxon taxon = new Taxon();
 			taxon.setId(taxonid);
 			taxon.setScientificname(scientificname);
-			//查询某个taxon的接受名引证
+			// 查询某个taxon的接受名引证
 			List<Object[]> acceptCitationlist = citationRepository.findByTaxonIdAndNametype(taxonid,
 					NametypeEnum.acceptedName.getIndex());
-			//查询某个taxon的异名引证
+			// 查询某个taxon的异名引证
 			List<Object[]> synonymCitationlist = citationRepository.findByTaxonIdAndNametype(taxonid,
 					NametypeEnum.synonym.getIndex());
-			//判断异名引证中是否有和接受名引证 名称和命名人一致的record
-			//id,sciname,authorship,nametype,citationstr,refjson
+			// 判断异名引证中是否有和接受名引证 名称和命名人一致的record
+			// id,sciname,authorship,nametype,citationstr,refjson
 			for (Object[] acceptCitation : acceptCitationlist) {
 				String acceptSciname = acceptCitation[1].toString();
-				String acceptAuthorship = acceptCitation[2] == null?null:acceptCitation[2].toString();
+				String acceptAuthorship = acceptCitation[2] == null ? null : acceptCitation[2].toString();
 				for (Object[] synonymCitation : synonymCitationlist) {
 					String synonymSciname = synonymCitation[1].toString();
-					if(!acceptSciname.trim().equals(synonymSciname.trim())) {
+					if (!acceptSciname.trim().equals(synonymSciname.trim())) {
 						continue;
 					}
-					String synonymAuthorship = synonymCitation[2] == null?null:acceptCitation[2].toString();
-					if(StringUtils.isNotEmpty(acceptAuthorship) && StringUtils.isNotEmpty(synonymAuthorship)) {
-						if(!acceptAuthorship.contains(synonymAuthorship)) {
+					String synonymAuthorship = synonymCitation[2] == null ? null : acceptCitation[2].toString();
+					if (StringUtils.isNotEmpty(acceptAuthorship) && StringUtils.isNotEmpty(synonymAuthorship)) {
+						if (!acceptAuthorship.contains(synonymAuthorship)) {
 							continue;
 						}
 					}
-					//需要删除的异名引证
-					String synonymId = acceptCitation[0].toString();
+					// 需要删除的异名引证
+//					System.out.println("---需要删除的异名引证");
+//					System.out.println("acceptSciname="+acceptSciname);
+//					System.out.println("synonymSciname="+synonymSciname);
+//					System.out.println("acceptAuthorship="+acceptAuthorship);
+//					System.out.println("synonymAuthorship="+synonymAuthorship);
+					String synonymId = synonymCitation[0].toString();
 					deleteCitationIdlist.add(synonymId);
-					logger.info("打印："+acceptSciname);
+//					logger.info("需要删除的异名引证 打印：" + acceptSciname);
 				}
 			}
-			
+
 		}
-		
-		logger.info("需要删除的异名引证个数："+deleteCitationIdlist.size());
-		if(insertOrUpdateDB && deleteCitationIdlist.size()>0) {
+
+		logger.info("需要删除的异名引证个数：" + deleteCitationIdlist.size());
+		if (insertOrUpdateDB && deleteCitationIdlist.size() > 0) {
 			int deleteByIdsResult = citationRepository.deleteByIds(deleteCitationIdlist);
-			logger.info("删除异名引证个数为："+deleteByIdsResult);
+			logger.info("删除异名引证个数为：" + deleteByIdsResult);
 		}
-		
+
 	}
 
 	@Override
 	public void perfectCitationStr(String datasetId) throws Exception {
 		List<Citation> updateCitationlist = new LinkedList<>();
-		//查询异名引证 的 完整引证字段 为空的数据
-		List<Object[]> list = citationRepository.findByDsAndNameTypeAndCitationstrNull(datasetId,NametypeEnum.synonym.getIndex());
-		logger.info("查询异名引证 的 完整引证字段 为空的数据 条数："+list.size());
+		// 查询异名引证 的 完整引证字段 为空的数据
+		List<Object[]> list = citationRepository.findByDsAndNameTypeAndCitationstrNull(datasetId,
+				NametypeEnum.synonym.getIndex());
+		logger.info("查询异名引证 的 完整引证字段 为空的数据 条数：" + list.size());
 		int i = 0;
 		int size = list.size();
 		for (Object[] objs : list) {
 			i++;
-			if(i%100==0) {
-				logger.info("进度报告："+i*100/size+"%（i="+i+",size="+size+"）");
+			if (i % 100 == 0) {
+				logger.info("进度报告：" + i * 100 / size + "%（i=" + i + ",size=" + size + "）");
 			}
-			String sciname = objs[3].toString();//引证名称
-			String scientificname = objs[1].toString();//taxon学名
+			String sciname = objs[3].toString();// 引证名称
+			String scientificname = objs[1].toString();// taxon学名
 			Citation citation = new Citation();
-			String id = objs[2].toString();//引证主键
-			String refjson = objs[8] == null?null:objs[8].toString();//citation参考文献
+			String id = objs[2].toString();// 引证主键
+			String refjson = objs[8] == null ? null : objs[8].toString();// citation参考文献
 			citation.setId(id);
 			citation.setRefjson(refjson);
 			citation.setRemark("信息来源于旧采集系统 动物志");
 			citation.setSciname(sciname);
 			Taxon taxon = new Taxon();
 			taxon.setScientificname(scientificname);
-			citation.setTaxon(taxon );
-			//从旧采集系统（动物志获取）
+			citation.setTaxon(taxon);
+			// 从旧采集系统（动物志获取）
 //			boolean update = getCitationFromDataSet(scientificname,sciname,DataConsts.Dataset_Id_DWZ,citation);
 //			logger.info("__"+scientificname+"__"+sciname);
-			boolean update = forcesDBService.getCitationFromForcesDB(scientificname, sciname, DataConsts.forcesDB_Tree_Id_DWZ,citation);
-			if(!update) {
+			boolean update = forcesDBService.getCitationFromForcesDB(scientificname, sciname,
+					DataConsts.forcesDB_Tree_Id_DWZ, citation,"BEDBB69A-139D-45A3-8CD9-CC7D55BF6E7E");
+			if (!update) {
 				continue;
 			}
 			resetCitationFromCitationstr(citation);
@@ -1074,30 +1108,183 @@ public class BirdAddDataImpl implements BirdAddData {
 //			String authorship = objs[4] == null?null:objs[4].toString();//作者
 //			int nametype = Integer.parseInt(objs[5].toString());//名称类型
 //			String citationstr = objs[6] == null?null:objs[6].toString();//完整引证
-			
+
 		}
-		//更新数据库
-		logger.info("需要根据动物志更新的引证数量："+updateCitationlist.size());
-		if(insertOrUpdateDB) {
-			//更新引证：authorship，citationstr，refjson,remark
+		// 更新数据库
+		logger.info("需要根据动物志更新的引证数量：" + updateCitationlist.size());
+		if (insertOrUpdateDB) {
+			// 更新引证：authorship，citationstr，refjson,remark
 			batchInsertService.batchUpdateCitationFourById(updateCitationlist);
 		}
 	}
 
 	private boolean getCitationFromDataSet(String scientificname, String sciname, String datasetId, Citation citation) {
-		Citation findcitation = citationRepository.findByTaxonAndScinameAndNameType(scientificname,NametypeEnum.synonym.getIndex(),sciname,datasetId);
-		if(findcitation!=null) {
+		Citation findcitation = citationRepository.findByTaxonAndScinameAndNameType(scientificname,
+				NametypeEnum.synonym.getIndex(), sciname, datasetId);
+		if (findcitation != null) {
 			String citationstr = findcitation.getCitationstr();
 			String authorship = findcitation.getAuthorship();
 			String refjson = findcitation.getRefjson();
 			JSONArray array = refService.strToJsonArray(refjson);
 			citation.setAuthorship(authorship);
-			if(StringUtils.isNotEmpty(citationstr)) {
+			if (StringUtils.isNotEmpty(citationstr)) {
 				resetCitation(citationstr, citation, array, sciname, NametypeEnum.synonym.getIndex());
 				return true;
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void perfectAuthorFromExcel() {
+		String excelPath = "E:\\003采集系统\\0012鸟类名录\\2019Bird_synonymCitation20190415.xls";
+		List<ExcelUntilB> list = toolService.readExcel(excelPath, ExcelUntilB.class);
+		List<Citation> updatelist = new LinkedList<>();
+		int i = 0;
+		for (ExcelUntilB row : list) {
+			String sciname = row.getColA().trim();
+			String scinameAndAuthor = row.getColB();
+			String authorFromExcel = scinameAndAuthor.replace(sciname, "").trim();
+			// 从数据库查询引证
+			List<Object[]> citatoionlist = citationRepository.findByDatasetAndSciName(DataConsts.Dataset_Id_Bird2019,
+					sciname);
+			// 转换成实体类
+			List<Citation> clist = findByDatasetAndSciNameTurnToCitation(citatoionlist);
+			// 结果遍历
+			Iterator<Citation> iterator = clist.iterator();
+			if (iterator.hasNext()) {
+				Citation citation = iterator.next();
+				if (citation.getNametype() == NametypeEnum.acceptedName.getIndex()) {
+					iterator.remove();
+					continue;
+				}
+				citation.setAuthorship(authorFromExcel);
+				// 添加到更新数组中
+				updatelist.add(citation);
+
+			}
+
+		}
+		logger.info("根据 id 更新citation 的 authorship，个数：" + updatelist.size());
+		// 更新citation:根据主键更新命名信息
+		if (insertOrUpdateDB) {
+			batchInsertService.batchUpdateCitationAuthorship(updatelist);
+		}
+	}
+
+	private List<Citation> findByDatasetAndSciNameTurnToCitation(List<Object[]> citatoionlist) {
+		List<Citation> list = new LinkedList<>();
+		// c.id,c.sciname,c.authorship,c.nametype,c.taxon_id,c.citationstr
+		for (Object[] objs : citatoionlist) {
+			Citation e = new Citation();
+			e.setId(objs[0].toString());
+			e.setSciname(objs[1].toString());
+			e.setAuthorship(objs[2] == null ? null : objs[2].toString());
+			e.setNametype(Integer.parseInt(objs[3].toString()));
+			e.setTaxon(new Taxon(objs[4].toString()));
+			e.setCitationstr(objs[5] == null ? null : objs[5].toString());
+			list.add(e);
+		}
+		return list;
+	}
+
+	@Override
+	public void perfectAuthorByCitationStr() {
+		// 查询所有引证信息
+		List<Citation> list = citationRepository.findByDs(DataConsts.Dataset_Id_Bird2019);
+		for (Citation citation : list) {
+			String authorship = citation.getAuthorship();
+			String citationstr = citation.getCitationstr();
+			String sciname = citation.getSciname();
+			boolean parseFromCitaionStr = false;
+			if (StringUtils.isEmpty(authorship)) {// 判断命名信息是否为空
+				// 命名信息为空,从引证中解析命名信息
+				parseFromCitaionStr = true;
+			} else {
+				// 命名信息不为空,判断authorship中是否包含年份
+				if (!containsFourNum(authorship)) {
+					// 命名信息中不包含年份，从引证中解析命名信息
+					parseFromCitaionStr = true;
+				}
+			}
+			if (parseFromCitaionStr && StringUtils.isNotEmpty(citationstr)) {
+				Map<String, String> map = toolService.parseSciName(citationstr);
+				String newAuthorship = map.get(MapConsts.TAXON_AUTHOR);
+				String rankName = map.get(MapConsts.TAXON_RANK_NAME);
+				if (rankName.equals(RankEnum.unknown.getName())) {
+					int yearStart = toolService.getYearStart(citationstr);
+					String beforeYearInclude = citationstr.substring(0, yearStart+4);
+					newAuthorship = beforeYearInclude.replace(sciname, "");
+//					System.out.println("截取年份之前的内容："+beforeYearInclude);
+//					System.out.println("命名信息："+newAuthorship);
+				}
+				if (StringUtils.isNotEmpty(newAuthorship)) {
+					if(newAuthorship.startsWith(",")||newAuthorship.startsWith("，")||newAuthorship.startsWith(".")) {
+						newAuthorship = newAuthorship.substring(1);
+					}
+					newAuthorship = newAuthorship.replaceAll(sciname, "");
+					// 新命名信息包含旧命名信息，但是不以旧命名信息开头
+					if (StringUtils.isNotEmpty(authorship) && newAuthorship.contains(authorship)
+							&& !newAuthorship.startsWith(authorship)) {
+						newAuthorship = newAuthorship.substring(newAuthorship.indexOf(authorship));
+					}
+					citation.setAuthorship(newAuthorship);
+				}
+//				System.out.println("---原命名信息：" + authorship);
+//				System.out.println("sciname = " + sciname);
+//				System.out.println("引证原文：" + citationstr);
+//				System.out.println("从引证原文中解析出来的命名信息" + newAuthorship);
+			}
+
+		}
+		//
+		if(insertOrUpdateDB) {
+			//根据 id 更新citation 的 authorship
+			batchInsertService.batchUpdateCitationAuthorship(list);
+		}
+	}
+
+	private boolean containsFourNum(String line) {
+		Pattern pattern = Pattern.compile("(.*?)[0-9]{4}(.*?)");
+		// 忽略大小写的写法
+		// Pattern pat = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(line);
+		// 字符串是否与正则表达式相匹配
+		boolean rs = matcher.matches();
+		return rs;
+	}
+
+	@Override
+	public void printDontHasAcceptCitationTaxon() {
+		
+		List<Object[]> list = taxonRepository.findTaxonBydsAndRank(datasetId_2019bird,
+				String.valueOf(RankEnum.species.getIndex()));
+		for (Object[] objects : list) {
+			String taxonid = objects[0].toString();
+			String scientificname = objects[1].toString();
+			String tsname = objects[2].toString();
+			String chname = objects[3].toString();
+			Taxon taxon = new Taxon();
+			taxon.setId(taxonid);
+			taxon.setScientificname(scientificname);
+			// 查询某个taxon的接受名引证
+			List<String> acceptCitationlist = citationRepository.findIdByTaxonIdAndNametype(taxonid,
+					NametypeEnum.acceptedName.getIndex());
+			
+			//第1步：补充接受名引证
+			if (acceptCitationlist.size() == 0) {
+				logger.info(tsname+"	"+scientificname+"	"+chname);
+			}
+		}
+
+	}
+
+	@Override
+	public void countCitationByDs(String datasetId) {
+		int acceptcount = citationRepository.countCitationByDsAndNametype(datasetId,NametypeEnum.acceptedName.getIndex());
+		int syncount = citationRepository.countCitationByDsAndNametype(datasetId,NametypeEnum.synonym.getIndex());
+		logger.info("--@@统计结果：接受名引证数量："+acceptcount);
+		logger.info("--@@统计结果：异名引证数量："+syncount);
 	}
 
 }

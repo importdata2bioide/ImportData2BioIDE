@@ -414,4 +414,23 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 		
 	}
 
+	@Override
+	public void batchUpdateCitationAuthorship(List<Citation> records) {
+		String sql = "update citation set authorship=? where id=? ";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Citation record = records.get(i);
+            	String id = record.getId();
+            	if(StringUtils.isNotEmpty(id)) {
+            		ps.setString(1, record.getAuthorship());
+            		ps.setString(2, record.getId());
+            	}
+            }
+        });
+		
+	}
+
 }

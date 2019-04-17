@@ -98,8 +98,10 @@ import org.w3c.dom.Element;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
 /**
  * spring默认所有的bean都是singleton的
+ * 
  * @author BIGIOZ
  *
  */
@@ -107,11 +109,11 @@ import com.alibaba.fastjson.JSONObject;
 public class ForcesDBServiceImpl implements ForcesDBService {
 	private final static Logger logger = LoggerFactory.getLogger(ForcesDBServiceImpl.class);
 	Configuration configuration = null;
-	
+
 	// 项目启动后执行
 	@PostConstruct
 	public void initConfiguration() {
-		if(configuration==null) {
+		if (configuration == null) {
 			configuration = new Configuration();
 		}
 		logger.info("初始化旧采集系统连接参数");
@@ -122,7 +124,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	}
 
 	private String TreeID = "40F60C0F-C2E8-479B-84C8-1C4E59331D59";
-	private String loginUser = "";//3a29945023d04ef8a134f0f017d316f0
+	private String loginUser = "";// 3a29945023d04ef8a134f0f017d316f0
 	private String taxasetId = "00fe280f56b94beb9bea301bf52454a9";
 	private String sourcesid = "665a87846a4a4720b19f65f1d60c1812";
 	private String taxtreeId = "d7930c1de010482a964289b755061e59";
@@ -135,11 +137,10 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	private AQueryForcesDB aQueryForcesDB;
 	@Autowired
 	private BatchInsertService batchInsertService;
-	
+
 	@Autowired
 	private BatchSubmitService batchSubmitService;
-	
-	
+
 	@Autowired
 	private TaxonRepository taxonRepository;
 	@Autowired
@@ -206,7 +207,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		}
 		rs.close();
 //		prepareStatement.close();
-		logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"查询数据集完毕，数量：" + treelist.size());
+		logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "查询数据集完毕，数量：" + treelist.size());
 		int i = 0;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = factory.newDocumentBuilder();
@@ -221,10 +222,10 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			i++;
 			String name = f.getTreeName();
 			f.getId();
-			System.out.println("20190411打印="+name);
+			System.out.println("20190411打印=" + name);
 			Taxaset taxaset = taxasetRepository.findOneByTsname(name);// 分类单元集
 			Datasource datasource = datasourceRepository.findOneByTitle(name);
-			
+
 			Taxtree taxtree = taxtreeRepository.findOneByTreenameAndInfo(name, name);
 			logger.info(i + ".-------------------" + name);
 			logger.info("private String loginUser = \"3a29945023d04ef8a134f0f017d316f0\";");// 新采集系统的用户user.id
@@ -292,7 +293,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		if (CommUtils.isStrEmpty(id)) {
 			throw new ValidationException("Team 数据不规范，id值为空！无法继续...");
 		} else {
-			logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"所选团队是：" + team.getName());
+			logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "所选团队是：" + team.getName());
 		}
 		// 用户
 		User currentUser = userRepository.findOneById(currentUserId);
@@ -331,7 +332,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				ds.setCreatedDate(CommUtils.getTimestamp(inputtimeStr));
 				ds.setCreator(currentUser);
 				Dataset dsSave = datasetRepository.save(ds);
-				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"创建一个分类单元集");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "创建一个分类单元集");
 				// 创建一个分类单元集
 				Taxaset taxaset = new Taxaset();
 				taxaset.setId(UUIDUtils.getUUID32());
@@ -345,7 +346,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				taxaset.setDataset(dsSave);
 				taxasetRepository.save(taxaset);
 				// 分类树
-				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"创建一个分类树");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "创建一个分类树");
 				Taxtree taxtree = new Taxtree();
 				taxtree.setId(UUIDUtils.getUUID32());
 				taxtree.setTreename(treeName);
@@ -357,7 +358,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				taxtree.setInputtime(CommUtils.getTimestamp(inputtimeStr));
 				taxtreeRepository.save(taxtree);
 			} else {
-				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"数据集(" + treeName + ") 已存在,跳过");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "数据集(" + treeName + ") 已存在,跳过");
 			}
 			Datasource datasource = datasourceRepository.findOneByTitle(treeName);
 			if (datasource == null || CommUtils.isStrEmpty(datasource.getId())) {
@@ -373,7 +374,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				entity.setStatus(0);
 				datasourceRepository.save(entity);
 			} else {
-				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+" "+"数据源(" + treeName + ") 已存在,跳过");
+				logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + " " + "数据源(" + treeName + ") 已存在,跳过");
 			}
 		}
 
@@ -384,65 +385,66 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	@Override
 	public String insertDSAll(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		initData(request);
-		logger.info("1、基础信息"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+		logger.info("1、基础信息" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 		this.insertTaxon(request);// taxon
 		try {
-			logger.info("2、引证"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("2、引证" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertCitation(request);// 引证
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐导入引证出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("3、描述"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("3、描述" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertDesc(request);// 描述
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐⭐导入描述出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("4、分布"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("4、分布" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertDistribution(request);// 分布
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入分布出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("5、检索表"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("5、检索表" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertKeyitem(request);// 检索表
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入检索表出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("6、俗名"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("6、俗名" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertCommName(request);// 俗名
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入俗名出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("7、多媒体"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("7、多媒体" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertMultimedia(request, response);// 多媒体
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入多媒体出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("8、标本"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("8、标本" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertSpecimen(request);
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入标本出错，错误信息：" + e.getMessage());
 		}
 		try {
-			logger.info("9、分类树"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+			logger.info("9、分类树" + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 			this.insertTree(request);
 		} catch (Exception e) {
 //			logger.error(e.getMessage(), e);
 			logger.error("⭐error⭐⭐⭐⭐⭐⭐⭐⭐导入分类树出错，错误信息：" + e.getMessage());
 		}
-		logger.info("~~~~~~~~~~~~~~~~~~~~~FINISH（完成一个数据集）~~~~~~~~~~~~~~~~~"+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+		logger.info("~~~~~~~~~~~~~~~~~~~~~FINISH（完成一个数据集）~~~~~~~~~~~~~~~~~" + " "
+				+ CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 
 		return "finish";
 	}
@@ -451,12 +453,15 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	@Override
 	public String insertDSAllByXml(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		List<XmlParamsVO> list = ReadxmlByDom.Readxml("book1.xml");
-		logger.info("从xml中一共读取了: " + list.size()+" "+CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
+		logger.info("从xml中一共读取了: " + list.size() + " " + CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
 		for (XmlParamsVO paramsVO : list) {
 			// 54-60（包含）（完成）
 			// 62-65（包含）（61是动物志，以前导过了）（完成）
 			// 66-70（完成）
-			// 71-75（除75引证外都完成了）75引证错误信息：系统断定检查已失败。有关详细信息，请查看 SQL Server 错误日志。通常，断定失败是由软件错误或数据损坏导致的。若要检查数据库是否已损坏，请考虑运行 DBCC CHECKDB。如果您同意在安装过程中将转储发送到 Microsoft，则将向 Microsoft 发送微型转储。更新可能在 Microsoft 的最新 Service Pack 或技术支持部门的修补程序中提供。
+			// 71-75（除75引证外都完成了）75引证错误信息：系统断定检查已失败。有关详细信息，请查看 SQL Server
+			// 错误日志。通常，断定失败是由软件错误或数据损坏导致的。若要检查数据库是否已损坏，请考虑运行 DBCC CHECKDB。如果您同意在安装过程中将转储发送到
+			// Microsoft，则将向 Microsoft 发送微型转储。更新可能在 Microsoft 的最新 Service Pack
+			// 或技术支持部门的修补程序中提供。
 			// 76-80（完成）
 			// 81-85（完成）
 			// 86-90（完成）
@@ -465,7 +470,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				continue;
 			}
 			logger.info("录入一条数据：" + paramsVO.toString());
-			
+
 			logger.info("seq：" + paramsVO.getSeq());
 			this.TreeID = paramsVO.getTreeID();
 			this.loginUser = paramsVO.getLoginUser();
@@ -498,10 +503,10 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			prepareStatement.setString(1, TreeID);
 			rs = prepareStatement.executeQuery();
 			long startTime = System.currentTimeMillis(); // 获取开始时间
-			int i =0;
+			int i = 0;
 			while (rs.next()) {
 				i++;
-				logger.info("进度报告Begin："+i);
+				logger.info("进度报告Begin：" + i);
 				Citation c = new Citation();
 				// ID
 				c.setId(UUIDUtils.getUUID32());
@@ -563,12 +568,12 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				// Shortrefs 引证原文
 				c.setCitationstr(getCitationstr(rs.getString("sy_id"), taxon, nameType));
 				records.add(c);
-				//测试
+				// 测试
 //				batchSubmitService.saveAll(records);
-				
+
 				int size = records.size();
-				if(size%100==0) {
-					logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss")+"进度报告："+size);
+				if (size % 100 == 0) {
+					logger.info(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss") + "进度报告：" + size);
 				}
 				if (records.size() == 3000) {
 					logger.info("程序运行时间开始保存： " + (System.currentTimeMillis() - startTime) / 60000 + "min");
@@ -600,7 +605,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		return "引证信息录入完成";
 	}
 
-	@Cacheable(value= "getCitationstr")
+	@Cacheable(value = "getCitationstr")
 	private String getCitationstr(String taxaId, Taxon taxon, int nametype) throws Exception {
 		String sciName = taxon.getScientificname();
 		String citationstr = "";
@@ -675,8 +680,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		}
 		return citationstr;
 	}
-	
-	@Cacheable(value="getCitationRefjson")
+
+	@Cacheable(value = "getCitationRefjson")
 	private String getCitationRefjson(String taxonId, int nameType) throws Exception {
 		JSONArray jsonArray = new JSONArray();
 		Connection connDB = null;
@@ -816,7 +821,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	 * @return
 	 * @throws Exception
 	 */
-	
+
 	private String getAuthorship(String taxonId) throws Exception {
 		Connection connDB = null;
 		ResultSet rs = null;
@@ -1090,8 +1095,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				int i = 0;
 				while (rs.next()) {
 					i++;
-					if(i%1000==0) {
-						System.out.println("打印（无意义）：taxon 已经执行了："+i);
+					if (i % 1000 == 0) {
+						System.out.println("打印（无意义）：taxon 已经执行了：" + i);
 					}
 					Taxon t = new Taxon();
 					t.setId(rs.getString("id"));
@@ -1120,7 +1125,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					Rank rank = new Rank();
 					rank.setId(rankid);
 					t.setRank(rank);
-					
+
 					// epithet种加词/亚种加词
 					String[] array = { "subsp.", "species" };
 					boolean flag = Arrays.asList(array).contains(RankEN.toLowerCase());
@@ -1234,7 +1239,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				try {
 					taxon = taxonRepository.findByTaxonOldId(oldTaxaID, sourcesid);
 				} catch (Exception e1) {
-					logger.info("查询TAXON出错,在旧采集系统的ID是：" + oldTaxaID +"错误信息："+e1.getMessage());
+					logger.info("查询TAXON出错,在旧采集系统的ID是：" + oldTaxaID + "错误信息：" + e1.getMessage());
 				}
 				if (taxon == null || taxon.getId() == null) {
 					logger.info("找不到TAXON,在旧采集系统的ID是：" + oldTaxaID + "跳过此条数据继续执行");
@@ -1422,17 +1427,17 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	private void getXmlParams(HttpServletRequest request) {
 		String seq = request.getParameter("seqBegin");
 		int parseIntSeq = 0;
-		if(CommUtils.isStrEmpty(seq)) {
-			return ;
-		}else {
+		if (CommUtils.isStrEmpty(seq)) {
+			return;
+		} else {
 			try {
 				parseIntSeq = Integer.parseInt(seq);
 			} catch (NumberFormatException e) {
 				logger.error("warn 参数的参数seq应该是大于0的整数，默认使用全局变量参数...");
-				return ;
+				return;
 			}
 		}
-		//读取xml文件
+		// 读取xml文件
 		List<XmlParamsVO> list = ReadxmlByDom.Readxml("book1.xml");
 		boolean find = false;
 		for (XmlParamsVO paramsVO : list) {
@@ -1448,12 +1453,12 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				this.IMAGEPATH = paramsVO.getImagePath();
 				this.inputtimeStr = paramsVO.getInputtimeStr();
 				break;
-			}else {
+			} else {
 				continue;
 			}
 		}
-		if(!find) {
-			logger.error("warn 在xml文件中没有找到参数 == "+seq+"的信息，默认使用全局变量参数...");
+		if (!find) {
+			logger.error("warn 在xml文件中没有找到参数 == " + seq + "的信息，默认使用全局变量参数...");
 		}
 	}
 
@@ -1577,7 +1582,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				// and journal is not null
 				// select * from refs where remark = '旧采集系统' and refstr is null or refstr = ''
 				// order by refstr,author
-				//delete from refs where refstr is null  or refstr = ''
+				// delete from refs where refstr is null or refstr = ''
 				getRefstrByType(r, source);
 
 				entities.add(r);
@@ -1591,8 +1596,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 							try {
 								connectionHolder.set(copylist);// 实际上此处使用不到，目的在于解决多线程共享变量问题
 								System.out.println(Thread.currentThread().getName() + ":" + copylist.size());
-								System.out.println("begin 线程池中线程数目：" + CommUtils.executor.getPoolSize() + "，队列中等待执行的任务数目："
-										+ CommUtils.executor.getQueue().size() + "，已执行完的任务数目："
+								System.out.println("begin 线程池中线程数目：" + CommUtils.executor.getPoolSize()
+										+ "，队列中等待执行的任务数目：" + CommUtils.executor.getQueue().size() + "，已执行完的任务数目："
 										+ CommUtils.executor.getCompletedTaskCount());
 								for (Ref ref : copylist) {
 									refRepository.save(ref);
@@ -1700,20 +1705,20 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			} else {
 				refstr = source;
 			}
-		} else if (CommUtils.isStrNotEmpty(mayBeRefStr)) {//旧采集系统remark 字段非空
-			//作者
+		} else if (CommUtils.isStrNotEmpty(mayBeRefStr)) {// 旧采集系统remark 字段非空
+			// 作者
 			if (isStrNotEmpty(author) && !mayBeRefStr.contains(author)) {
 				refstr = refstr + "." + author;
 			}
-			//年代
+			// 年代
 			if (isStrNotEmpty(pyear) && !mayBeRefStr.contains(pyear)) {
 				refstr = refstr + "." + pyear;
 			}
-			//标题
+			// 标题
 			if (isStrNotEmpty(title) && !mayBeRefStr.contains(title)) {
 				refstr = refstr + "." + title;
 			}
-			refstr = refstr +"."+mayBeRefStr;
+			refstr = refstr + "." + mayBeRefStr;
 		} else if (String.valueOf(PtypeEnum.QK.getIndex()).equals(ptype)) {// 文献类型是期刊
 			// 【格式】作者.出版年份.篇名[J].刊名，卷号（期号）：起止页码.
 			// 【举例】王海粟.2004.浅议会计信息披露模式.财政研究,21(1)：56-58.
@@ -1870,20 +1875,19 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				refstr = refstr + "." + refe;
 			}
 		}
-		
-		
-		//最后所有的完整题录都判断一下是否包含作者和年代,
+
+		// 最后所有的完整题录都判断一下是否包含作者和年代,
 		String finalAuthor = r.getAuthor();
 		String finalPyear = r.getPyear();
-		//先年代
-		if(!refstr.contains(finalPyear) && !finalPyear.contains(";")) {
-			refstr = finalPyear+"."+refstr;
+		// 先年代
+		if (!refstr.contains(finalPyear) && !finalPyear.contains(";")) {
+			refstr = finalPyear + "." + refstr;
 		}
-		//后作者
-		if(!refstr.contains(finalAuthor) && !finalPyear.contains(";")) {
-			refstr = finalAuthor+"."+refstr;
+		// 后作者
+		if (!refstr.contains(finalAuthor) && !finalPyear.contains(";")) {
+			refstr = finalAuthor + "." + refstr;
 		}
-		
+
 		refstr = refstr.replace("..", ".");
 		refstr = refstr.replace("不详", "");
 		refstr = refstr.replace("unknown", "");
@@ -1894,7 +1898,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		refstr = refstr.replace("..", ".");
 
 		refstr = refstr.trim();
-		
+
 		if (refstr.trim().startsWith(".")) {
 			refstr = refstr.substring(1, refstr.length()).trim();
 		}
@@ -2056,7 +2060,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 
 	public void initData(HttpServletRequest request) {
 		getXmlParams(request);
-		if(CommUtils.isStrEmpty(loginUser)) {
+		if (CommUtils.isStrEmpty(loginUser)) {
 			throw new ValidationException("loginUser值为空！请初始化，无法继续...");
 		}
 		if (!isStrNotEmpty(taxasetId)) {
@@ -2480,17 +2484,18 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 		return rs;
 	}
 
-	
 	@Override
-	public boolean getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id,
-			Citation citation) throws Exception {
+	public boolean getCitationFromForcesDB(String scientificname, String sciname, String TreeId, Citation citation,
+			String nameTypeId) throws Exception {
 		boolean update = false;
-		//已知数据源、异名引证名称，查询引证命名信息和引证原文
-		String sql = "select s.* from Species s left join taxa t on t.id  = s.TaxaID where  t.treeId = '"+forcesDB_Tree_Id+"' and t.latin_name = '"+sciname+"' and t.StatusID = 'BEDBB69A-139D-45A3-8CD9-CC7D55BF6E7E'";
+		// 已知数据源、异名引证名称，查询引证命名信息和引证原文
+		String sql = "select s.* from Species s left join taxa t on t.id  = s.TaxaID where  t.treeId = '" + TreeId
+				+ "' and (t.fullname = '" + sciname + "' or t.latin_name = '" + sciname
+				+ "') and t.StatusID = 'BEDBB69A-139D-45A3-8CD9-CC7D55BF6E7E'";
 //		logger.info(sql);
 		ResultSet rs = this.query(sql);
 		while (rs.next()) {
-			String  authorstr = "";
+			String authorstr = "";
 			String Named_Person = rs.getString("Named_Person");
 			String Named_Date = rs.getString("Named_Date");
 			// 命名人和年代
@@ -2508,25 +2513,25 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 				authorstr = authorstr.replace("）", "");
 				authorstr = authorstr.trim();
 			}
-			if(StringUtils.isNotEmpty(authorstr)) {
+			if (StringUtils.isNotEmpty(authorstr)) {
 				citation.setAuthorship(authorstr);
 			}
-			//引证原文
+			// 引证原文
 			String citationstr = "";
 			String remark = rs.getString("Remark");
-			String description  = rs.getString("Description");
-			String  typeLocation = rs.getString("Type_Location");
-			if(StringUtils.isNotEmpty(remark)) {
-				citationstr =remark; 
-			}else if(StringUtils.isNotEmpty(description)) {
-				citationstr = description; 
+			String description = rs.getString("Description");
+			String typeLocation = rs.getString("Type_Location");
+			if (StringUtils.isNotEmpty(remark)) {
+				citationstr = remark;
+			} else if (StringUtils.isNotEmpty(description)) {
+				citationstr = description;
 			}
-			if(StringUtils.isNotEmpty(typeLocation)) {
-				citationstr = citationstr+" "+typeLocation;
+			if (StringUtils.isNotEmpty(typeLocation)) {
+				citationstr = citationstr + " " + typeLocation;
 			}
-			if(StringUtils.isNotEmpty(citationstr)) {
-				if(!citationstr.contains(sciname)) {
-					citationstr = sciname+" "+citationstr;
+			if (StringUtils.isNotEmpty(citationstr)) {
+				if (!citationstr.contains(sciname)) {
+					citationstr = sciname + " " + citationstr;
 				}
 				update = true;
 				citation.setCitationstr(citationstr);
@@ -2534,6 +2539,76 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			break;
 		}
 		return update;
+	}
+
+	@Override
+	public List<Citation> getAcceptCitationByParams(Taxon taxon, String forcesDB_Tree_Id,String sourcesid,String inputer) throws Exception {
+		ResultSet rs = null;
+		List<Citation> resultlist = new ArrayList<>();
+		try {
+			String scientificname = taxon.getScientificname();
+			String sql = "select * from Species where taxaid = (select id from Taxa where treeId = '" + forcesDB_Tree_Id
+					+ "' and (fullname = '" + scientificname + "' or latin_name = '" + scientificname
+					+ "') and StatusID = '67280F4A-D8D6-4CAD-BCDA-843866010852')";
+			rs = this.query(sql);
+			while (rs.next()) {
+				Citation record = new Citation();
+				record.setId(UUIDUtils.getUUID32());
+				record.setSciname(scientificname);
+				record.setNametype(NametypeEnum.acceptedName.getIndex());
+				record.setStatus(1);
+				record.setSourcesid(sourcesid);
+				record.setInputer(inputer);
+				record.setTaxon(taxon);
+				String authorstr = "";
+				String Named_Person = rs.getString("Named_Person");
+				String Named_Date = rs.getString("Named_Date");
+				// 命名人和年代
+				if (!isStrNotEmpty(Named_Date)) {// Named_Date为空
+					authorstr = Named_Person;
+				} else if (isStrNotEmpty(Named_Date) && Named_Person.contains(Named_Person)) {// Named_Date非空且Named_Person包含Named_Date
+					authorstr = Named_Person;
+				} else {
+					authorstr = Named_Person + "," + Named_Date;
+				}
+				if (isStrNotEmpty(authorstr)) {
+					authorstr = authorstr.replace("(", "");
+					authorstr = authorstr.replace(")", "");
+					authorstr = authorstr.replace("（", "");
+					authorstr = authorstr.replace("）", "");
+					authorstr = authorstr.trim();
+				}
+				if (StringUtils.isNotEmpty(authorstr)) {
+					record.setAuthorship(authorstr);
+				}
+				// 引证原文
+				String citationstr = "";
+				String remark = rs.getString("Remark");
+				String description = rs.getString("Description");
+				String typeLocation = rs.getString("Type_Location");
+				if (StringUtils.isNotEmpty(remark)) {
+					citationstr = remark;
+				} else if (StringUtils.isNotEmpty(description)) {
+					citationstr = description;
+				}
+				if (StringUtils.isNotEmpty(typeLocation)) {
+					citationstr = citationstr + " " + typeLocation;
+				}
+				if (StringUtils.isNotEmpty(citationstr)) {
+					if (!citationstr.contains(scientificname)) {
+						citationstr = scientificname + " " + citationstr;
+					}
+					record.setCitationstr(citationstr);
+				}
+				
+				resultlist.add(record);
+			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+		}
+		return resultlist;
 	}
 
 }

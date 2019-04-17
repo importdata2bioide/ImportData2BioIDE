@@ -26,47 +26,47 @@ public class C {
 
 	public static void main(String[] args) {
 		ToolService toolService = new ToolServiceImpl();
-		
-		initregExlist();
+	
 		// 要验证的字符串
 		List<String> list = new ArrayList<>();
-		list.add("Zacco Jordan et Evermann，1902，322.");
-		list.add("Bdellostoma burgeri Girard, 1855: 1.");
-		list.add("Triplophysa daqiaoensis Ding(丁瑞华)，1993，247；刘明玉等，2000，161；He et al.");
-		list.add("Heptatretus burgeri (Girard, 1855).");
-		list.add("Lampetra reissneri ：任慕莲，1981，3；朱元鼎和孟庆文等，2001，25.");
-		list.add("Triplophysa(Qinghaichthys)chondrostoma：成庆泰和郑葆珊，1987，193.");
-		list.add("Rasbora cephalotaenia steineri Nichols et Pope，1927，364；杨干荣和黄宏金(见伍献文等)，1964，36；朱松泉");
-		list.add("Rasbora lateristriata allos：林书颜，1931，67；杨干荣和黄宏金(见伍献文等)，1964，37.");
-		list.add("Cyprinus(Cyprinus)carpio carpio：陈湘粦和黄宏金(见伍献文等)，1982，411.");
-		list.add("Fugu vermiculare porphyreum (Temminck & schlegel, 1850).");
-		list.add("Xenodon(Balistes)niger Rüppell, 1836: 1-148.");
-		list.add("Etmopterus spinax（Linnaeus，1758）");
-		list.add("Chiloscyllium indicum var. plagiosum (Anonymous [Bennett], 1830): 686-694.");
-		list.add("Synaphobranchus pinnatus var. brevidorsalis Lloyd, 1909.");
-		list.add("Muraena isingleenoïdes Bleeker, 1852.");
-		list.add("Glyptosternon maculatum 张春霖等，1964，278；伍汉霖、邵广昭、赖春福、庄棣华、林沛立，2012，111.");
-		list.add("Anabarilius liui luquanensis 刘振华和何纪昌，1983，102.");
-		list.add("Gobiobotia(Gobiobotia)filifer(Garman，1912)");
-		list.add("Cyprinus(Cyprinus)pellegrini barbatus Chen et Huang(陈湘粦和黄宏金，见伍献文等)，1982，423.");
-		list.add("Cyprinus carpio var. hungaricus：Tchang，1930a，62.");
-		list.add(
-				"Tor(Foliter)brevifilis hainanensis伍献文等，1982，329；金鑫波(见中国水产科学院珠江水产研究所)，1986，126；陈湘粦等，1991，166；单乡红等(见乐佩琦等)，2000，158.");
-		list.add("Barbodes 伍献文等，1982，236.");
-		list.add("Tor(Tor)tor sinensis Wu(伍献文，见伍献文等)，1982，325；褚新洛和崔桂华(见褚新洛和陈银瑞)，1989，142.");
-		list.add("Garra imberba imberba (non Garman)：Chen，in Yang et al.，2010(部分，怒江).");
-		list.add("Schizothorax(Racoma)esocina 中国科学院动物研究所等，1979，34；武云飞和吴翠珍，1992，347；伍汉霖、邵广昭、赖春福、庄棣华、林沛立，2012，61.");
-		list.add("Schizothorax o'connori Lloyd，1908");
-		list.add("Glyptosternum 武云飞和吴翠珍，1992，539.");
-		list.add("Euchiloglanis feae feae(non Vinciguerra)：Chu，1979.");
-		list.add("Vanmanenia polylepis:Pan，Liu et Zheng(潘炯华、刘成汉和郑文彪)1983，107.");
-		list.add("Pseudogastromyzon(Pseudogastromyzon)lianjiangen-sis：Tang et Chen，2000，6；乐佩琦等，2000，486.");
+//		list.add("Zacco Jordan et Evermann，1902，322.");
+//		list.add("Bdellostoma burgeri Girard, 1855: 1.");
+//		list.add("Triplophysa daqiaoensis Ding(丁瑞华)，1993，247；刘明玉等，2000，161；He et al.");
+//		list.add("Heptatretus burgeri (Girard, 1855).");
+//		list.add("Lampetra reissneri ：任慕莲，1981，3；朱元鼎和孟庆文等，2001，25.");
+//		list.add("Triplophysa(Qinghaichthys)chondrostoma：成庆泰和郑葆珊，1987，193.");
+//		list.add("Rasbora cephalotaenia steineri Nichols et Pope，1927，364；杨干荣和黄宏金(见伍献文等)，1964，36；朱松泉");
+//		list.add("Rasbora lateristriata allos：林书颜，1931，67；杨干荣和黄宏金(见伍献文等)，1964，37.");
+//		list.add("Cyprinus(Cyprinus)carpio carpio：陈湘粦和黄宏金(见伍献文等)，1982，411.");
+//		list.add("Fugu vermiculare porphyreum (Temminck & schlegel, 1850).");
+//		list.add("Xenodon(Balistes)niger Rüppell, 1836: 1-148.");
+//		list.add("Etmopterus spinax（Linnaeus，1758）");
+//		list.add("Chiloscyllium indicum var. plagiosum (Anonymous [Bennett], 1830): 686-694.");
+//		list.add("Synaphobranchus pinnatus var. brevidorsalis Lloyd, 1909.");
+//		list.add("Muraena isingleenoïdes Bleeker, 1852.");
+//		list.add("Glyptosternon maculatum 张春霖等，1964，278；伍汉霖、邵广昭、赖春福、庄棣华、林沛立，2012，111.");
+//		list.add("Anabarilius liui luquanensis 刘振华和何纪昌，1983，102.");
+//		list.add("Gobiobotia(Gobiobotia)filifer(Garman，1912)");
+//		list.add("Cyprinus(Cyprinus)pellegrini barbatus Chen et Huang(陈湘粦和黄宏金，见伍献文等)，1982，423.");
+//		list.add("Cyprinus carpio var. hungaricus：Tchang，1930a，62.");
+//		list.add(
+//				"Tor(Foliter)brevifilis hainanensis伍献文等，1982，329；金鑫波(见中国水产科学院珠江水产研究所)，1986，126；陈湘粦等，1991，166；单乡红等(见乐佩琦等)，2000，158.");
+//		list.add("Barbodes 伍献文等，1982，236.");
+//		list.add("Tor(Tor)tor sinensis Wu(伍献文，见伍献文等)，1982，325；褚新洛和崔桂华(见褚新洛和陈银瑞)，1989，142.");
+//		list.add("Garra imberba imberba (non Garman)：Chen，in Yang et al.，2010(部分，怒江).");
+//		list.add("Schizothorax(Racoma)esocina 中国科学院动物研究所等，1979，34；武云飞和吴翠珍，1992，347；伍汉霖、邵广昭、赖春福、庄棣华、林沛立，2012，61.");
+//		list.add("Schizothorax o'connori Lloyd，1908");
+//		list.add("Glyptosternum 武云飞和吴翠珍，1992，539.");
+//		list.add("Euchiloglanis feae feae(non Vinciguerra)：Chu，1979.");
+//		list.add("Vanmanenia polylepis:Pan，Liu et Zheng(潘炯华、刘成汉和郑文彪)1983，107.");
+//		list.add("Pseudogastromyzon(Pseudogastromyzon)lianjiangen-sis：Tang et Chen，2000，6；乐佩琦等，2000，486.");
+		list.add("Ardea(Butorides)Virescens var．amurensis von Schrenck,1860, Reis. Forschung. Amur Lande 1 (2): 441");
+		list.add("Syrnium nivicolum \"H odgson\" Blyth, 1845, Journ. As. Soc. Bengal, 14. 185（模式产地：尼泊尔），");
 		
 		toolService.initregExlist();
 		for (String line : list) {
 			System.out.println("-----");
 			Map<String, String> map = toolService.parseSciName(line);
-			System.out.println(line);
 			System.out.println("阶元："+map.get(MapConsts.TAXON_RANK_NAME));
 			System.out.println("学名："+map.get(MapConsts.TAXON_SCI_NAME));
 			System.out.println("命名信息："+map.get(MapConsts.TAXON_AUTHOR));
@@ -196,7 +196,7 @@ public class C {
 			// 12 var 属 空格 种加词 空格可忽略 var. 空格 亚种加词 空格 命名信息首字母大写
 			regExlist.put("var-1", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}var.\\s{1,}"
 					+ EngMixLatin + "\\s{1,}[A-Z]{1,}(.*?)");
-
+		
 		}
 	}
 

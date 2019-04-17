@@ -1,5 +1,6 @@
 package org.big.service;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.config.HttpConfig;
 import org.big.constant.ConfigConsts;
@@ -36,6 +38,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 
 @Service
 public class ToolServiceImpl implements ToolService {
@@ -484,6 +489,8 @@ public class ToolServiceImpl implements ToolService {
 
 	@Override
 	public Map<String, String> parseSciName(String line) {
+		// 替换特殊字符
+		line = line.replaceAll("[．]", ".");
 		Map<String, String> map = new HashMap<>();
 		String sciname = "";
 		boolean match = false;
@@ -569,6 +576,24 @@ public class ToolServiceImpl implements ToolService {
 				} else if (key.equals("var-2")) {
 					rank = RankEnum.var;
 					sciname = line.substring(0, line.indexOf("："));
+				} else if (key.equals("var-special")) {
+					rank = RankEnum.var;
+					int indexOfVar = line.indexOf("var.") + "var.".length();
+					boolean endWithBlank = true;
+					int scinameEndIndex = line.length();
+					for (int i = indexOfVar; i < line.length(); i++) {
+						char charAt = line.charAt(i);
+						if (charAt == ' ' && endWithBlank) {
+
+						} else {
+							endWithBlank = false;
+						}
+						if(!endWithBlank && charAt == ' ') {
+							scinameEndIndex = i;
+							break;
+						}
+					}
+					sciname = line.substring(0,scinameEndIndex);
 				} else {
 					throw new ValidationException("未定义的key:" + key);
 				}
@@ -578,7 +603,7 @@ public class ToolServiceImpl implements ToolService {
 		}
 		if (!match) {
 			int indexOfPointUpperCaseWithoutBrackets = indexOfPointUpperCaseWithoutBrackets(line, 2);
-			
+
 			if (line.contains("：")) {
 				sciname = line.substring(0, line.indexOf("："));
 //				logger.info(indexOfPointUpperCaseWithoutBrackets+"__"+sciname+"_____使用：分隔_____" + line);
@@ -591,11 +616,11 @@ public class ToolServiceImpl implements ToolService {
 
 		}
 		String author = "";// 命名人和年代
-		if(StringUtils.isNotEmpty(sciname)) {
+		if (StringUtils.isNotEmpty(sciname)) {
 			String year = getYear(line);
-			if(StringUtils.isNotEmpty(year)) {
+			if (StringUtils.isNotEmpty(year)) {
 				String exceptSciname = line.substring(sciname.length());
-				author = exceptSciname.substring(0,exceptSciname.indexOf(year)+year.length());
+				author = exceptSciname.substring(0, exceptSciname.indexOf(year) + year.length());
 			}
 		}
 
@@ -679,6 +704,9 @@ public class ToolServiceImpl implements ToolService {
 			// var 属 空格 种加词 空格可忽略 var. 空格 亚种加词：
 			regExlist.put("var-2", "^[A-Z]{1}" + EngMixLatin + "\\s{1,}" + EngMixLatin + "\\s{0,}var.\\s{1,}"
 					+ EngMixLatin + "\\s{0,}：(.*?)");
+			// var 举例Ardea(Butorides)Virescens var．amurensis von Schrenck,1860
+			regExlist.put("var-special", "^[A-Z]{1}" + EngMixLatin + "\\s{0,}\\([A-Z]{1}" + EngMixLatin
+					+ "\\)\\s{0,}[A-Z]{1}" + EngMixLatin + "\\s{1,}var.\\s{0,}" + EngMixLatin + "(.*?)");
 
 		}
 	}
@@ -743,6 +771,21 @@ public class ToolServiceImpl implements ToolService {
 			}
 		}
 		return -1;
+	}
+
+	@Override
+	public <T> List<T> readExcel(String path, Class<T> t) {
+		ImportParams params = new ImportParams();
+		params.setTitleRows(0);
+		params.setHeadRows(1);
+		long start = new Date().getTime();
+		List<T> list = ExcelImportUtil.importExcel(new File(path), t, params);
+		logger.info("-excel文件路径：" + path);
+		logger.info("-读取excel所消耗时间：" + (new Date().getTime() - start));
+		logger.info("-读取行数：" + list.size());
+		logger.info("-打印第一行表格内容：" + ReflectionToStringBuilder.toString(list.get(0)));
+		logger.info("-读取excel完成");
+		return list;
 	}
 
 }

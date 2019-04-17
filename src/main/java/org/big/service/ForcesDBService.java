@@ -2,11 +2,13 @@ package org.big.service;
 
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.big.entity.Citation;
+import org.big.entity.Taxon;
 
 public interface ForcesDBService {
 	
@@ -110,12 +112,23 @@ public interface ForcesDBService {
 	 * @Description 获取指定的异名引证
 	 * @param scientificname 接受名
 	 * @param sciname 异名引证名称
-	 * @param forcesDB_Tree_Id_DWZ 数据源Id
-	 * @param citation 实体类，直接修改此实体类中的数据
+	 * @param forcesDB_Tree_Id 数据源Id
+	 * @param citation 实体类，直接修改此实体类中的数据：引证原文和命名信息
+	 * @param nameTypeId:taxa.StatusID  67280F4A-D8D6-4CAD-BCDA-843866010852	accepted name    |  BEDBB69A-139D-45A3-8CD9-CC7D55BF6E7E	synonym
 	 * @return 引证是否需要更新
 	 * @author ZXY
 	 * @throws Exception 
 	 */
-	public boolean getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id_DWZ, Citation citation) throws Exception;
+	public boolean getCitationFromForcesDB(String scientificname, String sciname, String forcesDB_Tree_Id, Citation citation,String nameTypeId) throws Exception;
+	/**
+	 * 
+	 * @Description 
+	 * @param taxon
+	 * @param forcesDB_Tree_Id_Bird
+	 * @return
+	 * @author ZXY
+	 * @throws Exception 
+	 */
+	public List<Citation> getAcceptCitationByParams(Taxon taxon, String forcesDB_Tree_Id,String sourcesid,String inputer) throws Exception;
 
 }

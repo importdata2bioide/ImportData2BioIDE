@@ -67,5 +67,25 @@ public interface BirdAddData {
 	 * @throws Exception 
 	 */
 	void perfectCitationStr(String datasetId) throws Exception;
+	/**
+	 * 
+	 * @Description 完善的命名信息（有命名人没有命名时间）
+	 * @author ZXY
+	 */
+	void perfectAuthorFromExcel();
+	/**
+	 * 
+	 * @Description 根据引证原文解析命名信息
+	 * @author ZXY
+	 */
+	void perfectAuthorByCitationStr();
+	/**
+	 * 
+	 * @Description 打印没有接受名引证的taxon
+	 * @author ZXY
+	 */
+	void printDontHasAcceptCitationTaxon();
+	
+	void countCitationByDs(String datasetId);
 
 }

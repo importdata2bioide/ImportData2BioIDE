@@ -55,23 +55,40 @@ public class BirdAddDataController {
 	 */
 	@RequestMapping(value = "/birdAddDataController_updateCitationStrBySciName", method = RequestMethod.GET)
 	public String updateCitationStrBySciName(HttpServletResponse response) throws Exception {
-//		System.out.println("第一步：根据旧采集系统（鸟纲 郑雷）补充引证，根据引证原文补充参考文献");
+//		System.out.println("第1步：根据旧采集系统（鸟纲 郑雷）补充引证，根据引证原文补充参考文献");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.updateCitationStrBySciName(response);
-//		System.out.println("验证并补充接受名引证或异名引证");
+//		System.out.println("第2步：验证并补充接受名引证或异名引证（数据来源于采集系统 数据集=鸟纲-郑-雷-sp2000  或  旧系统数据库鸟纲-郑-雷-sp2000 |  或  旧系统数据库动物志）");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.validateCitation();
-//		System.out.println("第三步：接受名和异名 名称相同，命名信息相同，删除异名");
+//		System.out.println("第3步：接受名和异名 名称相同，命名信息相同，删除异名");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.deleteCitationOfSameSciname(DataConsts.Dataset_Id_Bird2019);
-		System.out.println("第四步：根据旧采集系统（动物志）补充异名引证的完整引证字段");
-		birdAddData.perfectCitationStr(DataConsts.Dataset_Id_Bird2019);
+
+//		System.out.println("第4步：根据旧采集系统（动物志）补充异名引证的完整引证字段");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
+//		birdAddData.perfectCitationStr(DataConsts.Dataset_Id_Bird2019);
+//		System.out.println("第5步：完善的命名信息（有命名人没有命名时间），根据完整引证解析");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
+//		birdAddData.perfectAuthorByCitationStr();
+//		System.out.println("第6步：完善的命名信息（有命名人没有命名时间）,20190415林老师提供的excel");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
+//		birdAddData.perfectAuthorFromExcel();
+//		System.out.println("最后一步：打印没有接受名引证的taxon");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
+//		birdAddData.printDontHasAcceptCitationTaxon();
+		// 此taxon 查询不到接受名引证：数据集：tsname=雀形目 scientificname=Pericrocotus solaris
+
 		return "index";
 	}
 
 	// 导出数据集下所有的异名引证
 	@RequestMapping(value = "/birdAddDataController_exportCitationExcelOfDataSet", method = RequestMethod.GET)
 	public void exportCitationExcelOfDataSet(HttpServletResponse response) throws Exception {
-		List<ExcelUntilF> list = birdAddData.exportCitationExcelOfDataSet(NametypeEnum.synonym,DataConsts.Dataset_Id_Bird2019);
-		FilesUtils.exportExcel(list, "2019Bird_synonymCitation", "2019Bird_synonymCitation", ExcelUntilF.class, URLEncoder.encode("2019Bird_synonymCitation.xls", "UTF-8"),
-				response);
+		List<ExcelUntilF> list = birdAddData.exportCitationExcelOfDataSet(NametypeEnum.acceptedName,
+				DataConsts.Dataset_Id_Bird2019);
+		FilesUtils.exportExcel(list, "2019Bird_synonymCitation", "2019Bird_synonymCitation", ExcelUntilF.class,
+				URLEncoder.encode("2019Bird_synonymCitation.xls", "UTF-8"), response);
 	}
 
 }

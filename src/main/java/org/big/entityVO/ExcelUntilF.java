@@ -6,22 +6,22 @@ public class ExcelUntilF implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 	// fixedIndex int -1 对应excel的列,忽略名字
-	@Excel(fixedIndex = 0, width = 40.00, name = "A")
+	@Excel(fixedIndex = 0, width = 40.00, name = "目（中文）")
 	private String colA;
 
-	@Excel(fixedIndex = 1, width = 40.00, name = "B")
+	@Excel(fixedIndex = 1, width = 40.00, name = "接受名（拉丁）（引证名称的接受名）")
 	private String colB;
 
-	@Excel(fixedIndex = 2, width = 40.00, name = "C")
+	@Excel(fixedIndex = 2, width = 40.00, name = "接受名（中文）（引证名称的接受名）")
 	private String colC;
 
-	@Excel(fixedIndex = 3, width = 40.00, name = "D")
+	@Excel(fixedIndex = 3, width = 40.00, name = "引证名称")
 	private String colD;
 	
-	@Excel(fixedIndex = 4, width = 40.00, name = "E")
+	@Excel(fixedIndex = 4, width = 40.00, name = "命名信息")
 	private String colE;
 	
-	@Excel(fixedIndex = 5, width = 40.00, name = "F")
+	@Excel(fixedIndex = 5, width = 40.00, name = "完整引证")
 	private String colF;
 
 

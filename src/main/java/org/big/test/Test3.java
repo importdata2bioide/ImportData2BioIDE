@@ -20,8 +20,20 @@ public class Test3 {
 //		testLinklist();
 //		testclone();
 //		System.out.println(CommUtils.getCurrentDate("yyyy-MM-dd HH:mm:ss"));
-		replaceAllTest();
+//		replaceAllTest();
+//		containsTest();
+		test();
 
+	}
+	private static void test() {
+		System.out.println(".".equals("."));
+		
+	}
+	private static void containsTest() {
+		String s1 = "Mntris, 1832";
+		String s2 = "Mntris";
+		System.out.println(s1.contains(s2));
+		
 	}
 	private static void replaceAllTest() {
 		String s = "石家庄。bb<br>的伤口缝合；舒服的和，";

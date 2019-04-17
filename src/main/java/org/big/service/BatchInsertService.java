@@ -39,6 +39,13 @@ public interface BatchInsertService {
 	 * @author ZXY
 	 */
 	public void batchUpdateCitation(List<Citation> records);
+	/**
+	 * 
+	 * @Description  根据 id 更新citation 的 authorship
+	 * @param records
+	 * @author ZXY
+	 */
+	public void batchUpdateCitationAuthorship(List<Citation> records);
 	
 	/**
 	 * 
