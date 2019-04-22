@@ -1458,8 +1458,7 @@ public class BirdAddDataImpl implements BirdAddData {
 			}
 			if (line.length() > 0) {
 				String strline = line.toString();
-				strline = strline.substring(0, strline.length() - 1).toString();
-				// 写到word中
+				strline = strline.substring(0, strline.length() - 1).toString(); // 写到word中
 				writeWithStyle(paragraph, strline, false, false);
 			}
 		}
@@ -1634,10 +1633,13 @@ public class BirdAddDataImpl implements BirdAddData {
 		logger.info("定义参数");
 		String outputfolder = "E:\\003采集系统\\0012鸟类名录\\输出文件20190418\\";
 		String fileName = "2019鸟类名录.docx";
-		int citationStyle = 2;// 1|引证全文/2|引证只包含命名信息和页码
+		int citationStyle = 1;// 1|引证全文/2|引证只包含命名信息和页码
 		// logger.info("第0步：属补充中文名，从2018版名录鸟类部分补充+根据接受名引证命名信息更新taxon命名信息");
 		// perfactGenusCHname();
 		// updateTaxonAuthor();
+		if (citationStyle == 1) {
+			fileName = "2019鸟类名录(引证全文).docx";
+		}
 		logger.info("第1步：从forces查询分布地");
 		List<ProvinceVO> provincelist = forcesDBService.findProvince();
 		Map<String, Integer> provinceMap = turnToMap(provincelist);
@@ -1701,24 +1703,79 @@ public class BirdAddDataImpl implements BirdAddData {
 	 * @author ZXY
 	 */
 	private void writeWithStyle(XWPFParagraph paragraph, String line, boolean bold, boolean italic) {
-		for (int i = 0; i < line.length(); i++) {
-			String charAt = String.valueOf(line.charAt(i));
-			if (isChinese(charAt)) {// 中文：宋体
-				XWPFRun run = paragraph.createRun();
-				run.setFontFamily(fontFamilyChinese);// 字体
-				run.setBold(bold);// 加粗
-				run.setFontSize(fontSize);// 字号
-				run.setText(charAt);// 标题内容
-			} else {// 其他：Calibri
-				XWPFRun run = paragraph.createRun();
-				run.setFontFamily(fontFamily);// 字体
-				run.setBold(bold);// 加粗
-				run.setFontSize(fontSize);// 字号
-				run.setText(charAt);// 标题内容
-				run.setItalic(italic);// 斜体（字体倾斜）
-			}
-
+		// 起始字符的性质
+		if (StringUtils.isEmpty(line)) {
+			return;
 		}
+		// 第一个中文的位置
+		ToolService toolService = new ToolServiceImpl();
+		int indexOfFirstChinese = toolService.IndexOfFirstBelongToChinese(line);
+		// 第一个非中文的位置
+		int indexOfFirstNotChinese = toolService.IndexOfFirstNotBelongToChinese(line);
+		if (indexOfFirstChinese == -1 && indexOfFirstNotChinese == 0) {
+//			String notChinese = line;
+//			System.out.println("finally非中文:" + line);
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamily);// 字体
+			run.setBold(bold);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(line);// 标题内容
+			run.setItalic(italic);// 斜体（字体倾斜）
+		} else if (indexOfFirstChinese == 0 && indexOfFirstNotChinese == -1) {
+//			String chinese = line;
+//			System.out.println("finally中文:" + line);
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamilyChinese);// 字体
+			run.setBold(bold);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(line);// 标题内容
+		} else if (indexOfFirstChinese > indexOfFirstNotChinese) {// 非中文开头
+			String eng = StringUtils.substring(line, indexOfFirstNotChinese, indexOfFirstChinese);
+			if (StringUtils.isEmpty(eng)) {
+				return;
+			}
+//			System.out.println("非中文：" + eng);
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamily);// 字体
+			run.setBold(bold);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(eng);// 标题内容
+			run.setItalic(italic);// 斜体（字体倾斜）
+			line = StringUtils.substring(line, indexOfFirstChinese);
+			writeWithStyle(paragraph, line, bold, italic);
+		} else {
+			String chinese = StringUtils.substring(line, indexOfFirstChinese, indexOfFirstNotChinese);
+			if (StringUtils.isEmpty(chinese)) {
+				return;
+			}
+//			System.out.println("中文：" + chinese);
+			XWPFRun run = paragraph.createRun();
+			run.setFontFamily(fontFamilyChinese);// 字体
+			run.setBold(bold);// 加粗
+			run.setFontSize(fontSize);// 字号
+			run.setText(chinese);// 标题内容
+			line = StringUtils.substring(line, indexOfFirstNotChinese);
+			writeWithStyle(paragraph, line, bold, italic);
+		}
+
+//		for (int i = 0; i < line.length(); i++) {
+//			String charAt = String.valueOf(line.charAt(i));
+//			if (isChinese(charAt)) {// 中文：宋体
+//				XWPFRun run = paragraph.createRun();
+//				run.setFontFamily(fontFamilyChinese);// 字体
+//				run.setBold(bold);// 加粗
+//				run.setFontSize(fontSize);// 字号
+//				run.setText(charAt);// 标题内容
+//			} else {// 其他：Calibri
+//				XWPFRun run = paragraph.createRun();
+//				run.setFontFamily(fontFamily);// 字体
+//				run.setBold(bold);// 加粗
+//				run.setFontSize(fontSize);// 字号
+//				run.setText(charAt);// 标题内容
+//				run.setItalic(italic);// 斜体（字体倾斜）
+//			}
+//
+//		}
 
 	}
 
@@ -1864,12 +1921,12 @@ public class BirdAddDataImpl implements BirdAddData {
 						clone.setId(UUIDUtils.getUUID32());
 						clone.setTaxon(taxon);
 						insertCommname.add(clone);
-						
+
 					}
 				}
 			}
 		}
-		logger.info("需要补充的commname个数："+insertCommname.size());
+		logger.info("需要补充的commname个数：" + insertCommname.size());
 
 		// 保存数据库
 		try {

@@ -1,6 +1,5 @@
 package org.big.test;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,9 +8,12 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.big.entity.Citation;
 import org.big.entity.User;
 import org.big.service.BirdAddDataImpl;
+import org.big.service.ToolService;
+import org.big.service.ToolServiceImpl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -19,19 +21,58 @@ import com.alibaba.fastjson.JSONObject;
 public class Test3 {
 
 	public static void main(String[] args) {
-		List<String> list = new ArrayList();
-		list.add("1");
-		list.add("3");
-		list.add("4");
-		list.add(3, "5");
-		for (String string : list) {
-			System.out.println(string);
-		}
+		String line = "admin.org";
+		writeWithStyle(line);
 
 	}
 
+	private static void writeWithStyle(String line) {
+		// 起始字符的性质
+		if (StringUtils.isEmpty(line)) {
+			return;
+		}
+		// 第一个中文的位置
+		ToolService toolService = new ToolServiceImpl();
+		int indexOfFirstChinese = toolService.IndexOfFirstBelongToChinese(line);
+		// 第一个非中文的位置
+		int indexOfFirstNotChinese = toolService.IndexOfFirstNotBelongToChinese(line);
+		if(indexOfFirstChinese == -1 && indexOfFirstNotChinese == 0) {
+			String notChinese = line;
+			System.out.println("finally非中文:"+line);
+		}else if(indexOfFirstChinese == 0 && indexOfFirstNotChinese == -1) {
+			String chinese = line;
+			System.out.println("finally中文:"+line);
+		}else if (indexOfFirstChinese > indexOfFirstNotChinese) {// 非中文开头
+			String eng = StringUtils.substring(line, indexOfFirstNotChinese, indexOfFirstChinese);
+			if(StringUtils.isEmpty(eng)) {
+				return;
+			}
+			System.out.println("非中文：" + eng);
+			line = StringUtils.substring(line, indexOfFirstChinese);
+			writeWithStyle(line);
+		} else {
+			String chinese = StringUtils.substring(line, indexOfFirstChinese, indexOfFirstNotChinese);
+			if(StringUtils.isEmpty(chinese)) {
+				return;
+			}
+			System.out.println("中文：" + chinese);
+			line = StringUtils.substring(line, indexOfFirstNotChinese);
+			writeWithStyle(line);
+		}
+	}
+
+	public static boolean isChinese(String text) {
+		String regEx = "[\\u4e00-\\u9fa5]+";
+		Pattern p = Pattern.compile(regEx);
+		Matcher m = p.matcher(text);
+		if (m.find())
+			return true;
+		else
+			return false;
+	}
+
 	private static void sortByEntityOrder() {
-		Map<String,String> map  = new TreeMap<>();
+		Map<String, String> map = new TreeMap<>();
 		map.put("ab", "石家庄");
 		map.put("cb", "ts");
 		map.put("kb", "he");
@@ -39,13 +80,12 @@ public class Test3 {
 		map.put("bb", "kjdsfk");
 		map.put("ac", "石家庄");
 		map.put("kc", "he");
-		Iterator<Map.Entry<String, String>> entries = map.entrySet().iterator(); 
-		while (entries.hasNext()) { 
-		  Map.Entry<String, String> entry = entries.next(); 
-		  System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue()); 
+		Iterator<Map.Entry<String, String>> entries = map.entrySet().iterator();
+		while (entries.hasNext()) {
+			Map.Entry<String, String> entry = entries.next();
+			System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
 		}
-		
-		
+
 	}
 
 	private static void test2() {
@@ -59,15 +99,15 @@ public class Test3 {
 		String pattern = "[0-9]{4}";
 		Pattern compile = Pattern.compile(pattern);
 		Matcher matcher = compile.matcher(content);
-		if(matcher.find()) {
+		if (matcher.find()) {
 			String matcherline = matcher.group();// 提取匹配到的结果
 			String butyear = content.substring(0, content.indexOf(matcherline)).trim();
-			String lastChar = butyear.substring(butyear.length()-1);
+			String lastChar = butyear.substring(butyear.length() - 1);
 			System.out.println(lastChar);
-			Pattern punctuation = Pattern.compile("\\pP"); 
-			boolean find = punctuation.matcher(lastChar).find(); 
-			if(find) {
-				content = butyear.substring(0,butyear.length()-1)+","+matcherline;
+			Pattern punctuation = Pattern.compile("\\pP");
+			boolean find = punctuation.matcher(lastChar).find();
+			if (find) {
+				content = butyear.substring(0, butyear.length() - 1) + "," + matcherline;
 			}
 		}
 		return content;

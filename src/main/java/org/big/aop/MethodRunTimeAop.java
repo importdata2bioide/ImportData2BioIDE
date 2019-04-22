@@ -26,6 +26,8 @@ public class MethodRunTimeAop {
         long startTime = System.currentTimeMillis();
         Object result = null;
         try {
+        	long maxMemory = Runtime.getRuntime().maxMemory();
+        	logger.error("堆内存大小：" + maxMemory / 1024 / 1024 + "MB");
             // 通过代理类调用业务逻辑执行，调用proceed()方法，就会触发切入点方法执行
             result = pjp.proceed();
         } catch (Throwable e) {

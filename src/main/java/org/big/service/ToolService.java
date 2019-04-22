@@ -220,5 +220,17 @@ public interface ToolService {
 	 * @author ZXY
 	 */
 	<T> List<T> readExcel(String path, Class<T> t);
+	/**
+	 * 
+	 * @Description 第一个非中文的位置
+	 * @param line
+	 * @return
+	 * @author ZXY
+	 */
+	int IndexOfFirstNotChinese(String line);
+
+	int IndexOfFirstBelongToChinese(String line);
+
+	int IndexOfFirstNotBelongToChinese(String line);
 
 }

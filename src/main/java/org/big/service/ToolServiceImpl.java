@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +50,8 @@ public class ToolServiceImpl implements ToolService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	public String[] belongChinese = {"，","。","：","；","“","”"};
 
 	@SuppressWarnings("static-access")
 	@Async
@@ -589,12 +591,12 @@ public class ToolServiceImpl implements ToolService {
 						} else {
 							endWithBlank = false;
 						}
-						if(!endWithBlank && charAt == ' ') {
+						if (!endWithBlank && charAt == ' ') {
 							scinameEndIndex = i;
 							break;
 						}
 					}
-					sciname = line.substring(0,scinameEndIndex);
+					sciname = line.substring(0, scinameEndIndex);
 				} else {
 					throw new ValidationException("未定义的key:" + key);
 				}
@@ -713,19 +715,6 @@ public class ToolServiceImpl implements ToolService {
 	}
 
 	@Override
-	public int IndexOfFirstChinese(String line) {
-		// 找第一个汉字
-		for (int index = 0; index <= line.length() - 1; index++) {
-			// 将字符串拆开成单个的字符
-			String w = line.substring(index, index + 1);
-			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
-				return index;
-			}
-		}
-		return -1;
-	}
-
-	@Override
 	public int indexOfPointUpperCaseWithoutBrackets(String line, int point) {
 		int index = -1;
 		int count = 0;
@@ -787,6 +776,61 @@ public class ToolServiceImpl implements ToolService {
 		logger.info("-打印第一行表格内容：" + ReflectionToStringBuilder.toString(list.get(0)));
 		logger.info("-读取excel完成");
 		return list;
+	}
+
+	@Override
+	public int IndexOfFirstNotChinese(String line) {
+		// 找第一个汉字
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
+			} else {
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int IndexOfFirstChinese(String line) {
+		// 找第一个汉字
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0) {// \u4e00-\u9fa5 中文汉字的范围
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int IndexOfFirstBelongToChinese(String line) {
+		// 找第一个汉字或中文标点符号
+		
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if ((w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0)|| Arrays.asList(belongChinese).contains(w)) {// \u4e00-\u9fa5 中文汉字的范围
+				return index;
+			}
+		}
+		return -1;
+	}
+
+	@Override
+	public int IndexOfFirstNotBelongToChinese(String line) {
+		// 找第一个汉字或标点符号
+		for (int index = 0; index <= line.length() - 1; index++) {
+			// 将字符串拆开成单个的字符
+			String w = line.substring(index, index + 1);
+			if (w.compareTo("\u4e00") > 0 && w.compareTo("\u9fa5") < 0|| Arrays.asList(belongChinese).contains(w)) {// \u4e00-\u9fa5 中文汉字的范围
+			} else {
+				return index;
+			}
+		}
+		return -1;
 	}
 
 }
