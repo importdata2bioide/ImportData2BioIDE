@@ -175,9 +175,17 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	Citation findByTaxonAndScinameAndNameType(String scientificname, int nameType,String sciname,String datasetId);
 	
 	
+	
 	@Query(value = "select c.*  from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId ",nativeQuery = true)
 	List<Citation> findByDs(String datasetId);
 
 	@Query(value = "select count(*) from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and c.nametype = :nametype",nativeQuery = true)
 	int countCitationByDsAndNametype(String datasetId, int nametype);
+	
+	
+	@Query(value = "select c.* from citation c  left join taxon  t on t.id = c.taxon_id left join taxaset ts on t.taxaset_id = ts.id where ts.dataset_id =:datasetId and c.nametype = :nameType and c.sciname = :sciname",nativeQuery = true)
+	Citation findByDsAndNameTypeAndSciname(String datasetId, int nameType,String sciname);
+
+	
+	
 }

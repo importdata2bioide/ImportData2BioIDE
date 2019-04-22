@@ -1936,4 +1936,28 @@ public class BirdAddDataImpl implements BirdAddData {
 		}
 
 	}
+
+	@Override
+	public void perfectAcceptCitationStr() {
+		String path = "E:\\003采集系统\\0012鸟类名录\\补充接受名引证20190422.xlsx";
+		List<ExcelUntilF> list = toolService.readExcel(path, ExcelUntilF.class);
+		for (ExcelUntilF row : list) {
+			String sciname = row.getColD();//接受名
+			String author = row.getColE();//命名信息
+			String citationstr = row.getColF();//完整引证
+			Citation citation = citationRepository.findByDsAndNameTypeAndSciname(DataConsts.Dataset_Id_Bird2019,NametypeEnum.acceptedName.getIndex(),sciname);
+			citation.setAuthorship(author);
+			citation.setCitationstr(citationstr);
+			resetCitationFromCitationstr(citation);
+			String id = citation.getTaxon().getId();
+			Taxon taxon = taxonRepository.findOneById(id);
+			taxon.setAuthorstr(author);//更新taxon的命名信息
+			if (insertOrUpdateDB) {
+				citationRepository.save(citation);
+				taxonRepository.save(taxon);
+			}
+		}
+		//
+		
+	}
 }

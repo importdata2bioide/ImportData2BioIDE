@@ -100,5 +100,11 @@ public interface BirdAddData {
 	 * @author ZXY
 	 */
 	void addCommonName();
+	/**
+	 * 
+	 * @Description 根据《补充接受名引证20190422.xlsx》补充2019鸟类名录接受名引证
+	 * @author ZXY
+	 */
+	void perfectAcceptCitationStr();
 
 }
