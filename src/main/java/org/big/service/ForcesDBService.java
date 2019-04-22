@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.big.entity.Citation;
 import org.big.entity.Taxon;
+import org.big.entityVO.ProvinceVO;
 
 public interface ForcesDBService {
 	
@@ -130,5 +131,7 @@ public interface ForcesDBService {
 	 * @throws Exception 
 	 */
 	public List<Citation> getAcceptCitationByParams(Taxon taxon, String forcesDB_Tree_Id,String sourcesid,String inputer) throws Exception;
+
+	public List<ProvinceVO> findProvince() throws Exception;
 
 }

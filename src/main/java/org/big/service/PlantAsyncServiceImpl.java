@@ -316,7 +316,11 @@ public class PlantAsyncServiceImpl implements PlantAsyncService {
 			} catch (Exception e) {
 				logger.info("error 00001 ,错误信息如下" + e.getMessage() + "，路径：" + path);
 				for (PlantEncyclopediaExcelVO row : sheetValues) {
-					toolService.printEntity(row);
+					try {
+						toolService.printEntity(row);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
 				}
 				e.printStackTrace();
 			}

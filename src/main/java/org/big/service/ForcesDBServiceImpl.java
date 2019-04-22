@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.big.common.CommUtils;
 import org.big.common.Configuration;
-import org.big.common.ConnDB;
 import org.big.common.OtherConnDB;
 import org.big.common.ReadxmlByDom;
 import org.big.common.ReturnCode;
@@ -62,6 +60,7 @@ import org.big.entity.Team;
 import org.big.entity.User;
 import org.big.entityVO.KeytypeEnum;
 import org.big.entityVO.NametypeEnum;
+import org.big.entityVO.ProvinceVO;
 import org.big.entityVO.PtypeEnum;
 import org.big.entityVO.XmlParamsVO;
 import org.big.repository.CitationRepository;
@@ -2542,7 +2541,8 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 	}
 
 	@Override
-	public List<Citation> getAcceptCitationByParams(Taxon taxon, String forcesDB_Tree_Id,String sourcesid,String inputer) throws Exception {
+	public List<Citation> getAcceptCitationByParams(Taxon taxon, String forcesDB_Tree_Id, String sourcesid,
+			String inputer) throws Exception {
 		ResultSet rs = null;
 		List<Citation> resultlist = new ArrayList<>();
 		try {
@@ -2600,7 +2600,7 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 					}
 					record.setCitationstr(citationstr);
 				}
-				
+
 				resultlist.add(record);
 			}
 		} finally {
@@ -2609,6 +2609,31 @@ public class ForcesDBServiceImpl implements ForcesDBService {
 			}
 		}
 		return resultlist;
+	}
+
+	@Override
+	public List<ProvinceVO> findProvince() throws Exception {
+		ResultSet rs = null;
+		List<ProvinceVO> list = new ArrayList<>();
+		try {
+			// select CName,cn,CodeChar,newCodeChar,order_ from Location_province
+			String sql = "select * from Location_province where order_ is not null  order by order_ asc";
+			rs = this.query(sql);
+			while (rs.next()) {
+				ProvinceVO province = new ProvinceVO();
+				province.setCname(rs.getString("CName"));
+				province.setCn(rs.getString("cn"));
+				province.setCodeChar(rs.getString("CodeChar"));
+				province.setNewCodeChar(rs.getString("newCodeChar"));
+				province.setOrderr(Integer.parseInt(rs.getString("order_")));
+				list.add(province);
+			}
+		} finally {
+			if (rs != null) {
+				rs.close();
+			}
+		}
+		return list;
 	}
 
 }

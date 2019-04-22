@@ -218,6 +218,9 @@ public class Taxon implements Serializable{
 	}
 
 	public String getChname() {
+		if(StringUtils.isNotEmpty(chname)) {
+			chname = chname.trim();
+		}
 		return chname;
 	}
 
@@ -322,6 +325,9 @@ public class Taxon implements Serializable{
 	}
 
 	public String getScientificname() {
+		if(StringUtils.isNotEmpty(scientificname)) {
+			scientificname = scientificname.trim();
+		}
 		return this.scientificname;
 	}
 

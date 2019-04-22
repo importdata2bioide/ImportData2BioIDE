@@ -314,18 +314,19 @@ public class TaxonServiceImpl implements TaxonService {
 
 	private String getPointRankId(String id, Map<String, String> relationMap,
 			Map<String, PartTaxonVO> lowerThanfamilyMap, int rankId) {
+		String pointTaxonId = "";
 		String pid = "";
 		try {
 			pid = relationMap.get(id);
 			PartTaxonVO parentTaxon = lowerThanfamilyMap.get(pid);
 			if (parentTaxon.getRankId() == rankId) {
-				return parentTaxon.getId();
+				pointTaxonId = parentTaxon.getId();
+				return pointTaxonId;
 			} else {
-				getPointRankId(parentTaxon.getId(), relationMap, lowerThanfamilyMap, rankId);
+				pointTaxonId = getPointRankId(parentTaxon.getId(), relationMap, lowerThanfamilyMap, rankId);
+				return pointTaxonId;
 			}
-			return null;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new ValidationException("获取指定rank失败，id=" + id + ",pid=" + pid);
 		}
 	}

@@ -75,10 +75,10 @@ public class ParseWordServiceImpl implements ParseWordService {
 
 	@Override
 	public void readExcelAndOutputWord(BaseParamsForm baseParamsForm) throws Exception {
-		boolean writeExecute = true;// 重写到word
-		boolean insertExecute = false;// 转换成实体类
+		boolean writeExecute = false;// 重写到word
+		boolean insertExecute = true;// 转换成实体类
 		String outputfolder = "E:\\003采集系统\\0013鱼类\\20180408输出文件\\";
-		String inputfolder = "E:\\003采集系统\\0013鱼类\\20190402\\";
+		String inputfolder = "E:\\003采集系统\\0013鱼类\\20190403\\";
 		List<String> fileList = new ArrayList<>();
 		fileList.add("3-名录-1盲鳗至鼠喜(伍审阅)-Shao Lab.doc");
 		fileList.add("3-名录-2鲤形目-狗鱼目.doc");
@@ -339,16 +339,16 @@ public class ParseWordServiceImpl implements ParseWordService {
 					}
 					other.setDistribution(line);
 				}
-//				if (insertExecute) {
-//					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
-//							DescTypeConsts.DISTRIBUTION);
-//					desclist.add(desc);
-//					Distributiondata distributiondata = parseLineFishWord.parseDistribution(line, preTaxon,
-//							baseParamsForm, desc);
-//					if (distributiondata != null) {
-//						distributionlist.add(distributiondata);
-//					}
-//				}
+				if (insertExecute) {
+					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
+							DescTypeConsts.DISTRIBUTION);
+					desclist.add(desc);
+					Distributiondata distributiondata = parseLineFishWord.parseDistribution(line, preTaxon,
+							baseParamsForm, desc);
+					if (distributiondata != null) {
+						distributionlist.add(distributiondata);
+					}
+				}
 				break;
 			case protectLevel:// 保护等级
 				if (execute) {
@@ -357,11 +357,11 @@ public class ParseWordServiceImpl implements ParseWordService {
 					}
 					other.setProtectLevel(line);
 				}
-//				if (insertExecute) {
-//					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
-//							DescTypeConsts.PORTECT);
-//					desclist.add(desc);
-//				}
+				if (insertExecute) {
+					Description desc = parseLineFishWord.parseDesc(line, preTaxon, baseParamsForm,
+							DescTypeConsts.PORTECT);
+					desclist.add(desc);
+				}
 				break;
 			case commonName:// 俗名
 				if (execute) {
@@ -919,5 +919,6 @@ public class ParseWordServiceImpl implements ParseWordService {
 		}
 
 	}
+	
 
 }

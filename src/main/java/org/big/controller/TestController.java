@@ -112,17 +112,10 @@ public class TestController {
 	}
 	
 	private void updateBlank() {
-		List<Object[]> list = citationRepository.findAllIdAndSciname();
-		List<Object[]> updatelist = new ArrayList<>();
-		int i = 0;
-		for (Object[] objs : list) {
-			String id = objs[0].toString();
-			String sciname = objs[1].toString();
-			if(sciname.startsWith(" ")||sciname.endsWith(" ")) {
-				i++;
-				objs[1] = sciname.trim();
-				updatelist.add(objs);
-			}
+		List<Commonname> list = commonnameRepository.findByCommonnameContaining(":zh-CN");
+		for (Commonname commonname : list) {
+			commonname.setCommonname(commonname.getCommonname().replace(":zh-CN", ""));
+			commonnameRepository.save(commonname);
 		}
 	}
 
@@ -753,8 +746,7 @@ public class TestController {
 				exportlist.add(entity);
 				try {
 					toolService.printEntity(entity);
-				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}

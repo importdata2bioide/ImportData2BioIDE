@@ -25,7 +25,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class BirdAddDataController {
 	@Autowired
 	private BirdAddData birdAddData;
-
+	
+	/**
+	 * 
+	 * @Description 2019鸟类名录数据转换成word文档
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 * @author ZXY
+	 */
+	@RequestMapping(value = "/birdAddDataController_exportToWord", method = RequestMethod.GET)
+	public String exportToWord(HttpServletResponse response) throws Exception {
+		birdAddData.exportToWord();
+		return "index";
+	}
 	/**
 	 * 
 	 * @Description http://localhost/importByExcel
@@ -64,7 +77,7 @@ public class BirdAddDataController {
 //		System.out.println("第3步：接受名和异名 名称相同，命名信息相同，删除异名");
 //		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.deleteCitationOfSameSciname(DataConsts.Dataset_Id_Bird2019);
-
+//
 //		System.out.println("第4步：根据旧采集系统（动物志）补充异名引证的完整引证字段");
 //		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.perfectCitationStr(DataConsts.Dataset_Id_Bird2019);
@@ -74,6 +87,8 @@ public class BirdAddDataController {
 //		System.out.println("第6步：完善的命名信息（有命名人没有命名时间）,20190415林老师提供的excel");
 //		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.perfectAuthorFromExcel();
+//		System.out.println("第7步：从2018鸟类名录补充俗名到2019鸟类名录");
+//		birdAddData.addCommonName();
 //		System.out.println("最后一步：打印没有接受名引证的taxon");
 //		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
 //		birdAddData.printDontHasAcceptCitationTaxon();

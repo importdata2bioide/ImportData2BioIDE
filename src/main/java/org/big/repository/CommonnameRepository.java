@@ -71,7 +71,7 @@ public interface CommonnameRepository extends BaseRepository<Commonname, String>
 	 * @param taxonId
 	 * @return
 	 */
-	@Query(value = "Select c from Commonname c Where c.taxon.id = ?1 and c.status = 1")
+	@Query(value = "Select c from Commonname c Where c.taxon.id = ?1 and c.status = 1 order by commonname")
 	List<Commonname> findCommonnameListByTaxonId(String taxonId);
 	//zxy
 	
@@ -89,6 +89,8 @@ public interface CommonnameRepository extends BaseRepository<Commonname, String>
 	@Modifying
 	@Query(value = "delete from commonname where taxon_id  in (select id from taxon where taxaset_id = ?1)", nativeQuery = true)
 	void delCommonnameByTaxaSetId(String tsId);
+	
+	List<Commonname> findByCommonnameContaining(String contains);
 	
 
 }

@@ -119,5 +119,12 @@ public interface BatchInsertService {
 	 * @author ZXY
 	 */
 	public void updateTaxonHasTaxtree(List<TaxonHasTaxtree> list);
+	/**
+	 * 
+	 * @Description 更新taxon 的chname字段
+	 * @param updatechanmelist
+	 * @author ZXY
+	 */
+	public void updateTaxonChname(List<Taxon> updatechanmelist);
 
 }

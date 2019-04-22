@@ -300,5 +300,13 @@ public interface TaxtreeService {
      * @author ZXY
      */
     public void updatePreTaxonByOrderNum(String taxtreeId);
+    /**
+     * 
+     * @Description 查询一棵树的所有孩子节点，
+     * @param taxtreeId
+     * @return
+     * @author ZXY
+     */
+    public List<TaxonHasTaxtree> findAllChildrenByTxtree(String taxtreeId);
 
 }

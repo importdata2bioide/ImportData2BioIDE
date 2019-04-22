@@ -463,6 +463,7 @@ public class ToolServiceImpl implements ToolService {
 		ResponseEntity<String> results = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 		String jsonStr = results.getBody();
 		JSONObject obj = new JSONObject().parseObject(jsonStr);// 将json字符串转换为json对象
+		System.out.println(Integer.parseInt(obj.get("errcode").toString()));
 		if (Integer.parseInt(obj.get("errcode").toString()) != 200) {
 			throw new ValidationException(ConfigConsts.READ_FILE_ERROR + ",读取word文件出错：" + obj.get("errmsg").toString());
 		}

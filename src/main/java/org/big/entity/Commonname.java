@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -24,7 +26,7 @@ import java.sql.Timestamp;
  */
 @Entity
 @Table(name = "commonname")
-public class Commonname implements Serializable{
+public class Commonname implements Serializable, Cloneable {
    
 	/**
 	 * @Description 
@@ -109,10 +111,16 @@ public class Commonname implements Serializable{
     @Basic
     @Column(name = "commonname")
     public String getCommonname() {
+    	if(StringUtils.isNotEmpty(commonname)) {
+    		commonname = commonname.trim();
+    	}
         return commonname;
     }
 
     public void setCommonname(String commonname) {
+    	if(StringUtils.isNotEmpty(commonname)) {
+    		commonname = commonname.trim();
+    	}
         this.commonname = commonname;
     }
 
@@ -186,89 +194,16 @@ public class Commonname implements Serializable{
         this.synchdate = synchdate;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((commonname == null) ? 0 : commonname.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((inputer == null) ? 0 : inputer.hashCode());
-		result = prime * result + ((inputtime == null) ? 0 : inputtime.hashCode());
-		result = prime * result + ((language == null) ? 0 : language.hashCode());
-		result = prime * result + ((refjson == null) ? 0 : refjson.hashCode());
-		result = prime * result + ((sourcesid == null) ? 0 : sourcesid.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + ((synchdate == null) ? 0 : synchdate.hashCode());
-		result = prime * result + ((synchstatus == null) ? 0 : synchstatus.hashCode());
-		result = prime * result + ((taxon == null) ? 0 : taxon.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Commonname other = (Commonname) obj;
-		if (commonname == null) {
-			if (other.commonname != null)
-				return false;
-		} else if (!commonname.equals(other.commonname))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (inputer == null) {
-			if (other.inputer != null)
-				return false;
-		} else if (!inputer.equals(other.inputer))
-			return false;
-		if (inputtime == null) {
-			if (other.inputtime != null)
-				return false;
-		} else if (!inputtime.equals(other.inputtime))
-			return false;
-		if (language == null) {
-			if (other.language != null)
-				return false;
-		} else if (!language.equals(other.language))
-			return false;
-		if (refjson == null) {
-			if (other.refjson != null)
-				return false;
-		} else if (!refjson.equals(other.refjson))
-			return false;
-		if (sourcesid == null) {
-			if (other.sourcesid != null)
-				return false;
-		} else if (!sourcesid.equals(other.sourcesid))
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		if (synchdate == null) {
-			if (other.synchdate != null)
-				return false;
-		} else if (!synchdate.equals(other.synchdate))
-			return false;
-		if (synchstatus == null) {
-			if (other.synchstatus != null)
-				return false;
-		} else if (!synchstatus.equals(other.synchstatus))
-			return false;
-		if (taxon == null) {
-			if (other.taxon != null)
-				return false;
-		} else if (!taxon.equals(other.taxon))
-			return false;
-		return true;
-	}
-
+  //实现Cloneable接口，重写clone方法
+  	@Override 
+      public Object clone() { 
+  		Commonname copyRecord = null; 
+          try{ 
+          	copyRecord = (Commonname)super.clone(); 
+          }catch(CloneNotSupportedException e) { 
+              e.printStackTrace(); 
+          } 
+          return copyRecord; 
+      } 
+  	
 }

@@ -63,8 +63,7 @@ public interface ToolService {
 	 * @throws InvocationTargetException
 	 * @author ZXY
 	 */
-	void printEntity(Object model) throws NoSuchMethodException, SecurityException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException;
+	void printEntity(Object model) throws Exception;
 
 	/**
 	 * 

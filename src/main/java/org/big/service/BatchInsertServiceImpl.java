@@ -433,4 +433,21 @@ public class BatchInsertServiceImpl implements BatchInsertService {
 		
 	}
 
+	@Override
+	public void updateTaxonChname(List<Taxon> records) {
+		String sql = "update taxon set chname=? where id=? ";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public int getBatchSize() {
+                return records.size();
+            }
+            public void setValues(PreparedStatement ps, int i)throws SQLException {
+            	Taxon record = records.get(i);
+            	ps.setString(1, record.getChname());
+        		ps.setString(2, record.getId());
+            }
+        });
+		
+		
+	}
+
 }

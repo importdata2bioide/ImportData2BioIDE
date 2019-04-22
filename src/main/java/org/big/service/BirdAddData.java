@@ -87,5 +87,18 @@ public interface BirdAddData {
 	void printDontHasAcceptCitationTaxon();
 	
 	void countCitationByDs(String datasetId);
+	/**
+	 * 
+	 * @Description 2019鸟类名录数据转换成word文档
+	 * @author ZXY
+	 * @throws Exception 
+	 */
+	void exportToWord() throws Exception;
+	/**
+	 * 
+	 * @Description 从2018鸟类名录补充俗名
+	 * @author ZXY
+	 */
+	void addCommonName();
 
 }

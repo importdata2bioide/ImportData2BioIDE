@@ -77,7 +77,7 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	 * @param request
 	 * @return
 	 */
-	@Query(value = "Select c from Citation c Where c.taxon.id = ?1")
+	@Query(value = "Select c from Citation c Where c.taxon.id = ?1 order by nametype asc")
 	List<Citation> findCitationListByTaxonId(String taxonId);
 	
 	//zxy
@@ -134,6 +134,8 @@ public interface CitationRepository extends BaseRepository<Citation, String> {
 	@Query(value = "select id,sciname,authorship,nametype,citationstr,refjson from citation where taxon_id = :taxonId and nametype = :nametype",nativeQuery = true)
 	List<Object[]>  findByTaxonIdAndNametype(String taxonId,int nametype);
 	
+	@Query(value = "select * from citation where taxon_id = :taxonId and nametype = :nametype",nativeQuery = true)
+	List<Citation>  findAllByTaxonIdAndNametype(String taxonId,int nametype);
 	
 	
 	@Query(value = "select  c.*  from citation  c left join taxon t on t.id = c.taxon_id  where t.scientificname = :scientificname and t.taxaset_id = :tsId and c.nametype = :nametype ",nativeQuery = true)

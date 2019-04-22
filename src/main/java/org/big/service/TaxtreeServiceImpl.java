@@ -4,8 +4,12 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
@@ -44,6 +48,8 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 	private TaxonHasTaxtreeRepository taxonHasTaxtreeRepository;
 	@Autowired
 	private BatchInsertService batchInsertService;
+	@Autowired
+	private ToolService toolService;
 
 	@Override
 	public void saveOne(Taxtree thisTaxtree) {
@@ -381,23 +387,33 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 
 	@Override
 	public List<TaxonHasTaxtree> sortTaxonHasTaxtree(List<TaxonHasTaxtree> nodeList) {
-		List<TaxonHasTaxtree> sortList = new ArrayList<>();
-		if (nodeList.size() > 0) {
-			// 获取第一个节点
-			TaxonHasTaxtree headNode = this.findHeadNode(nodeList);
-			sortList.add(headNode);
-			String thisNodeId = headNode.getTaxonId();
-			for (int i = 0; i < nodeList.size() - 1; i++) {
-				TaxonHasTaxtree nextNode = this.findNextNode(nodeList, thisNodeId);
-				if (nextNode.getTaxonId() != null) {
-					thisNodeId = nextNode.getTaxonId();
-					sortList.add(nextNode);
+		int size = nodeList.size();
+		List<TaxonHasTaxtree> sortlist = new LinkedList<>();
+		Iterator<TaxonHasTaxtree> iterator = nodeList.iterator();
+		while (iterator.hasNext()) {
+			TaxonHasTaxtree taxonHasTaxtree = iterator.next();
+			String prevTaxon = taxonHasTaxtree.getPrevTaxon();
+			int index = sortlist.size();
+			for (int i = 0; i < sortlist.size(); i++) {
+				TaxonHasTaxtree sortNode = sortlist.get(i);
+				if (sortNode.getTaxonId().equals(prevTaxon)) {
+					index = i+1;
+					break;
 				}
 			}
-		} else
-			sortList = nodeList;
-		return sortList;
+			// 插入节点到sortlist
+			sortlist.add(index, taxonHasTaxtree);
+			// 从nodeList移除节点
+			iterator.remove();
+		}
+		sortlist.addAll(nodeList);
+		if(size != sortlist.size()) {
+			throw new ValidationException("排序后节点缺失");
+		}
+		return sortlist;
 	}
+
+	
 
 	@Override
 	public TaxonHasTaxtree findNextNode(List<TaxonHasTaxtree> nodeList, String thisNodeId) {
@@ -539,7 +555,7 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 	public void updatePreTaxonByOrderNum(String taxtreeId) {
 		// 查询所有根节点
 		List<TaxonHasTaxtree> list = taxonHasTaxtreeRepository.findRootNodeByTaxtreeId(taxtreeId, taxtreeId);
-		if(list == null||list.size() == 0) {
+		if (list == null || list.size() == 0) {
 			return;
 		}
 		// 更新根节点实体数据（根据taxon.OrderNum更新taxonHasTaxtree.PreTaxon）
@@ -547,27 +563,27 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 		// 保存数据库
 		batchInsertService.updateTaxonHasTaxtree(updateTaxonHasTaxtree);
 		for (TaxonHasTaxtree taxonHasTaxtree : list) {
-			//分层获取孩子节点并更新到数据库
-			getChildNodesAndUpdatePreTaxon(taxonHasTaxtree.getTaxonId(),taxtreeId);
+			// 分层获取孩子节点并更新到数据库
+			getChildNodesAndUpdatePreTaxon(taxonHasTaxtree.getTaxonId(), taxtreeId);
 		}
 	}
-	
+
 	public void getChildNodesAndUpdatePreTaxon(String taxonId, String taxtreeId) {
 		// 查询孩子节点
 		List<TaxonHasTaxtree> childrenNode = taxonHasTaxtreeRepository.findTaxonHasTaxtreesByPidAndAndTaxtreeId(taxonId,
 				taxtreeId);
-		//查询结果为空，返回
-		if(childrenNode == null||childrenNode.size() == 0) {
+		// 查询结果为空，返回
+		if (childrenNode == null || childrenNode.size() == 0) {
 			return;
 		}
 		List<TaxonHasTaxtree> updateTaxonHasTaxtree = updateTaxonHasTaxtree(childrenNode);
 		// 保存数据库
 		batchInsertService.updateTaxonHasTaxtree(updateTaxonHasTaxtree);
-		
+
 		for (TaxonHasTaxtree taxonHasTaxtree : childrenNode) {
 			getChildNodesAndUpdatePreTaxon(taxonHasTaxtree.getTaxonId(), taxtreeId);
 		}
-		
+
 		return;
 	}
 
@@ -579,23 +595,23 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 	 */
 	private List<TaxonHasTaxtree> updateTaxonHasTaxtree(List<TaxonHasTaxtree> list) {
 		List<String> taxonIdList = new ArrayList<>();
-		Map<String,TaxonHasTaxtree> map = new HashMap<>();
+		Map<String, TaxonHasTaxtree> map = new HashMap<>();
 		for (TaxonHasTaxtree taxonHasTaxtree : list) {
 			taxonIdList.add(taxonHasTaxtree.getTaxonId());
 			map.put(taxonHasTaxtree.getTaxonId(), taxonHasTaxtree);
 		}
-		//从小到大排序
+		// 从小到大排序
 		List<String> orderList = taxonRepository.findIdByOrderNum(taxonIdList);
 //		List<TaxonHasTaxtree> resultlist = new ArrayList<>();
 		for (int i = 0; i < orderList.size(); i++) {
 			String taxonId = orderList.get(i);
 			TaxonHasTaxtree taxonHasTaxtree = map.get(taxonId);
 			if (i == 0) {
-				//第一个,preTaxon设为null
+				// 第一个,preTaxon设为null
 				taxonHasTaxtree.setPrevTaxon(null);
 //				resultlist.add(taxonHasTaxtree);
-			}else {
-				String prevTaxonId = orderList.get(i-1);
+			} else {
+				String prevTaxonId = orderList.get(i - 1);
 				taxonHasTaxtree.setPrevTaxon(prevTaxonId);
 //				resultlist.add(taxonHasTaxtree);
 			}
@@ -646,6 +662,38 @@ public class TaxtreeServiceImpl implements TaxtreeService {
 	@Override
 	public List<TaxonHasTaxtree> findByTaxtreeId(String taxtreeId) {
 		return taxonHasTaxtreeRepository.findByTaxtreeId(taxtreeId);
+	}
 
+	public List<TaxonHasTaxtree> findAllChildrenByTxtree(String taxtreeId) {
+		List<TaxonHasTaxtree> treelist = new LinkedList<>();
+		// 查询所有的root节点
+		List<TaxonHasTaxtree> rootNode = taxonHasTaxtreeRepository.findTaxonHasTaxtreesByPidAndAndTaxtreeId(taxtreeId,
+				taxtreeId);
+		// 查询结果为空，返回
+		if (rootNode == null || rootNode.size() == 0) {
+			return treelist;
+		}
+		// 根据preTaxon排序
+		rootNode = sortTaxonHasTaxtree(rootNode);
+		for (TaxonHasTaxtree child : rootNode) {
+			treelist.add(child);
+			getAllChildNodes(taxtreeId, child.getTaxonId(), treelist);
+		}
+		return treelist;
+	}
+
+	private void getAllChildNodes(String taxtreeId, String pid, List<TaxonHasTaxtree> treelist) {
+		List<TaxonHasTaxtree> childrenNode = taxonHasTaxtreeRepository.findTaxonHasTaxtreesByPidAndAndTaxtreeId(pid,
+				taxtreeId);
+		// 查询结果为空，返回
+		if (childrenNode == null || childrenNode.size() == 0) {
+			return;
+		}
+		// 根据preTaxon排序
+		childrenNode = sortTaxonHasTaxtree(childrenNode);
+		for (TaxonHasTaxtree child : childrenNode) {
+			treelist.add(child);
+			getAllChildNodes(taxtreeId, child.getTaxonId(), treelist);
+		}
 	}
 }

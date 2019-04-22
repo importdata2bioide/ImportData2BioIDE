@@ -153,6 +153,12 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.chname = ?2")
 	Taxon findByTaxasetAndChname(String taxaset,String chname);
 
+	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.scientificname = ?2")
+	Taxon findByTaxasetAndScientificname(String taxaset,String scientificname);
+
+	
+	
+	
 	@Modifying
 	@Transactional
 	@Query("Delete Taxon c where  c.taxaset.id =?1")
@@ -176,6 +182,11 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 
 	@Query(value = "select a.id,a.scientificname,a.authorstr,a.epithet,a.chname,a.rank_id from taxon a left join taxaset b on a.taxaset_id = b.id where b.dataset_id = ?1 and  a.scientificname =?2",nativeQuery = true)
 	List<Object[]> findByDatasetAndSciName(String datasetId,String sciName);
+	
+	@Query(value = "select a.* from taxon a left join taxaset b on a.taxaset_id = b.id where b.dataset_id = ?1 ",nativeQuery = true)
+	List<Taxon> findByDataset(String datasetId);
+	
+	
 	
 	@Query(value = "select id from taxon where id in  ?1 order by order_num,scientificname asc ",nativeQuery = true)
 	List<String> findIdByOrderNum(List<String> ids);
