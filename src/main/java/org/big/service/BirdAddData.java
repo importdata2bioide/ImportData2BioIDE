@@ -106,5 +106,24 @@ public interface BirdAddData {
 	 * @author ZXY
 	 */
 	void perfectAcceptCitationStr();
+	/**
+	 * 
+	 * @Description 根据word文档顺序，补充taxon.order_num
+	 * @author ZXY
+	 * @throws Exception 
+	 */
+	void orderByWord() throws Exception;
+	/**
+	 * 
+	 * @Description 更新某团队下下的所有分类树排序（preTaxon）
+	 * @author ZXY
+	 */
+	void orderTreeByTaxonOrderNum();
+	/**
+	 * 
+	 * @Description 删除重复的俗名
+	 * @author ZXY
+	 */
+	void deleteSameCommname();
 
 }

@@ -92,4 +92,5 @@ public interface TaxasetRepository extends BaseRepository<Taxaset, String> {
     
     @Query(value = "Select ts From Taxaset ts Where ts.tsname = ?1 and ts.dataset.id = ?2")
 	Taxaset findOneByTsnameAndDataset(String tsname,String dataset);
+
 }

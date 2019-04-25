@@ -39,6 +39,15 @@ public class BirdAddDataController {
 		birdAddData.exportToWord();
 		return "index";
 	}
+	
+	@RequestMapping(value = "/birdAddDataController_orderByWord", method = RequestMethod.GET)
+	public String orderByWord(HttpServletResponse response) throws Exception {
+		birdAddData.orderByWord();
+		birdAddData.orderTreeByTaxonOrderNum();
+//		birdAddData.deleteSameCommname();
+		return "index";
+	}
+	
 	/**
 	 * 
 	 * @Description http://localhost/importByExcel
@@ -91,9 +100,9 @@ public class BirdAddDataController {
 //		birdAddData.addCommonName();
 //		System.out.println("第8步：根据《补充接受名引证20190422.xlsx》补充2019鸟类名录接受名引证");
 //		birdAddData.perfectAcceptCitationStr();
-		System.out.println("最后一步：打印没有接受名引证的taxon");
-		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
-		birdAddData.printDontHasAcceptCitationTaxon();
+//		System.out.println("最后一步：打印没有接受名引证的taxon");
+//		birdAddData.countCitationByDs(DataConsts.Dataset_Id_Bird2019);
+//		birdAddData.printDontHasAcceptCitationTaxon();
 		// 此taxon 查询不到接受名引证：数据集：tsname=雀形目 scientificname=Pericrocotus solaris
 
 		return "index";

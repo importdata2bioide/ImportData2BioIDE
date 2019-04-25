@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -44,6 +45,7 @@ import org.big.entity.Distributiondata;
 import org.big.entity.Geoobject;
 import org.big.entity.Rank;
 import org.big.entity.Ref;
+import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
 import org.big.entity.TaxonHasTaxtree;
 import org.big.entity.Taxtree;
@@ -62,7 +64,9 @@ import org.big.repository.CommonnameRepository;
 import org.big.repository.DistributiondataRepository;
 import org.big.repository.GeoobjectRepository;
 import org.big.repository.RefRepository;
+import org.big.repository.TaxasetRepository;
 import org.big.repository.TaxonRepository;
+import org.big.repository.TaxtreeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +109,8 @@ public class BirdAddDataImpl implements BirdAddData {
 	private DistributiondataRepository distributiondataRepository;
 	@Autowired
 	private GeoobjectRepository geoobjectRepository;
+	@Autowired
+	private TaxtreeRepository taxtreeRepository;
 
 	private String userId_wangtianshan = "95c24cdc24794909bd140664e2ee9c3b";
 	private String datasetId_2019bird = "7da1c0ac-18c6-4710-addd-c9d49e8a2532";
@@ -1447,6 +1453,7 @@ public class BirdAddDataImpl implements BirdAddData {
 				String name = entry.getValue();
 				// 获得英文缩写
 				ProvinceVO provinceVO = provinceEntityMap.get(name);
+				String cn = provinceVO.getCn();// 中文简写
 				String codeChar = "";
 				if (provinceVO == null) {
 					logger.info("-错误：找不到的provinceVO实体类name = " + name);
@@ -1454,7 +1461,7 @@ public class BirdAddDataImpl implements BirdAddData {
 					codeChar = provinceVO.getCodeChar();
 					codeChar = "(" + codeChar + ")";
 				}
-				line.append(name + codeChar + "，");
+				line.append(cn + codeChar + "，");
 			}
 			if (line.length() > 0) {
 				String strline = line.toString();
@@ -1542,7 +1549,10 @@ public class BirdAddDataImpl implements BirdAddData {
 			String sciname = citation.getSciname();// 学名
 			String citationstr = citation.getCitationstr();// 引证原文
 			if (StringUtils.isNotEmpty(citationstr)) {
-				citationstr = citationstr.replace(sciname, "");// 去掉接受名的引证原文
+				citationstr = citationstr.replace(sciname, "").trim();// 去掉接受名的引证原文
+				if(citationstr.startsWith(",")) {
+					citationstr = citationstr.substring(1).trim();
+				}
 			}
 			if (StringUtils.isNotEmpty(authorship)) {
 				authorship = authorship.replaceAll("[()]", "");
@@ -1654,9 +1664,12 @@ public class BirdAddDataImpl implements BirdAddData {
 			// 创建一个word文件
 			doc = new XWPFDocument();
 			// 写内容
+			int i = 0;
 			for (Taxtree taxtree : treelist) {
-				logger.info("--" + taxtree.getTreename());
-				writeToWord(taxtree, doc, citationStyle, provinceEntityMap, provinceMap);
+				logger.info(i + "--" + taxtree.getTreename());
+//				writeToWord(taxtree, doc, citationStyle, provinceEntityMap, provinceMap);
+
+				writeToWordOrder(taxtree, doc, citationStyle, provinceEntityMap, provinceMap);
 
 				// break;
 			}
@@ -1787,6 +1800,36 @@ public class BirdAddDataImpl implements BirdAddData {
 			return true;
 		else
 			return false;
+	}
+
+	private void writeToWordOrder(Taxtree taxtree, XWPFDocument doc, int citationStyle,
+			Map<String, ProvinceVO> provinceEntityMap, Map<String, Integer> provinceMap) {
+		String treename = taxtree.getTreename();
+		Taxaset taxaset = taxasetService.findbyDatasetAndTsname(DataConsts.Dataset_Id_Bird2019, treename);
+		if (taxaset == null) {
+			logger.info("没有查询到名称为[" + treename + "]的分类单元集");
+		} else {
+			List<Taxon> list = taxonRepository.findByTaxaset(taxaset.getId());
+			for (Taxon taxon : list) {
+				String rankId = taxon.getRank().getId();
+				switch (rankId) {
+				case "5":// 科
+					writeFamily(taxon, doc, citationStyle);
+					break;
+				case "6":// 属
+					writeGenus(taxon, doc, citationStyle);
+					break;
+				case "7":// 种
+					writeSpeciesOrSubp(taxon, doc, citationStyle, provinceEntityMap, provinceMap);
+					break;
+				case "42":// 亚种
+					writeSpeciesOrSubp(taxon, doc, citationStyle, provinceEntityMap, provinceMap);
+					break;
+				default:
+					throw new ValidationException("未定义的rankId = " + rankId);
+				}
+			}
+		}
 	}
 
 	/**
@@ -1942,22 +1985,275 @@ public class BirdAddDataImpl implements BirdAddData {
 		String path = "E:\\003采集系统\\0012鸟类名录\\补充接受名引证20190422.xlsx";
 		List<ExcelUntilF> list = toolService.readExcel(path, ExcelUntilF.class);
 		for (ExcelUntilF row : list) {
-			String sciname = row.getColD();//接受名
-			String author = row.getColE();//命名信息
-			String citationstr = row.getColF();//完整引证
-			Citation citation = citationRepository.findByDsAndNameTypeAndSciname(DataConsts.Dataset_Id_Bird2019,NametypeEnum.acceptedName.getIndex(),sciname);
+			String sciname = row.getColD();// 接受名
+			String author = row.getColE();// 命名信息
+			String citationstr = row.getColF();// 完整引证
+			Citation citation = citationRepository.findByDsAndNameTypeAndSciname(DataConsts.Dataset_Id_Bird2019,
+					NametypeEnum.acceptedName.getIndex(), sciname);
 			citation.setAuthorship(author);
 			citation.setCitationstr(citationstr);
 			resetCitationFromCitationstr(citation);
 			String id = citation.getTaxon().getId();
 			Taxon taxon = taxonRepository.findOneById(id);
-			taxon.setAuthorstr(author);//更新taxon的命名信息
+			taxon.setAuthorstr(author);// 更新taxon的命名信息
 			if (insertOrUpdateDB) {
 				citationRepository.save(citation);
 				taxonRepository.save(taxon);
 			}
 		}
 		//
-		
+
+	}
+
+	@Override
+	public void orderByWord() throws Exception {
+		taxasetOrderNum = 0;
+		String wordPath = "E:\\003采集系统\\0002导入鸟类\\20190423.doc";
+		// 2019名录下的所有taxaset
+		List<Taxaset> taxasetlist = taxasetService.findTaxasetsByDatasetId(DataConsts.Dataset_Id_Bird2019);
+		int size = taxasetlist.size();
+		logger.info("-分类单元集总计：" + taxasetlist.size());
+		// 读取word文件
+		List<String> doclist = toolService.readDoc(wordPath);
+		List<String> groupByOrder = null;
+		int orderCount = 0;
+		for (String line : doclist) {
+			if (isOrder(line)) {
+				handlePreTaxon(groupByOrder, taxasetlist);
+				groupByOrder = new ArrayList<>();
+				orderCount++;
+				getTaxaset(line, taxasetlist);
+
+			}
+			groupByOrder.add(line);
+		}
+		handlePreTaxon(groupByOrder, taxasetlist);
+		logger.info("-word中匹配的目个数和分类单元集目个数匹配结果：" + (size == orderCount) + ",orderCount = " + orderCount);
+
+	}
+
+	private Taxaset getTaxaset(String line, List<Taxaset> taxasetlist) {
+		String butNum = line.substring(line.indexOf(".") + 1);
+		String tsname = butNum.substring(0, toolService.IndexOfFirstEng(butNum)).trim();
+		// 从数据库中匹配分类单元集
+		Taxaset taxaset = getTaxasetBytsname(taxasetlist, tsname);
+		if (taxaset == null) {
+			logger.info("没有找到名为：[" + tsname + "]的分类单元集，" + butNum);
+		}
+		return taxaset;
+	}
+
+	int taxasetOrderNum = 0;
+
+	private void handlePreTaxon(List<String> groupByOrder, List<Taxaset> taxasetlist) {
+		if (groupByOrder == null) {
+			return;
+		}
+		int orderNum = 0;
+		Taxaset taxaset = null;
+		Taxon preTaxon = null;
+		List<Taxon> updatelist = new ArrayList<>();
+		Map<String, String> genusMap = new HashMap<>();
+		for (String line : groupByOrder) {
+			if (isOrder(line)) {// 目
+				taxasetOrderNum++;
+				taxaset = getTaxaset(line, taxasetlist);
+				logger.info("-" + taxasetOrderNum + "、" + taxaset.getTsname() + "	" + taxaset.getId());
+				// logger.info("update taxtree set order_num ="+taxasetOrderNum+" where
+				// dataset_id ='7da1c0ac-18c6-4710-addd-c9d49e8a2532' and treename =
+				// '"+taxaset.getTsname()+"';");
+			} else if (isFamily(line)) {// 科
+				orderNum++;
+				Taxon taxon = getFamilyTaxon(line, taxaset);
+				taxon.setOrderNum(orderNum);
+				updatelist.add(taxon);
+			} else if (isSpecies(line)) {// 种
+				orderNum++;
+				Taxon taxon = getSpeciesTaxon(line, taxaset);
+				Taxon genusTaxon = getGenus(taxon, genusMap, taxaset);
+				if (genusTaxon != null) {
+					// 更新属序号
+					genusTaxon.setOrderNum(orderNum);
+					orderNum++;
+					updatelist.add(genusTaxon);
+				}
+				// 更新种阶元序号
+				taxon.setOrderNum(orderNum);
+				updatelist.add(taxon);
+				preTaxon = taxon;
+			} else if (isSubspecies(line)) {// 亚种
+				orderNum++;
+				Taxon taxon = getSubspeciesTaxon(line, taxaset, preTaxon);
+				taxon.setOrderNum(orderNum);
+				updatelist.add(taxon);
+			}
+
+		}
+//		 操作数据库
+		logger.info("-操作数据库，更新OrderNum:" + updatelist.size());
+		batchInsertService.batchUpdateTaxonOrderNumById(updatelist);
+//		 查询orderNum为空的taxon
+		int total = taxonRepository.countByTaxaset(taxaset.getId());
+		List<Taxon> list = taxonRepository.findByTaxasetAndOrderNumNull(taxaset.getId());
+		if (list.size() != 0) {
+			logger.info((list.size() == total) + "在分类单元集[" + taxaset.getTsname() + "]查询orderNum为空的taxon条数："
+					+ list.size() + ",分类单元集下数据总条数：" + total);
+		}
+	}
+
+	private Taxon getGenus(Taxon taxon, Map<String, String> genusMap, Taxaset taxaset) {
+		String scientificname = taxon.getScientificname();
+		String genusLatinName = scientificname.substring(0, scientificname.indexOf(" ")).trim();
+		String key = genusMap.get(genusLatinName);
+		if (StringUtils.isEmpty(key)) {
+			genusMap.put(genusLatinName, genusLatinName);
+			// 从数据库是否能查询到
+			Taxon genusTaxon = taxonRepository.findByTaxasetAndScientificname(taxaset.getId(), genusLatinName);
+			if (genusTaxon == null) {
+				logger.info(
+						"在分类单元集 [" + taxaset.getTsname() + "]中没有找到taxon(属阶元),taxon 的scientificname=" + genusLatinName);
+			} else {
+				return genusTaxon;
+			}
+		}
+		return null;
+	}
+
+	private Taxon getSubspeciesTaxon(String line, Taxaset taxaset, Taxon preTaxon) {
+		String scientificname = preTaxon.getScientificname() + " " + line.substring(line.lastIndexOf(".") + 1).trim();
+		if (scientificname.contains("Parus cinereus commixtus")) {
+			System.out.println(line);
+		}
+		Taxon taxon = taxonRepository.findByTaxasetAndScientificname(taxaset.getId(), scientificname);
+		if (taxon == null) {
+			logger.info(line + "	在分类单元集 [" + taxaset.getTsname() + "]中没有找到taxon(亚种阶元),taxon 的scientificname="
+					+ scientificname);
+		}
+		return taxon;
+	}
+
+	private boolean isSubspecies(String line) {
+		if (line.startsWith("—")) {
+			return true;
+		}
+		return false;
+	}
+
+	private Taxon getSpeciesTaxon(String line, Taxaset taxaset) {
+		int indexOfFirstEng = toolService.IndexOfFirstEng(line);
+		String chname = line.substring(0, indexOfFirstEng).trim();
+		// 中文开头
+		Taxon taxon = null;
+		try {
+			taxon = taxonRepository.findByTaxasetAndChname(taxaset.getId(), chname);
+		} catch (Exception e) {
+			logger.info(e.getMessage());
+		}
+		if (taxon == null) {
+			logger.info(
+					line + "	在分类单元集 [" + taxaset.getTsname() + "]中没有找到taxon(种阶元),taxon 的chname=" + chname + "	");
+		}
+		return taxon;
+	}
+
+	private boolean isSpecies(String line) {
+		if (StringUtils.isEmpty(line) || line.startsWith("—") || line.startsWith("·") || line.contains("，")
+				|| line.contains("。") || line.contains("、") || CommUtils.isEnglish(line.substring(0, 1))) {
+			return false;
+		}
+		if (!CommUtils.isChinese(line.trim().substring(0, 1))) {
+			return false;
+		}
+		int indexOfFirstEng = toolService.IndexOfFirstEng(line);
+		if (indexOfFirstEng == -1) {
+			return false;
+		}
+		return true;
+	}
+
+	private Taxon getFamilyTaxon(String line, Taxaset taxaset) {
+		String butNum = line.substring(line.indexOf(".") + 1);
+		String chname = butNum.substring(0, toolService.IndexOfFirstEng(butNum)).trim();
+		Taxon taxon = taxonRepository.findByTaxasetAndChname(taxaset.getId(), chname);
+		if (taxon == null) {
+			logger.info(line + "	在分类单元集 [" + taxaset.getTsname() + "]中没有找到taxon(科阶元),taxon 的chname = " + chname);
+		}
+		return taxon;
+	}
+
+	private boolean isFamily(String line) {
+		if (line.contains("科") && line.contains("属") && line.contains("种")) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isOrder(String line) {
+		if (line.contains("目")) {
+			String orderLineReg = "^[A-Z]+\\s{0,}\\.(.*?)";
+			Pattern pattern = Pattern.compile(orderLineReg);
+			Matcher matcher = pattern.matcher(line);
+			return matcher.matches();
+		}
+		return false;
+	}
+
+	private Taxaset getTaxasetBytsname(List<Taxaset> taxasetlist, String chname) {
+		Iterator<Taxaset> iterator = taxasetlist.iterator();
+		while (iterator.hasNext()) {
+			Taxaset taxaset = iterator.next();
+			if (taxaset.getTsname().equals(chname)) {
+				return taxaset;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void orderTreeByTaxonOrderNum() {
+		// 查询分类树
+		List<Taxtree> treelist = taxtreeRepository.findByDatasetId(DataConsts.Dataset_Id_Bird2019);
+		for (Taxtree taxtree : treelist) {
+			logger.info("更新分类树：" + taxtree.getTreename());
+			taxtreeService.updatePreTaxonByOrderNum(taxtree.getId());
+		}
+	}
+
+	@Override
+	public void deleteSameCommname() {
+		List<Taxon> list = taxonRepository.findByDataset(DataConsts.Dataset_Id_Bird2019);
+		for (Taxon taxon : list) {
+			List<Commonname> commonnamelist = commonnameRepository.findByTaxonId(taxon.getId());
+			if (commonnamelist.size() == 0) {
+				continue;
+			}
+			// 筛选重复数据
+			// 转换成map类型
+			Map<String, Commonname> map = new HashMap<>();
+			for (Commonname commonname : commonnamelist) {
+				map.put(commonname.getCommonname(), commonname);
+			}
+			if (map.size() == commonnamelist.size()) {
+				continue;
+			}
+			logger.info(taxon.getTaxaset().getTsname() + "	有重复数据：" + taxon.getScientificname());
+			Map<String, Commonname> mapId = new HashMap<>();
+			// 找出重复数据
+			for (Entry<String, Commonname> entry : map.entrySet()) {
+				mapId.put(entry.getValue().getId(), entry.getValue());
+			}
+			logger.info(mapId.size() + "	" + map.size() + "	" + commonnamelist.size());
+			for (Commonname entity : commonnamelist) {
+				String id = entity.getId();
+				Commonname commonname = mapId.get(id);
+				if (commonname == null) {
+					// 需要被删除
+//					commonnameRepository.deleteById(id);
+					logger.info(taxon.getScientificname() + "	" + taxon.getTaxaset().getTsname() + "	删除ID = " + id
+							+ "	" + entity.getCommonname());
+				}
+			}
+
+		}
 	}
 }

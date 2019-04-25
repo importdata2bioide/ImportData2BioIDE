@@ -92,5 +92,11 @@ public interface CommonnameRepository extends BaseRepository<Commonname, String>
 	
 	List<Commonname> findByCommonnameContaining(String contains);
 	
+	@Query("Select c from Commonname c Where c.taxon.id = ?1 ")
+	List<Commonname>  findByTaxonId(String taxonId);
+	
+	
+	
+	
 
 }

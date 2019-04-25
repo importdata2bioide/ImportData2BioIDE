@@ -115,6 +115,7 @@ public interface RefRepository extends BaseRepository<Ref, String> {
 
 	List<Ref> findByIdIn(List<String> ids);
 	
+	List<Ref> findByRefstrStartingWith(String start);
 	
 	
 

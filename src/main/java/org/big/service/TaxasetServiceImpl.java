@@ -249,4 +249,10 @@ public class TaxasetServiceImpl implements TaxasetService {
 		}
 		return thisResult;
 	}
+
+	@Override
+	public Taxaset findbyDatasetAndTsname(String datasetId, String tsname) {
+		Taxaset taxaset = taxasetRepository.findOneByTsnameAndDataset(tsname,datasetId);
+		return taxaset;
+	}
 }

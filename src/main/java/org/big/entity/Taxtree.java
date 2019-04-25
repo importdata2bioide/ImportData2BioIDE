@@ -52,6 +52,8 @@ public class Taxtree implements Serializable {
 	private String treeinfo;
 
 	private String treename;
+	
+	private int orderNum;//按照insert顺序在数据集内递增
 
 	//bi-directional many-to-many association to Taxon
 	@ManyToMany
@@ -267,5 +269,14 @@ public class Taxtree implements Serializable {
 			return false;
 		return true;
 	}
+
+	public int getOrderNum() {
+		return orderNum;
+	}
+
+	public void setOrderNum(int orderNum) {
+		this.orderNum = orderNum;
+	}
+	
 
 }

@@ -218,9 +218,9 @@ public class Taxon implements Serializable{
 	}
 
 	public String getChname() {
-		if(StringUtils.isNotEmpty(chname)) {
-			chname = chname.trim();
-		}
+//		if(StringUtils.isNotEmpty(chname)) {
+//			chname = chname.trim();
+//		}
 		return chname;
 	}
 

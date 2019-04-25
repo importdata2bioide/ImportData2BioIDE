@@ -52,6 +52,8 @@ public class Taxaset implements Serializable {
 	//bi-directional many-to-one association to Dataset
 	@ManyToOne
 	private Dataset dataset;
+	
+	
 
 	//bi-directional many-to-one association to Taxon
 	@OneToMany(mappedBy="taxaset")
@@ -248,4 +250,5 @@ public class Taxaset implements Serializable {
 		return "Taxaset [id=" + id + ", refsjson=" + refsjson + ", tsname=" + tsname + "]";
 	}
 
+	
 }

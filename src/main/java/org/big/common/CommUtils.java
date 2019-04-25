@@ -555,7 +555,16 @@ public class CommUtils {
 	public static boolean isEnglish(String text) {
 		return text.matches("^[a-zA-Z]*");
 	}
-
+	
+	public static boolean isChinese(String text) {
+		String regEx = "[\\u4e00-\\u9fa5]+";
+		Pattern p = Pattern.compile(regEx);
+		Matcher m = p.matcher(text);
+		if (m.find())
+			return true;
+		else
+			return false;
+	}
 	/**
 	 * isStartWithSeq 是否符合(1) (12) 开头
 	 * 

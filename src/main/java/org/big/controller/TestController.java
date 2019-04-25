@@ -19,11 +19,13 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.big.common.CommUtils;
 import org.big.common.FilesUtils;
 import org.big.common.UUIDUtils;
+import org.big.constant.DataConsts;
 import org.big.entity.Citation;
 import org.big.entity.Commonname;
 import org.big.entity.Description;
 import org.big.entity.Geoobject;
 import org.big.entity.Rank;
+import org.big.entity.Ref;
 import org.big.entity.Taxaset;
 import org.big.entity.Taxon;
 import org.big.entityVO.ExcelUutilH;
@@ -109,16 +111,36 @@ public class TestController {
 	@RequestMapping(value = "/testController_test1")
 	public void test1(HttpServletResponse response) throws Exception {
 		updateBlank();
+		
 	}
 	
-	private void updateBlank() {
-		List<Commonname> list = commonnameRepository.findByCommonnameContaining(":zh-CN");
-		for (Commonname commonname : list) {
-			commonname.setCommonname(commonname.getCommonname().replace(":zh-CN", ""));
-			commonnameRepository.save(commonname);
+
+	private void updateBlank() throws Exception {
+		List<Taxon> list = taxonRepository.findByDataset(DataConsts.Dataset_Id_Bird2019);
+		for (Taxon taxon : list) {
+			String scientificname = taxon.getScientificname();
+			if(StringUtils.isNotEmpty(scientificname) && scientificname.contains("  ")) {
+				taxon.setScientificname(scientificname.replaceAll("  ", " "));
+				toolService.printEntity(taxon);
+				taxonRepository.save(taxon);
+			}
 		}
 	}
 
+	private void updateChname() {
+		List<Taxon> list = taxonRepository.findbychnameContainBlank();
+		System.out.println(list.size());
+		int i = 0;
+		for (Taxon taxon : list) {
+			String chname = taxon.getChname();
+			System.out.println(chname);
+			i++;
+			taxon.setChname(chname.trim());
+			
+		}
+		batchInsertService.updateTaxonChname(list);
+		
+	}
 	private void updateCitationSciName() {
 		List<Citation> list = citationRepository.findByScinameEndingWith(",");
 		for (Citation citation : list) {

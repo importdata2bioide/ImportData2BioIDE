@@ -117,4 +117,6 @@ public interface TaxasetService {
      */
 	JSON newOne(Taxaset thisTaxaset, HttpServletRequest request);
 
+	Taxaset findbyDatasetAndTsname(String datasetId, String tsname);
+
 }

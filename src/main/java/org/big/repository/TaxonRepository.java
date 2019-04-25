@@ -137,7 +137,7 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	List<Taxon> findByTaxonSciNameAndRankAndDSid(String scientificname, String rankid,String datasetId);
 	
 	
-	@Query(value = "select t from Taxon t where t.taxaset.id = ?1")
+	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 order by orderNum asc")
 	List<Taxon> findByTaxaset(String taxasetId);
 	
 	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.rank.id = ?2")
@@ -156,8 +156,6 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	@Query(value = "select t from Taxon t where t.taxaset.id = ?1 and t.scientificname = ?2")
 	Taxon findByTaxasetAndScientificname(String taxaset,String scientificname);
 
-	
-	
 	
 	@Modifying
 	@Transactional
@@ -187,11 +185,22 @@ public interface TaxonRepository extends BaseRepository<Taxon, String> {
 	List<Taxon> findByDataset(String datasetId);
 	
 	
+	@Query(value = "select a.* from taxon a  where a.taxaset_id = ?1 and (a.order_num is null or a.order_num = '' or a.order_num = 0)",nativeQuery = true)
+	List<Taxon> findByTaxasetAndOrderNumNull(String id);
 	
 	@Query(value = "select id from taxon where id in  ?1 order by order_num,scientificname asc ",nativeQuery = true)
 	List<String> findIdByOrderNum(List<String> ids);
 
 	@Query(value = "select a.id,a.scientificname,b.tsname,a.chname from taxon a left join taxaset b on a.taxaset_id = b.id where b.dataset_id = :datasetId and a.rank_id = :rankId ",nativeQuery = true)
 	List<Object[]> findTaxonBydsAndRank(String datasetId,String rankId);
+
+	@Query(value = "select * from taxon where chname  like ' %' and chname is not null and chname !='' order by chname",nativeQuery = true)
+	List<Taxon> findbychnameContainBlank();
+
+	@Query(value = "select count(*) from taxon where taxaset_id = :taxasetId",nativeQuery = true)
+	int countByTaxaset(String taxasetId);
+
+	
+
 	
 }

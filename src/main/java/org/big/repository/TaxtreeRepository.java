@@ -83,7 +83,7 @@ public interface TaxtreeRepository extends BaseRepository<Taxtree, String> {
     Taxtree findOneByTreenameAndInfo(String treename,String treeinfo);
     
     
-    @Query(value = "Select tt From Taxtree tt Where tt.dataset.id = ?1 order by treeinfo,treename desc")
+    @Query(value = "Select tt From Taxtree tt Where tt.dataset.id = ?1 order by orderNum asc")
     List<Taxtree> findByDatasetId(String datasetId);
     
 
